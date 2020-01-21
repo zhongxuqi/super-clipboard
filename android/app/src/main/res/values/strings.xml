@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SuperClipboard</string>
+
+    <string name="window_close">Window Close</string>
+    <string name="window_min">Window Min</string>
+    <string name="content_type_icon">Content Type Icon</string>
 </resources>

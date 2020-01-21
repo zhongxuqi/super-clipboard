@@ -6,9 +6,11 @@ import android.graphics.PixelFormat
 import android.os.Build
 import android.view.*
 import android.view.View.OnTouchListener
-import android.widget.Button
-import android.widget.TextView
+import android.widget.ListView
 import android.widget.Toast
+import com.musketeer.superclipboard.adapter.HistoryListAdapter
+import com.musketeer.superclipboard.data.Content
+import java.util.*
 
 
 class ClipboardMainWindow constructor(private val mContext: Context) {
@@ -22,7 +24,10 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         private var mFloatViewLastY = 0
         private var mFloatViewFirstX = 0
         private var mFloatViewFirstY = 0
-        var imageButton: Button? = null
+
+        private var mContentListView: ListView? = null
+        private var mContentListAdapter: HistoryListAdapter? = null
+        private var mContentList: LinkedList<Content> = LinkedList()
     }
 
     fun dismissFloatView() {
@@ -97,9 +102,6 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
     init {
         val inflater = LayoutInflater.from(mContext)
         mFloatView = inflater.inflate(R.layout.clipboard_main_layout, null)
-        val textView: TextView = mFloatView!!.findViewById(R.id.float_text)
-        textView.text = "I'm a float view!"
-        imageButton = mFloatView!!.findViewById(R.id.float_btn)
         mFloatView!!.setOnClickListener(mFloatViewOnClickListener)
         mFloatView!!.setOnTouchListener(mFloatViewOnTouchListener)
         mFloatViewLayoutParams = WindowManager.LayoutParams()
@@ -109,5 +111,16 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         mFloatViewLayoutParams!!.gravity = Gravity.CENTER
         mFloatViewLayoutParams!!.width = WindowManager.LayoutParams.WRAP_CONTENT
         mFloatViewLayoutParams!!.height = WindowManager.LayoutParams.WRAP_CONTENT
+
+        for (i in 0..10) {
+            var contentType = Content.ContentType.Text
+            if (i%2 != 0) {
+                contentType = Content.ContentType.Image
+            }
+            mContentList.add(Content(contentType, "text $i", "", 0, 0))
+        }
+        mContentListView = mFloatView!!.findViewById(R.id.history_list) as ListView
+        mContentListAdapter = HistoryListAdapter(mContext, R.id.history_list_item_content, mContentList)
+        mContentListView!!.adapter = mContentListAdapter
     }
 }
