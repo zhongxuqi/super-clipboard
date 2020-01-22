@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
+import android.util.DisplayMetrics
 import android.view.*
 import android.view.View.OnTouchListener
 import android.widget.ListView
@@ -42,7 +43,6 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
     fun showFloatView() {
         if (!mIsFloatViewShowing) {
             mIsFloatViewShowing = true
-            mWindowManager = mContext.getSystemService(WINDOW_SERVICE) as WindowManager
             if (mWindowManager != null) {
                 mWindowManager!!.addView(mFloatView, mFloatViewLayoutParams)
             }
@@ -100,6 +100,9 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
     }
 
     init {
+        mWindowManager = mContext.getSystemService(WINDOW_SERVICE) as WindowManager
+        val metrics = DisplayMetrics()
+        mWindowManager!!.defaultDisplay.getMetrics(metrics)
         val inflater = LayoutInflater.from(mContext)
         mFloatView = inflater.inflate(R.layout.clipboard_main_layout, null)
         mFloatView!!.setOnClickListener(mFloatViewOnClickListener)
@@ -109,8 +112,8 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         mFloatViewLayoutParams!!.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         mFloatViewLayoutParams!!.type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE
         mFloatViewLayoutParams!!.gravity = Gravity.CENTER
-        mFloatViewLayoutParams!!.width = WindowManager.LayoutParams.WRAP_CONTENT
-        mFloatViewLayoutParams!!.height = WindowManager.LayoutParams.WRAP_CONTENT
+        mFloatViewLayoutParams!!.width = (metrics.widthPixels * 0.6).toInt()
+        mFloatViewLayoutParams!!.height = (metrics.heightPixels * 0.6).toInt()
 
         for (i in 0..10) {
             var contentType = Content.ContentType.Text
