@@ -9,19 +9,19 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.musketeer.superclipboard.R
-import com.musketeer.superclipboard.data.Content
+import com.musketeer.superclipboard.data.ClipBoardMessage
 
 
-class HistoryListAdapter: ArrayAdapter<Content> {
+class HistoryListAdapter: ArrayAdapter<ClipBoardMessage> {
     internal class ViewHolder {
         var iconView: ImageView? = null
         var contentView: TextView? = null
     }
 
-    constructor(ctx: Context, resID: Int, contentList: List<Content>): super(ctx, resID, contentList)
+    constructor(ctx: Context, resID: Int, contentList: List<ClipBoardMessage>): super(ctx, resID, contentList)
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val contentObj: Content = getItem(position)!!
+        val contentObj: ClipBoardMessage = getItem(position)!!
         var view: View? = null
         val viewHolder: ViewHolder?
         if (convertView == null) {
@@ -36,11 +36,11 @@ class HistoryListAdapter: ArrayAdapter<Content> {
         }
 
         when (contentObj.type) {
-            Content.ContentType.Text -> {
+            ClipBoardMessage.MessageType.Text -> {
                 viewHolder.iconView!!.setImageDrawable(context.getDrawable(R.drawable.ic_text_fields_black_24dp))
                 viewHolder.iconView!!.setColorFilter(ContextCompat.getColor(context, R.color.green))
             }
-            Content.ContentType.Image -> {
+            ClipBoardMessage.MessageType.Image -> {
                 viewHolder.iconView!!.setImageDrawable(context.getDrawable(R.drawable.ic_image_black_24dp))
                 viewHolder.iconView!!.setColorFilter(ContextCompat.getColor(context, R.color.blue))
             }

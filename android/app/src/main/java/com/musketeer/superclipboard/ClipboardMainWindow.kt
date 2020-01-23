@@ -10,12 +10,14 @@ import android.view.View.OnTouchListener
 import android.widget.ListView
 import android.widget.Toast
 import com.musketeer.superclipboard.adapter.HistoryListAdapter
-import com.musketeer.superclipboard.data.Content
+import com.musketeer.superclipboard.data.ClipBoardMessage
+import com.musketeer.superclipboard.db.SqliteHelper
 import java.util.*
 
 
 class ClipboardMainWindow constructor(private val mContext: Context) {
     companion object {
+        private var mContext: Context? = null
         private var mIsFloatViewShowing = false
         private var mWindowManager: WindowManager? = null
         private var mFloatView: View? = null
@@ -28,7 +30,15 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
 
         private var mContentListView: ListView? = null
         private var mContentListAdapter: HistoryListAdapter? = null
-        private var mContentList: LinkedList<Content> = LinkedList()
+        private var mContentList: LinkedList<ClipBoardMessage> = LinkedList()
+
+
+        fun refreshAdapter() {
+            var msgList = SqliteHelper.helper!!.ListAll()
+            mContentList.clear()
+            mContentList.addAll(msgList)
+            mContentListAdapter!!.notifyDataSetChanged()
+        }
     }
 
     fun dismissFloatView() {
@@ -100,6 +110,7 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
     }
 
     init {
+        ClipboardMainWindow.mContext = this.mContext.applicationContext
         mWindowManager = mContext.getSystemService(WINDOW_SERVICE) as WindowManager
         val metrics = DisplayMetrics()
         mWindowManager!!.defaultDisplay.getMetrics(metrics)
@@ -115,13 +126,8 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         mFloatViewLayoutParams!!.width = (metrics.widthPixels * 0.6).toInt()
         mFloatViewLayoutParams!!.height = (metrics.heightPixels * 0.6).toInt()
 
-        for (i in 0..10) {
-            var contentType = Content.ContentType.Text
-            if (i%2 != 0) {
-                contentType = Content.ContentType.Image
-            }
-            mContentList.add(Content(contentType, "text $i", "", 0, 0))
-        }
+        var msgList = SqliteHelper.helper!!.ListAll()
+        mContentList.addAll(msgList)
         mContentListView = mFloatView!!.findViewById(R.id.history_list) as ListView
         mContentListAdapter = HistoryListAdapter(mContext, R.id.history_list_item_content, mContentList)
         mContentListView!!.adapter = mContentListAdapter

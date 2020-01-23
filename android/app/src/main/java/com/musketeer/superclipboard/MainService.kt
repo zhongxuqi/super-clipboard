@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.musketeer.superclipboard.data.ClipBoardMessage
+import com.musketeer.superclipboard.db.SqliteHelper
 
 
 class MainService : Service() {
@@ -16,10 +18,10 @@ class MainService : Service() {
         manager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         manager!!.addPrimaryClipChangedListener {
             if (manager!!.hasPrimaryClip() && manager!!.primaryClip!!.itemCount > 0) {
-                val addedText =
-                    manager!!.primaryClip!!.getItemAt(0).text
-                System.out.printf("===>>> %s\n", addedText.toString())
-                Log.w("clipboard", "get text: $addedText")
+                val addedText = manager!!.primaryClip!!.getItemAt(0).text
+                val millisTs = System.currentTimeMillis()
+                SqliteHelper.helper!!.Insert(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, addedText.toString(), "", millisTs, millisTs))
+                ClipboardMainWindow.refreshAdapter()
             }
         }
     }
