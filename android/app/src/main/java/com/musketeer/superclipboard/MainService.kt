@@ -12,6 +12,7 @@ import com.musketeer.superclipboard.db.SqliteHelper
 
 class MainService : Service() {
     var manager: ClipboardManager? = null
+    var prevValue: String = ""
 
     override fun onCreate() {
         super.onCreate()
@@ -20,8 +21,12 @@ class MainService : Service() {
             if (manager!!.hasPrimaryClip() && manager!!.primaryClip!!.itemCount > 0) {
                 val addedText = manager!!.primaryClip!!.getItemAt(0).text
                 val millisTs = System.currentTimeMillis()
-                SqliteHelper.helper!!.Insert(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, addedText.toString(), "", millisTs, millisTs))
-                ClipboardMainWindow.refreshAdapter()
+                val newValue = addedText.toString()
+                if (prevValue.compareTo(newValue) != 0) {
+                    prevValue = newValue
+                    SqliteHelper.helper!!.Insert(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
+                    ClipboardMainWindow.refreshAdapter()
+                }
             }
         }
     }
