@@ -5,15 +5,52 @@
     android:layout_height="wrap_content">
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/min_view"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="4dp"
+        app:cardPreventCornerOverlap="false"
+        app:cardBackgroundColor="@color/white"
+        app:cardUseCompatPadding="true"
+        app:contentPadding="0dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_move"
+                android:scaleType="centerInside"
+                android:tint="@color/grey"
+                android:contentDescription="@string/move"/>
+            <ImageView
+                android:id="@+id/btn_window_max"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_brightness_1_black_24dp"
+                android:scaleType="centerInside"
+                android:tint="@color/green"
+                android:contentDescription="@string/window_max"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
         android:id="@+id/max_view"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/white"
         app:cardCornerRadius="4dp"
         app:cardElevation="4dp"
         app:cardPreventCornerOverlap="false"
+        app:cardBackgroundColor="@color/white"
+        app:cardUseCompatPadding="true"
         app:contentPadding="0dp">
         <LinearLayout
             android:layout_width="match_parent"
@@ -55,6 +92,7 @@
                     android:layout_height="1dp"
                     android:layout_weight="1"/>
                 <ImageView
+                    android:id="@+id/btn_window_min"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:paddingTop="8dp"
@@ -64,8 +102,10 @@
                     android:src="@drawable/ic_brightness_1_black_24dp"
                     android:scaleType="centerInside"
                     android:tint="@color/yellow"
-                    android:contentDescription="@string/window_min"/>
+                    android:contentDescription="@string/window_min"
+                    android:background="?attr/selectableItemBackground"/>
                 <ImageView
+                    android:id="@+id/btn_window_close"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:paddingTop="8dp"
@@ -75,7 +115,8 @@
                     android:src="@drawable/ic_brightness_1_black_24dp"
                     android:scaleType="centerInside"
                     android:tint="@color/red"
-                    android:contentDescription="@string/window_close"/>
+                    android:contentDescription="@string/window_close"
+                    android:background="?attr/selectableItemBackground"/>
             </LinearLayout>
 
             <View
