@@ -6,4 +6,7 @@
     <string name="content_type_icon">Content Type Icon</string>
     <string name="all_platform_sync">All Platform Sync</string>
     <string name="person">Person</string>
+    <string name="avatar">Avatar</string>
+    <string name="user_name">User Name</string>
+    <string name="help">Help</string>
 </resources>
