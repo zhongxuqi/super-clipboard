@@ -1,14 +1,9 @@
 package com.musketeer.superclipboard
 
-import android.content.ComponentName
 import android.content.Context
-import android.content.Context.BIND_AUTO_CREATE
 import android.content.Context.WINDOW_SERVICE
-import android.content.Intent
-import android.content.ServiceConnection
 import android.graphics.PixelFormat
 import android.os.Build
-import android.os.IBinder
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.View.OnTouchListener
@@ -46,7 +41,6 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
 
         private var popWindow: PopupWindow? = null
         private var personSettingsView: View? = null
-        private var mainServiceBinder: MainService.MainServiceBinder? = null
 
         fun refreshAdapter() {
             val msgList = SqliteHelper.helper!!.ListAll()
@@ -170,18 +164,6 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         mContentListView = mFloatView!!.findViewById(R.id.history_list) as ListView
         mContentListAdapter = HistoryListAdapter(mContext, R.id.history_list_item_content, mContentList)
         mContentListView!!.adapter = mContentListAdapter
-
-        // init binder
-        val bindIntent = Intent(mContext, MainService::class.java)
-        mContext.bindService(bindIntent, object: ServiceConnection {
-            override fun onServiceDisconnected(name: ComponentName?) {
-
-            }
-
-            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-                mainServiceBinder = service as MainService.MainServiceBinder
-            }
-        }, BIND_AUTO_CREATE)
 
         // init popup window
         personSettingsView = inflater.inflate(R.layout.person_settings, null)

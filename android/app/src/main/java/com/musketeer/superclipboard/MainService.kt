@@ -27,6 +27,10 @@ class MainService : Service() {
     override fun onCreate() {
         super.onCreate()
         notify("")
+        val last = SqliteHelper.helper!!.GetLast()
+        if (last != null) {
+            prevValue = last.content
+        }
         manager.addPrimaryClipChangedListener {
             if (manager.hasPrimaryClip() && manager.primaryClip!!.itemCount > 0) {
                 val addedText = manager.primaryClip!!.getItemAt(0).text

@@ -39,12 +39,30 @@ class SqliteHelper: SQLiteOpenHelper {
             val updateTime = cursor.getLong(cursor.getColumnIndex("update_time"))
             msgList.add(ClipBoardMessage(id, type, content, extra, createTime, updateTime))
         }
+        cursor.close()
         while (msgList.size > MaxSize) {
             val last = msgList.last
             Delete(last.id)
             msgList.removeLast()
         }
         return msgList
+    }
+
+    fun GetLast(): ClipBoardMessage? {
+        val db = writableDatabase
+        val cursor = db.query(TABLE_NAME, arrayOf("id", "type", "content", "extra", "create_time", "update_time"), null, null, null, null, "create_time DESC", "1")
+        while (cursor.moveToNext()) {
+            val id = cursor.getInt(cursor.getColumnIndex("id"))
+            val type = ClipBoardMessage.ToMessageType(cursor.getInt(cursor.getColumnIndex("type")))
+            val content = cursor.getString(cursor.getColumnIndex(("content")))
+            val extra = cursor.getString(cursor.getColumnIndex("extra"))
+            val createTime = cursor.getLong(cursor.getColumnIndex("create_time"))
+            val updateTime = cursor.getLong(cursor.getColumnIndex("update_time"))
+            cursor.close()
+            return ClipBoardMessage(id, type, content, extra, createTime, updateTime)
+        }
+        cursor.close()
+        return null
     }
 
     fun Delete(id: Int) {
