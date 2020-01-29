@@ -12,4 +12,9 @@
     <string name="help">Help</string>
     <string name="move">Move</string>
     <string name="clipboard_empty">ClipBoard is Empty</string>
+    <string name="detail">Detail</string>
+    <string name="delete">Delete</string>
+    <string name="expand">Expand</string>
+    <string name="fold">Fold</string>
+    <string name="copied">Copied</string>
 </resources>

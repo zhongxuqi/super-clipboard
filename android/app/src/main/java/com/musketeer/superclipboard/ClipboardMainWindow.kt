@@ -1,5 +1,6 @@
 package com.musketeer.superclipboard
 
+import android.content.ClipData
 import android.content.Context
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
@@ -7,9 +8,7 @@ import android.os.Build
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.View.OnTouchListener
-import android.widget.ImageView
-import android.widget.ListView
-import android.widget.PopupWindow
+import android.widget.*
 import androidx.constraintlayout.widget.Constraints
 import com.musketeer.superclipboard.adapter.HistoryListAdapter
 import com.musketeer.superclipboard.data.ClipBoardMessage
@@ -42,10 +41,23 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         private var popWindow: PopupWindow? = null
         private var personSettingsView: View? = null
 
-        fun refreshAdapter() {
-            val msgList = SqliteHelper.helper!!.ListAll()
-            mContentList.clear()
-            mContentList.addAll(msgList)
+        private var actionMenuWindow: PopupWindow? = null
+        private var actionMenuWindowView: View? = null
+        private var actionMenuExpandView: TextView? = null
+        private var clipboardMsg: ClipBoardMessage? = null
+
+        fun addMessage(msg: ClipBoardMessage) {
+            mContentList.addFirst(msg)
+            mContentListAdapter!!.notifyDataSetChanged()
+        }
+
+        fun deleteMessage(id: Int) {
+            for (msg in mContentList.iterator()) {
+                if (msg.id.compareTo(id) == 0) {
+                    mContentList.remove(msg)
+                    break
+                }
+            }
             mContentListAdapter!!.notifyDataSetChanged()
         }
     }
@@ -164,6 +176,36 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         mContentListView = mFloatView!!.findViewById(R.id.history_list) as ListView
         mContentListAdapter = HistoryListAdapter(mContext, R.id.history_list_item_content, mContentList)
         mContentListView!!.adapter = mContentListAdapter
+        mContentListView!!.setOnItemClickListener(object: AdapterView.OnItemClickListener{
+            override fun onItemClick(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val clipboardMsg = mContentList[position]
+                MainService.instance!!.skipNum++
+                MainService.instance!!.manager.setPrimaryClip(ClipData.newPlainText(clipboardMsg.content, clipboardMsg.content))
+                Toast.makeText(mContext, R.string.copied, Toast.LENGTH_SHORT).show()
+            }
+        })
+        mContentListView!!.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
+            override fun onItemLongClick(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ): Boolean {
+                clipboardMsg = mContentList[position]
+                if (mContentListAdapter!!.hasExpandItem(clipboardMsg!!.id)) {
+                    actionMenuExpandView!!.text = mContext.getText(R.string.fold)
+                } else {
+                    actionMenuExpandView!!.text = mContext.getText(R.string.expand)
+                }
+                actionMenuWindow!!.showAsDropDown(view)
+                return true
+            }
+        })
 
         // init popup window
         personSettingsView = inflater.inflate(R.layout.person_settings, null)
@@ -171,6 +213,28 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         personSettingsBtn!!.setOnClickListener(object: View.OnClickListener{
             override fun onClick(v: View?) {
                 popWindow!!.showAsDropDown(personSettingsBtn)
+            }
+        })
+
+        // init action menu window
+        actionMenuWindowView = inflater.inflate(R.layout.action_menu, null)
+        actionMenuExpandView = actionMenuWindowView!!.findViewById(R.id.expand_text) as TextView
+        actionMenuWindow = PopupWindow(actionMenuWindowView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
+        actionMenuWindowView!!.findViewById<View>(R.id.action_menu_detail).setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                actionMenuWindow!!.dismiss()
+                if (mContentListAdapter!!.hasExpandItem(clipboardMsg!!.id)) {
+                    mContentListAdapter!!.removeExpandItem(clipboardMsg!!.id)
+                } else {
+                    mContentListAdapter!!.addExpandItem(clipboardMsg!!.id)
+                }
+            }
+        })
+        actionMenuWindowView!!.findViewById<View>(R.id.action_menu_delete).setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                actionMenuWindow!!.dismiss()
+                SqliteHelper.helper!!.Delete(clipboardMsg!!.id)
+                deleteMessage(clipboardMsg!!.id)
             }
         })
     }
