@@ -20,11 +20,13 @@ function createWindow () {
   /**
    * Initial window options
    */
+  console.log(require('path').join(__dirname, 'static', 'app_icon.png'))
 
   mainWindow = new BrowserWindow({
     height: screen.height * 0.6,
     useContentSize: true,
-    width: screen.height * 0.6
+    width: screen.height * 0.6,
+    icon: require('path').join(__dirname, 'app_icon.png')
   })
   mainWindow.setMenuBarVisibility(false)
 
