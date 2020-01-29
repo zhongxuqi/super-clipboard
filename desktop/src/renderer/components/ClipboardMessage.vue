@@ -1,19 +1,36 @@
 <template>
   <div class="scb-clipboard-message">
-    <i class="iconfont icon-text_fields scb-clipboard-message-icon"></i>
-    <div class="scb-clipboard-message-content">texsdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffft</div>
+    <i class="iconfont scb-clipboard-message-icon" v-bind:class="iconClass"></i>
+    <div class="scb-clipboard-message-content">{{content}}</div>
     <b-button variant="success" size="sm"><i class="iconfont icon-copy"></i></b-button>
   </div>
 </template>
 
 <script>
+import Consts from '../../common/Consts'
+
 export default {
   name: 'clipboard-message',
   props: {
-
+    type: Number,
+    content: String
   },
   data: function () {
     return {}
+  },
+  computed: {
+    iconClass: function () {
+      let c = {}
+      switch (this.type) {
+        case Consts.MessageType.Text:
+          c['icon-text_fields'] = true
+          break
+        case Consts.MessageType.Image:
+          c['icon-tupian2'] = true
+          break
+      }
+      return c
+    }
   }
 }
 </script>

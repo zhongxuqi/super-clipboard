@@ -2,7 +2,7 @@
   <div class="scb-clipboard">
     <div class="scb-cliboard-list">
       <div class="scb-cliboard-list-item" v-for="item in msgList" v-bind:key="item.id">
-        <ClipboardMessage></ClipboardMessage>
+        <ClipboardMessage v-bind:type="item.type" v-bind:content="item.content"></ClipboardMessage>
       </div>
     </div>
   </div>
@@ -10,6 +10,7 @@
 
 <script>
 import ClipboardMessage from './ClipboardMessage'
+import { ipcRenderer } from 'electron'
 
 export default {
   name: 'clipboard-page',
@@ -18,12 +19,21 @@ export default {
   },
   data: function () {
     return {
-      msgList: [{
-        id: 1
-      }, {
-        id: 2
-      }]
+      connectID: 0,
+      msgList: []
     }
+  },
+  methods: {
+    onAddMessage: function (event, arg) {
+      this.msgList = [arg, ...this.msgList]
+    }
+  },
+  mounted: function () {
+    ipcRenderer.send('clipboard-message-connect', '')
+    ipcRenderer.on('clipboard-message-add', this.onAddMessage.bind(this))
+  },
+  beforeDestroy: function () {
+    ipcRenderer.removeAllListeners('clipboard-message-add')
   }
 }
 </script>

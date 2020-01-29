@@ -1,6 +1,7 @@
 'use strict'
 
-import { app, BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow, screen, clipboard, ipcMain } from 'electron'
+import Consts from '../common/Consts'
 
 /**
  * Set `__static` path to static files in production
@@ -29,8 +30,30 @@ function createWindow () {
 
   mainWindow.loadURL(winURL)
 
+  let index = 0
+  let renderChannel
+  let prevValue = ''
+  let intervalID = setInterval(function () {
+    const newValue = clipboard.readText()
+    if (prevValue !== newValue) {
+      prevValue = newValue
+      if (renderChannel !== undefined) {
+        renderChannel.send('clipboard-message-add', {
+          id: ++index,
+          type: Consts.MessageType.Text,
+          content: newValue
+        })
+      }
+    }
+  }, 500)
+
+  ipcMain.on('clipboard-message-connect', (event, arg) => {
+    renderChannel = event.sender
+  })
+
   mainWindow.on('closed', () => {
     mainWindow = null
+    clearInterval(intervalID)
   })
 }
 
