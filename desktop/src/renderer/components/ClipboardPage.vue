@@ -26,14 +26,22 @@ export default {
   methods: {
     onAddMessage: function (event, arg) {
       this.msgList = [arg, ...this.msgList]
+    },
+    onDeleteMessage: function (event, arg) {
+      this.msgList = this.msgList.filter(function (item) {
+        if (item.id === arg.id) return false
+        return true
+      })
     }
   },
   mounted: function () {
     ipcRenderer.send('clipboard-message-connect', '')
     ipcRenderer.on('clipboard-message-add', this.onAddMessage.bind(this))
+    ipcRenderer.on('clipboard-message-delete', this.onDeleteMessage.bind(this))
   },
   beforeDestroy: function () {
     ipcRenderer.removeAllListeners('clipboard-message-add')
+    ipcRenderer.removeAllListeners('clipboard-message-delete')
   }
 }
 </script>

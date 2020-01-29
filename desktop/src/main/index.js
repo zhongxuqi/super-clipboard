@@ -2,6 +2,9 @@
 
 import { app, BrowserWindow, screen, clipboard, ipcMain } from 'electron'
 import Consts from '../common/Consts'
+import Database from './Database'
+
+const MAX_LEN = 10
 
 /**
  * Set `__static` path to static files in production
@@ -20,8 +23,6 @@ function createWindow () {
   /**
    * Initial window options
    */
-  console.log(require('path').join(__dirname, 'static', 'app_icon.png'))
-
   mainWindow = new BrowserWindow({
     height: screen.height * 0.6,
     useContentSize: true,
@@ -30,32 +31,73 @@ function createWindow () {
   })
   mainWindow.setMenuBarVisibility(false)
 
-  mainWindow.loadURL(winURL)
-
-  let index = 0
+  // init ipc
   let renderChannel
-  let prevValue = ''
-  let intervalID = setInterval(function () {
-    const newValue = clipboard.readText()
-    if (prevValue !== newValue) {
-      prevValue = newValue
-      if (renderChannel !== undefined) {
-        renderChannel.send('clipboard-message-add', {
-          id: ++index,
-          type: Consts.MessageType.Text,
-          content: newValue
-        })
+  let renderInited = false
+  let prevValue
+  let intervalID
+  let msgList
+
+  function clearMsg (rows) {
+    let end = 0
+    if (rows.length > MAX_LEN) {
+      end = rows.length - MAX_LEN
+    }
+    for (var i = 0; i < end; i++) {
+      Database.deleteMsg(rows[i].id)
+      if (renderChannel !== undefined) renderChannel.send('clipboard-message-delete', rows[i])
+    }
+    return rows.slice(end)
+  }
+
+  Database.listAll(function (rows) {
+    msgList = clearMsg(rows)
+    if (renderChannel !== undefined && renderInited === false) {
+      renderInited = true
+      for (var i = 0; i < msgList.length; i++) {
+        renderChannel.send('clipboard-message-add', msgList[i])
       }
     }
-  }, 500)
+
+    if (msgList.length > 0) prevValue = msgList[msgList.length - 1]
+    intervalID = setInterval(function () {
+      const newValue = clipboard.readText()
+      if (prevValue !== newValue) {
+        prevValue = newValue
+        let now = Date.now()
+        let msg = {
+          type: Consts.MessageType.Text,
+          content: newValue,
+          extra: '',
+          create_time: now,
+          update_time: now
+        }
+        Database.insert(msg, function (dbMsg) {
+          if (renderChannel !== undefined) {
+            renderChannel.send('clipboard-message-add', dbMsg)
+          }
+          msgList = clearMsg([...msgList, dbMsg])
+        })
+      }
+    }, 500)
+  })
 
   ipcMain.on('clipboard-message-connect', (event, arg) => {
     renderChannel = event.sender
+    renderInited = false
+    if (msgList !== undefined) {
+      renderInited = true
+      for (var i = 0; i < msgList.length; i++) {
+        renderChannel.send('clipboard-message-add', msgList[i])
+      }
+    }
   })
 
+  mainWindow.loadURL(winURL)
   mainWindow.on('closed', () => {
     mainWindow = null
-    clearInterval(intervalID)
+    if (intervalID !== undefined) clearInterval(intervalID)
+    Database.close()
   })
 }
 
