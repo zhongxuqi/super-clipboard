@@ -37,6 +37,7 @@ function createWindow () {
   let prevValue
   let intervalID
   let msgList
+  let skipValue = ''
 
   function clearMsg (rows) {
     let end = 0
@@ -62,7 +63,9 @@ function createWindow () {
     if (msgList.length > 0) prevValue = msgList[msgList.length - 1]
     intervalID = setInterval(function () {
       const newValue = clipboard.readText()
-      if (prevValue !== newValue) {
+      if (newValue === '') return
+      if (prevValue !== newValue && skipValue !== newValue) {
+        skipValue = ''
         prevValue = newValue
         let now = Date.now()
         let msg = {
@@ -91,6 +94,19 @@ function createWindow () {
         renderChannel.send('clipboard-message-add', msgList[i])
       }
     }
+  })
+
+  ipcMain.on('clipboard-message-action-delete', (event, arg) => {
+    Database.deleteMsg(arg.id)
+    if (renderChannel !== undefined) renderChannel.send('clipboard-message-delete', arg)
+    msgList = msgList.filter(function (item) {
+      return item.id !== arg.id
+    })
+  })
+
+  ipcMain.on('clipboard-message-action-copy', (event, arg) => {
+    skipValue = arg
+    clipboard.writeText(arg)
   })
 
   mainWindow.loadURL(winURL)

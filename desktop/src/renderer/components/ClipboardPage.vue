@@ -2,7 +2,7 @@
   <div class="scb-clipboard">
     <div class="scb-cliboard-list">
       <div class="scb-cliboard-list-item" v-for="item in msgList" v-bind:key="item.id">
-        <ClipboardMessage v-bind:type="item.type" v-bind:content="item.content"></ClipboardMessage>
+        <ClipboardMessage v-bind:type="item.type" v-bind:content="item.content" v-on:ondelete="deleteMsg(item)" v-on:oncopy="copyMsg(item)"></ClipboardMessage>
       </div>
     </div>
   </div>
@@ -19,7 +19,6 @@ export default {
   },
   data: function () {
     return {
-      connectID: 0,
       msgList: []
     }
   },
@@ -32,6 +31,12 @@ export default {
         if (item.id === arg.id) return false
         return true
       })
+    },
+    deleteMsg: function (msg) {
+      ipcRenderer.send('clipboard-message-action-delete', msg)
+    },
+    copyMsg: function (msg) {
+      ipcRenderer.send('clipboard-message-action-copy', msg.content)
     }
   },
   mounted: function () {

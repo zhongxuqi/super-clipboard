@@ -1,13 +1,20 @@
 <template>
   <div class="scb-clipboard-message">
     <i class="iconfont scb-clipboard-message-icon" v-bind:class="iconClass"></i>
-    <div class="scb-clipboard-message-content">{{content}}</div>
-    <b-button variant="success" size="sm"><i class="iconfont icon-copy"></i></b-button>
+    <div class="scb-clipboard-message-content"><pre v-bind:class="{
+      'scb-clipboard-message-content-fold': !this.expand
+    }">{{content}}</pre></div>
+    <b-dropdown ref="dropdown" text="" variant="light" size="sm" style="margin-right:0.5rem">
+      <b-dropdown-item-button v-on:click="setExpand(!expand)">{{expand?textFold:textExpand}}</b-dropdown-item-button>
+      <b-dropdown-item v-on:click="clickDelete">Delete</b-dropdown-item>
+    </b-dropdown>
+    <b-button variant="success" size="sm" v-on:click="clickCopy"><i class="iconfont icon-copy"></i></b-button>
   </div>
 </template>
 
 <script>
 import Consts from '../../common/Consts'
+import Language from '../utils/Language'
 
 export default {
   name: 'clipboard-message',
@@ -16,7 +23,25 @@ export default {
     content: String
   },
   data: function () {
-    return {}
+    return {
+      textExpand: Language.getLanguageText('expand'),
+      textFold: Language.getLanguageText('fold'),
+
+      expand: false
+    }
+  },
+  methods: {
+    setExpand: function (e) {
+      this.$refs.dropdown.hide(true)
+      this.expand = e
+    },
+    clickDelete: function () {
+      this.$refs.dropdown.hide(true)
+      this.$emit('ondelete')
+    },
+    clickCopy: function () {
+      this.$emit('oncopy')
+    }
   },
   computed: {
     iconClass: function () {
@@ -46,7 +71,6 @@ export default {
   align-items: center;
   box-sizing: border-box;
   padding: 0.4rem;
-  overflow: hidden;
 }
 
 .scb-clipboard-message-icon {
@@ -57,9 +81,17 @@ export default {
 .scb-clipboard-message-content {
   width: 0rem;
   flex: 1;
+  margin: 0rem 0.5rem;
+}
+
+.scb-clipboard-message-content pre {
+  margin: 0rem;
+  padding: 0rem;
+}
+
+.scb-clipboard-message-content-fold {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  margin: 0rem 0.5rem;
 }
 </style>

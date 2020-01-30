@@ -19,10 +19,14 @@ if (lang !== 'en' && lang !== 'zh') {
 
 var languageMap = {
   'en': {
-    'clipboard': 'ClipBoard'
+    'clipboard': 'ClipBoard',
+    'expand': 'Expand',
+    'fold': 'Fold'
   },
   'zh': {
-    'clipboard': '剪切板'
+    'clipboard': '剪切板',
+    'expand': '展开',
+    'fold': '折叠'
   }
 }
 

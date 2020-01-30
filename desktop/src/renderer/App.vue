@@ -6,7 +6,7 @@
         <div class="scb-user-username md-title">Click to login</div>
       </div>
       <div class="scb-sidebar-menu" style="margin-top:0.5rem">
-        <MenuBtn icon="icon-clipboard" v-bind:content="textClipboard" v-bind:active="mode='clipboard'"></MenuBtn>
+        <MenuBtn icon="icon-clipboard" v-bind:content="textClipboard" v-bind:active="mode==='clipboard'"></MenuBtn>
       </div>
     </div>
     <div class="scb-body">
