@@ -24,10 +24,11 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
+    titleBarStyle: 'hidden',
     height: screen.height * 0.6,
     useContentSize: true,
     width: screen.height * 0.6,
-    icon: require('path').join(__dirname, 'app_icon.png')
+    icon: require('path').join(__dirname/ 'icons', '64x64.png')
   })
   mainWindow.setMenuBarVisibility(false)
 
@@ -60,7 +61,7 @@ function createWindow () {
       }
     }
 
-    if (msgList.length > 0) prevValue = msgList[msgList.length - 1]
+    if (msgList.length > 0) prevValue = msgList[msgList.length - 1].content
     intervalID = setInterval(function () {
       const newValue = clipboard.readText()
       if (newValue === '') return
