@@ -87,9 +87,13 @@ export default {
 .scb-clipboard-message-content pre {
   margin: 0rem;
   padding: 0rem;
+  word-break: break-all;
+  overflow: hidden;
+  white-space: pre-wrap;
 }
 
-.scb-clipboard-message-content-fold {
+.scb-clipboard-message-content pre.scb-clipboard-message-content-fold {
+  word-break: keep-all;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
