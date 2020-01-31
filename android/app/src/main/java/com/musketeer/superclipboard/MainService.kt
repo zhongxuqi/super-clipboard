@@ -11,6 +11,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
+import com.musketeer.superclipboard.net.UdpClient
 
 
 class MainService : Service() {
@@ -56,6 +57,7 @@ class MainService : Service() {
                 }
             }
         })
+        UdpClient.Instance!!.start()
     }
 
     fun notify(txt: String) {
