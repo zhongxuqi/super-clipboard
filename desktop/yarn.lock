@@ -3594,6 +3594,11 @@ devtron@^1.4.0:
     highlight.js "^9.3.0"
     humanize-plus "^1.8.1"
 
+dgram@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npm.taobao.org/dgram/download/dgram-1.0.1.tgz#37f3b200f8033a5ff759303089c81ce361b651c3"
+  integrity sha1-N/OyAPgDOl/3WTAwicgc42G2UcM=
+
 di@^0.0.1:
   version "0.0.1"
   resolved "https://registry.npm.taobao.org/di/download/di-0.0.1.tgz#806649326ceaa7caa3306d75d985ea2748ba913c"

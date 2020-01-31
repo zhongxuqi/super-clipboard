@@ -3,7 +3,9 @@
 import { app, BrowserWindow, screen, clipboard, ipcMain } from 'electron'
 import Consts from '../common/Consts'
 import Database from './Database'
+import NetUDP from './net_udp'
 
+NetUDP.start()
 const MAX_LEN = 10
 
 /**
@@ -28,7 +30,7 @@ function createWindow () {
     height: screen.height * 0.6,
     useContentSize: true,
     width: screen.height * 0.6,
-    icon: require('path').join(__dirname/ 'icons', '64x64.png')
+    icon: require('path').join(__dirname, 'icons', '64x64.png')
   })
   mainWindow.setMenuBarVisibility(false)
 

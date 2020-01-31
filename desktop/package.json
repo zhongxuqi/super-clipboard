@@ -60,6 +60,7 @@
     "axios": "^0.18.0",
     "bootstrap": "^4.4.1",
     "bootstrap-vue": "^2.3.0",
+    "dgram": "^1.0.1",
     "sqlite3": "^4.1.1",
     "vue": "^2.6.11",
     "vue-electron": "^1.0.6",
