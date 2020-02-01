@@ -22,13 +22,15 @@ var languageMap = {
     'clipboard': 'ClipBoard',
     'expand': 'Expand',
     'fold': 'Fold',
-    'all_platform_sync': 'All Platform Sync'
+    'all_platform_sync': 'All Platform Sync',
+    'device_total': '%d device total'
   },
   'zh': {
     'clipboard': '剪切板',
     'expand': '展开',
     'fold': '折叠',
-    'all_platform_sync': '全平台同步'
+    'all_platform_sync': '全平台同步',
+    'device_total': '一共%d个设备'
   }
 }
 

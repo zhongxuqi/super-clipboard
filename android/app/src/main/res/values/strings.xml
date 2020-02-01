@@ -17,4 +17,5 @@
     <string name="expand">Expand</string>
     <string name="fold">Fold</string>
     <string name="copied">Copied</string>
+    <string name="device_total">%d Device Total</string>
 </resources>

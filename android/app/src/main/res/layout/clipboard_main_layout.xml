@@ -78,13 +78,16 @@
                     android:contentDescription="@string/person"
                     android:background="?attr/selectableItemBackground"/>
                 <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/sync_switcher"
                     android:layout_width="wrap_content"
                     android:layout_height="10dp"
                     android:checked="false"
                     android:theme="@style/SwitchTheme"/>
                 <TextView
+                    android:id="@+id/sync_state_desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/grey"
                     android:textSize="12sp"
                     android:text="@string/all_platform_sync"/>
                 <View

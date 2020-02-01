@@ -51,13 +51,12 @@ class MainService : Service() {
                     if (prevValue.compareTo(newValue) != 0) {
                         prevValue = newValue
                         SqliteHelper.helper!!.Insert(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
-                        ClipboardMainWindow.addMessage(SqliteHelper.helper!!.GetLast()!!)
+                        ClipboardMainWindow.Instance?.addMessage(SqliteHelper.helper!!.GetLast()!!)
                         notify(newValue)
                     }
                 }
             }
         })
-        UdpClient.Instance!!.start()
     }
 
     fun notify(txt: String) {

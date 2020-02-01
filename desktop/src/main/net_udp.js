@@ -1,11 +1,6 @@
 import dgram from 'dgram'
 let udpClient = dgram.createSocket('udp4')
 
-udpClient.on('message', function (msg, remoteInfo) {
-  let metaDataLen = msg[1]
-  console.log(`receive message from ${remoteInfo.address}:${remoteInfo.port}：${msg.slice(2, 2 + metaDataLen).toString()}`)
-})
-
 function str2UTF8 (str) {
   var bytes = []
   var len, c
@@ -53,6 +48,9 @@ export default {
       }
       udpClient.send(buffer, 0, buffer.length, 9000, '127.0.0.1')
     }, 1000)
+  },
+  listenMessage: function (callback) {
+    udpClient.on('message', callback)
   },
   close: function () {
     if (intervalID === undefined) return

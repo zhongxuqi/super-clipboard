@@ -6,7 +6,7 @@
         <div class="scb-user-username md-title">Click to login</div>
       </div>
       <div class="scb-sidebar-sync">
-        <div style="flex:1;margin-bottom:0.5rem">{{textAllPlatformSync}}</div>
+        <div style="flex:1;margin-bottom:0.5rem" v-bind:style="{color:syncState?'#2196f3':'#424242'}">{{syncState?syncStateDesc:textAllPlatformSync}}</div>
         <div class="scb-sidebar-sync-switch"><ToggleButton v-model="syncState"></ToggleButton></div>
       </div>
       <div class="scb-sidebar-menu" style="box-sizing:border-box;padding:0.5rem">
@@ -37,7 +37,13 @@ export default {
       textAllPlatformSync: Language.getLanguageText('all_platform_sync'),
 
       mode: 'clipboard',
-      syncState: false
+      syncState: false,
+      deviceNum: 0
+    }
+  },
+  computed: {
+    syncStateDesc: function () {
+      return Language.getLanguageText('device_total').replace('%d', `${this.deviceNum}`)
     }
   },
   methods: {
@@ -45,6 +51,9 @@ export default {
   },
   mounted: function () {
     this.syncState = ipcRenderer.sendSync('clipboard-sync-state')
+    ipcRenderer.on('clipboard-sync-state-device', function (event, arg) {
+      this.deviceNum = arg.deviceNum
+    }.bind(this))
   },
   watch: {
     syncState: function (newValue, oldValue) {

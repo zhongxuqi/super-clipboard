@@ -5,61 +5,68 @@ import android.content.Context
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
+import android.os.Handler
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.View.OnTouchListener
 import android.widget.*
 import androidx.constraintlayout.widget.Constraints
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.adapter.HistoryListAdapter
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
+import com.musketeer.superclipboard.net.UdpClient
 import java.util.*
 
 
-class ClipboardMainWindow constructor(private val mContext: Context) {
+class ClipboardMainWindow constructor(val mContext: Context) {
     companion object {
-        private var mContext: Context? = null
-        private var screenWidth: Int = 0
-        private var screenHeight: Int = 0
+        var Instance: ClipboardMainWindow? = null
+    }
 
-        private var mIsFloatViewShowing = false
-        private var mWindowManager: WindowManager? = null
-        private var mFloatView: View? = null
-        private var mFloatViewLayoutParams: WindowManager.LayoutParams? =null
-        private var mFloatViewLastX = 0
-        private var mFloatViewLastY = 0
-        private var mFloatViewFirstX = 0
-        private var mFloatViewFirstY = 0
-        private var personSettingsBtn: ImageView? = null
-        private var maxMainView: View? = null
-        private var minMainView: View? = null
+    val handler: Handler
 
-        private var mContentListView: ListView? = null
-        private var mContentListAdapter: HistoryListAdapter? = null
-        private var mContentList: LinkedList<ClipBoardMessage> = LinkedList()
+    private var screenWidth: Int = 0
+    private var screenHeight: Int = 0
 
-        private var popWindow: PopupWindow? = null
-        private var personSettingsView: View? = null
+    private var mIsFloatViewShowing = false
+    private var mWindowManager: WindowManager? = null
+    private var mFloatView: View? = null
+    private var mFloatViewLayoutParams: WindowManager.LayoutParams? =null
+    private var mFloatViewLastX = 0
+    private var mFloatViewLastY = 0
+    private var mFloatViewFirstX = 0
+    private var mFloatViewFirstY = 0
+    private var personSettingsBtn: ImageView? = null
+    private var maxMainView: View? = null
+    private var minMainView: View? = null
+    val syncStateTextView: TextView
 
-        private var actionMenuWindow: PopupWindow? = null
-        private var actionMenuWindowView: View? = null
-        private var actionMenuExpandView: TextView? = null
-        private var clipboardMsg: ClipBoardMessage? = null
+    private var mContentListView: ListView? = null
+    private var mContentListAdapter: HistoryListAdapter? = null
+    private var mContentList: LinkedList<ClipBoardMessage> = LinkedList()
 
-        fun addMessage(msg: ClipBoardMessage) {
-            mContentList.addFirst(msg)
-            mContentListAdapter!!.notifyDataSetChanged()
-        }
+    private var popWindow: PopupWindow? = null
+    private var personSettingsView: View? = null
 
-        fun deleteMessage(id: Int) {
-            for (msg in mContentList.iterator()) {
-                if (msg.id.compareTo(id) == 0) {
-                    mContentList.remove(msg)
-                    break
-                }
+    private var actionMenuWindow: PopupWindow? = null
+    private var actionMenuWindowView: View? = null
+    private var actionMenuExpandView: TextView? = null
+    private var clipboardMsg: ClipBoardMessage? = null
+
+    fun addMessage(msg: ClipBoardMessage) {
+        mContentList.addFirst(msg)
+        mContentListAdapter!!.notifyDataSetChanged()
+    }
+
+    fun deleteMessage(id: Int) {
+        for (msg in mContentList.iterator()) {
+            if (msg.id.compareTo(id) == 0) {
+                mContentList.remove(msg)
+                break
             }
-            mContentListAdapter!!.notifyDataSetChanged()
         }
+        mContentListAdapter!!.notifyDataSetChanged()
     }
 
     fun dismissFloatView() {
@@ -129,7 +136,9 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
     }
 
     init {
-        ClipboardMainWindow.mContext = this.mContext.applicationContext
+        ClipboardMainWindow.Instance = this
+
+        handler = Handler()
         mWindowManager = mContext.getSystemService(WINDOW_SERVICE) as WindowManager
         val metrics = DisplayMetrics()
         mWindowManager!!.defaultDisplay.getMetrics(metrics)
@@ -152,6 +161,19 @@ class ClipboardMainWindow constructor(private val mContext: Context) {
         maxMainView!!.findViewById<ImageView>(R.id.btn_window_close).setOnClickListener {
             dismissFloatView()
         }
+        syncStateTextView = maxMainView!!.findViewById(R.id.sync_state_desc)
+        maxMainView!!.findViewById<SwitchMaterial>(R.id.sync_switcher).setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
+            override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+                if (isChecked) {
+                    UdpClient.Instance!!.start()
+                    syncStateTextView.setTextColor(mContext.resources.getColor(R.color.blue))
+                } else {
+                    UdpClient.Instance!!.close()
+                    syncStateTextView.setTextColor(mContext.resources.getColor(R.color.grey))
+                    syncStateTextView.text = mContext.getText(R.string.all_platform_sync)
+                }
+            }
+        })
 
         mFloatViewLayoutParams = WindowManager.LayoutParams()
         mFloatViewLayoutParams!!.format = PixelFormat.TRANSLUCENT

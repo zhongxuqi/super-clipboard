@@ -111,6 +111,21 @@ function createWindow () {
     clipboard.writeText(arg)
   })
 
+  let deviceNum = 0
+  NetUDP.listenMessage(function (msg, remoteInfo) {
+    let metaDataLen = msg[1]
+    console.log(`receive message from ${remoteInfo.address}:${remoteInfo.port}：${msg.slice(2, 2 + metaDataLen).toString()}`)
+    let metaDataJson = JSON.parse(msg.slice(2, 2 + metaDataLen).toString())
+    let newdeviceNum = 1
+    if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs !== null) {
+      newdeviceNum += metaDataJson.udp_addrs.length
+    }
+    if (deviceNum !== newdeviceNum) {
+      deviceNum = newdeviceNum
+      renderChannel.send('clipboard-sync-state-device', {deviceNum: deviceNum})
+    }
+  })
+
   ipcMain.on('clipboard-sync-state', (event, arg) => {
     event.returnValue = NetUDP.isStart()
   })
