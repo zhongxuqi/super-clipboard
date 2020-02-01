@@ -33,7 +33,6 @@ export default {
 <style scoped>
 .scb-menu-btn {
   box-sizing: border-box;
-  padding: 0.5rem 0.5rem;
 }
 
 .scb-menu-btn-body {

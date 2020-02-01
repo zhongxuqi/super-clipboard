@@ -5,7 +5,6 @@ import Consts from '../common/Consts'
 import Database from './Database'
 import NetUDP from './net_udp'
 
-NetUDP.start()
 const MAX_LEN = 10
 
 /**
@@ -110,6 +109,19 @@ function createWindow () {
   ipcMain.on('clipboard-message-action-copy', (event, arg) => {
     skipValue = arg
     clipboard.writeText(arg)
+  })
+
+  ipcMain.on('clipboard-sync-state', (event, arg) => {
+    event.returnValue = NetUDP.isStart()
+  })
+
+  ipcMain.on('clipboard-sync-state-toggle', (event, arg) => {
+    if (arg.state) {
+      NetUDP.start()
+    } else {
+      NetUDP.close()
+    }
+    event.returnValue = NetUDP.isStart()
   })
 
   mainWindow.loadURL(winURL)

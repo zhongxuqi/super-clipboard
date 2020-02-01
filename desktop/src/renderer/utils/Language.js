@@ -21,12 +21,14 @@ var languageMap = {
   'en': {
     'clipboard': 'ClipBoard',
     'expand': 'Expand',
-    'fold': 'Fold'
+    'fold': 'Fold',
+    'all_platform_sync': 'All Platform Sync'
   },
   'zh': {
     'clipboard': '剪切板',
     'expand': '展开',
-    'fold': '折叠'
+    'fold': '折叠',
+    'all_platform_sync': '全平台同步'
   }
 }
 

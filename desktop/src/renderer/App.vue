@@ -5,8 +5,12 @@
         <img class="scb-user-head" src="~@/assets/default_head.png" alt="electron-vue">
         <div class="scb-user-username md-title">Click to login</div>
       </div>
-      <div class="scb-sidebar-menu" style="margin-top:0.5rem">
-        <MenuBtn icon="icon-clipboard" v-bind:content="textClipboard" v-bind:active="mode==='clipboard'"></MenuBtn>
+      <div class="scb-sidebar-sync">
+        <div style="flex:1;margin-bottom:0.5rem">{{textAllPlatformSync}}</div>
+        <div class="scb-sidebar-sync-switch"><ToggleButton v-model="syncState"></ToggleButton></div>
+      </div>
+      <div class="scb-sidebar-menu" style="box-sizing:border-box;padding:0.5rem">
+        <div style="margin-bottom:0.5rem"><MenuBtn icon="icon-clipboard" v-bind:content="textClipboard" v-bind:active="mode==='clipboard'"></MenuBtn></div>
       </div>
     </div>
     <div class="scb-body">
@@ -18,17 +22,33 @@
 <script>
 import MenuBtn from './components/MenuBtn'
 import Language from './utils/Language'
+import { ToggleButton } from 'vue-js-toggle-button'
+import { ipcRenderer } from 'electron'
 
 export default {
   name: 'superclipboard',
   components: {
-    MenuBtn
+    MenuBtn,
+    ToggleButton
   },
   data: function () {
     return {
       textClipboard: Language.getLanguageText('clipboard'),
+      textAllPlatformSync: Language.getLanguageText('all_platform_sync'),
 
-      mode: 'clipboard'
+      mode: 'clipboard',
+      syncState: false
+    }
+  },
+  methods: {
+
+  },
+  mounted: function () {
+    this.syncState = ipcRenderer.sendSync('clipboard-sync-state')
+  },
+  watch: {
+    syncState: function (newValue, oldValue) {
+      ipcRenderer.send('clipboard-sync-state-toggle', {state: newValue})
     }
   }
 }
@@ -71,6 +91,25 @@ body {
 
 .scb-user-username {
 
+}
+
+.scb-sidebar-sync {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0rem 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e4e4e4;
+  border-bottom: 1px solid #e4e4e4;
+}
+
+.scb-sidebar-sync-switch {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 
 .scb-sidebar-menu-item {
