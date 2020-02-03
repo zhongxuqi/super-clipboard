@@ -80,5 +80,6 @@ class UdpClient {
 
     fun close() {
         isRunning = false
+        deviceNum = 0
     }
 }

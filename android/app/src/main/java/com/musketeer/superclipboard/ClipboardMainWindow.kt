@@ -26,37 +26,37 @@ class ClipboardMainWindow constructor(val mContext: Context) {
 
     val handler: Handler
 
-    private var screenWidth: Int = 0
-    private var screenHeight: Int = 0
+    private val screenWidth: Int
+    private val screenHeight: Int
 
     private var mIsFloatViewShowing = false
-    private var mWindowManager: WindowManager? = null
-    private var mFloatView: View? = null
-    private var mFloatViewLayoutParams: WindowManager.LayoutParams? =null
+    private val mWindowManager: WindowManager
+    private val mFloatView: View
+    private val mFloatViewLayoutParams: WindowManager.LayoutParams
     private var mFloatViewLastX = 0
     private var mFloatViewLastY = 0
     private var mFloatViewFirstX = 0
     private var mFloatViewFirstY = 0
-    private var personSettingsBtn: ImageView? = null
-    private var maxMainView: View? = null
-    private var minMainView: View? = null
+    private val personSettingsBtn: ImageView
+    private val maxMainView: View
+    private val minMainView: View
     val syncStateTextView: TextView
 
-    private var mContentListView: ListView? = null
-    private var mContentListAdapter: HistoryListAdapter? = null
-    private var mContentList: LinkedList<ClipBoardMessage> = LinkedList()
+    private val mContentListView: ListView
+    private val mContentListAdapter: HistoryListAdapter
+    private val mContentList: LinkedList<ClipBoardMessage> = LinkedList()
 
-    private var popWindow: PopupWindow? = null
-    private var personSettingsView: View? = null
+    private val popWindow: PopupWindow
+    private val personSettingsView: View
 
-    private var actionMenuWindow: PopupWindow? = null
-    private var actionMenuWindowView: View? = null
-    private var actionMenuExpandView: TextView? = null
+    private val actionMenuWindow: PopupWindow
+    private val actionMenuWindowView: View
+    private val actionMenuExpandView: TextView
     private var clipboardMsg: ClipBoardMessage? = null
 
     fun addMessage(msg: ClipBoardMessage) {
         mContentList.addFirst(msg)
-        mContentListAdapter!!.notifyDataSetChanged()
+        mContentListAdapter.notifyDataSetChanged()
     }
 
     fun deleteMessage(id: Int) {
@@ -66,103 +66,46 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 break
             }
         }
-        mContentListAdapter!!.notifyDataSetChanged()
+        mContentListAdapter.notifyDataSetChanged()
     }
 
     fun dismissFloatView() {
         if (mIsFloatViewShowing) {
             mIsFloatViewShowing = false
-            if (mWindowManager != null) {
-                mWindowManager!!.removeViewImmediate(mFloatView)
-            }
+            mWindowManager.removeViewImmediate(mFloatView)
         }
     }
 
     fun showFloatView() {
         if (!mIsFloatViewShowing) {
             mIsFloatViewShowing = true
-            if (mWindowManager != null) {
-                mWindowManager!!.addView(mFloatView, mFloatViewLayoutParams)
-            }
+            mWindowManager.addView(mFloatView, mFloatViewLayoutParams)
         }
-    }
-
-    private val mFloatViewOnTouchListener = OnTouchListener { v, event ->
-        var ret = false
-        val prm = mFloatViewLayoutParams
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                mFloatViewLastX = event.rawX.toInt()
-                mFloatViewLastY = event.rawY.toInt()
-                mFloatViewFirstX = mFloatViewLastX
-                mFloatViewFirstY = mFloatViewLastY
-                ret = true
-            }
-            MotionEvent.ACTION_UP -> {
-                ret = true
-            }
-            MotionEvent.ACTION_MOVE -> {
-                val deltaX = event.rawX.toInt() - mFloatViewLastX
-                val deltaY = event.rawY.toInt() - mFloatViewLastY
-                mFloatViewLastX = event.rawX.toInt()
-                mFloatViewLastY = event.rawY.toInt()
-                if (prm != null) {
-                    if (prm.x < 0) {
-                        prm.x = 0
-                    } else if (prm.x >= screenWidth - mFloatView!!.width) {
-                        prm.x = screenWidth - mFloatView!!.width
-                    }
-                    if (prm.x + deltaX in 0 until screenWidth - mFloatView!!.width) {
-                        prm.x += deltaX
-                    }
-                    if (prm.y < 0) {
-                        prm.y = 0
-                    } else if (prm.y >= screenHeight - mFloatView!!.height) {
-                        prm.y = screenHeight - mFloatView!!.height
-                    }
-                    if (prm.y + deltaY in 0 until screenHeight - mFloatView!!.height) {
-                        prm.y += deltaY
-                    }
-                    if (mWindowManager != null) {
-                        mWindowManager!!.updateViewLayout(mFloatView, prm)
-                    }
-                }
-                ret = true
-            }
-            else -> {
-            }
-        }
-        ret
     }
 
     init {
-        ClipboardMainWindow.Instance = this
+        Instance = this
 
         handler = Handler()
         mWindowManager = mContext.getSystemService(WINDOW_SERVICE) as WindowManager
         val metrics = DisplayMetrics()
-        mWindowManager!!.defaultDisplay.getMetrics(metrics)
+        mWindowManager.defaultDisplay.getMetrics(metrics)
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
 
         // init base view
         val inflater = LayoutInflater.from(mContext)
         mFloatView = inflater.inflate(R.layout.clipboard_main_layout, null)
-        mFloatView!!.setOnTouchListener(mFloatViewOnTouchListener)
-        personSettingsBtn = mFloatView!!.findViewById(R.id.person_settings)
+        personSettingsBtn = mFloatView.findViewById(R.id.person_settings)
 
-        maxMainView = mFloatView!!.findViewById(R.id.max_view)
-        maxMainView!!.layoutParams = Constraints.LayoutParams((screenWidth * 0.6).toInt(), (screenHeight * 0.6).toInt())
-        maxMainView!!.visibility = View.VISIBLE
-        maxMainView!!.findViewById<ImageView>(R.id.btn_window_min).setOnClickListener {
-            maxMainView!!.visibility = View.GONE
-            minMainView!!.visibility = View.VISIBLE
-        }
-        maxMainView!!.findViewById<ImageView>(R.id.btn_window_close).setOnClickListener {
+        maxMainView = mFloatView.findViewById(R.id.max_view)
+        maxMainView.layoutParams = Constraints.LayoutParams((screenWidth * 0.6).toInt(), (screenHeight * 0.6).toInt())
+        maxMainView.visibility = View.VISIBLE
+        maxMainView.findViewById<ImageView>(R.id.btn_window_close).setOnClickListener {
             dismissFloatView()
         }
-        syncStateTextView = maxMainView!!.findViewById(R.id.sync_state_desc)
-        maxMainView!!.findViewById<SwitchMaterial>(R.id.sync_switcher).setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
+        syncStateTextView = maxMainView.findViewById(R.id.sync_state_desc)
+        maxMainView.findViewById<SwitchMaterial>(R.id.sync_switcher).setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
             override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
                 if (isChecked) {
                     UdpClient.Instance!!.start()
@@ -176,29 +119,80 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         })
 
         mFloatViewLayoutParams = WindowManager.LayoutParams()
-        mFloatViewLayoutParams!!.format = PixelFormat.TRANSLUCENT
-        mFloatViewLayoutParams!!.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        mFloatViewLayoutParams!!.type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE
-        mFloatViewLayoutParams!!.width = WindowManager.LayoutParams.WRAP_CONTENT
-        mFloatViewLayoutParams!!.height = WindowManager.LayoutParams.WRAP_CONTENT
-        mFloatViewLayoutParams!!.gravity = Gravity.TOP or Gravity.START
-        mFloatViewLayoutParams!!.x = screenWidth - maxMainView!!.layoutParams.width
-        mFloatViewLayoutParams!!.y = 0
+        mFloatViewLayoutParams.format = PixelFormat.TRANSLUCENT
+        mFloatViewLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        mFloatViewLayoutParams.type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE
+        mFloatViewLayoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT
+        mFloatViewLayoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+        mFloatViewLayoutParams.gravity = Gravity.TOP or Gravity.START
+        mFloatViewLayoutParams.x = screenWidth - maxMainView.layoutParams.width
+        mFloatViewLayoutParams.y = 0
 
-        minMainView = mFloatView!!.findViewById(R.id.min_view)
-        minMainView!!.visibility = View.GONE
-        minMainView!!.findViewById<ImageView>(R.id.btn_window_max).setOnClickListener {
-            maxMainView!!.visibility = View.VISIBLE
-            minMainView!!.visibility = View.GONE
+        mFloatView.setOnTouchListener(object: View.OnTouchListener{
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                if (event == null) return false
+                var ret = false
+                val prm = mFloatViewLayoutParams
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        mFloatViewLastX = event.rawX.toInt()
+                        mFloatViewLastY = event.rawY.toInt()
+                        mFloatViewFirstX = mFloatViewLastX
+                        mFloatViewFirstY = mFloatViewLastY
+                        ret = true
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        ret = true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val deltaX = event.rawX.toInt() - mFloatViewLastX
+                        val deltaY = event.rawY.toInt() - mFloatViewLastY
+                        mFloatViewLastX = event.rawX.toInt()
+                        mFloatViewLastY = event.rawY.toInt()
+                        if (prm.x < 0) {
+                            prm.x = 0
+                        } else if (prm.x >= screenWidth - mFloatView.width) {
+                            prm.x = screenWidth - mFloatView.width
+                        }
+                        if (prm.x + deltaX in 0 until screenWidth - mFloatView.width) {
+                            prm.x += deltaX
+                        }
+                        if (prm.y < 0) {
+                            prm.y = 0
+                        } else if (prm.y >= screenHeight - mFloatView.height) {
+                            prm.y = screenHeight - mFloatView.height
+                        }
+                        if (prm.y + deltaY in 0 until screenHeight - mFloatView.height) {
+                            prm.y += deltaY
+                        }
+                        mWindowManager.updateViewLayout(mFloatView, prm)
+                        ret = true
+                    }
+                    else -> {
+                    }
+                }
+                return ret
+            }
+        })
+
+        minMainView = mFloatView.findViewById(R.id.min_view)
+        minMainView.visibility = View.GONE
+        minMainView.findViewById<ImageView>(R.id.btn_window_max).setOnClickListener {
+            maxMainView.visibility = View.VISIBLE
+            minMainView.visibility = View.GONE
+        }
+        maxMainView.findViewById<ImageView>(R.id.btn_window_min).setOnClickListener {
+            maxMainView.visibility = View.GONE
+            minMainView.visibility = View.VISIBLE
         }
 
         // init history list
         val msgList = SqliteHelper.helper!!.ListAll()
         mContentList.addAll(msgList)
-        mContentListView = mFloatView!!.findViewById(R.id.history_list) as ListView
+        mContentListView = mFloatView.findViewById(R.id.history_list) as ListView
         mContentListAdapter = HistoryListAdapter(mContext, R.id.history_list_item_content, mContentList)
-        mContentListView!!.adapter = mContentListAdapter
-        mContentListView!!.setOnItemClickListener(object: AdapterView.OnItemClickListener{
+        mContentListView.adapter = mContentListAdapter
+        mContentListView.setOnItemClickListener(object: AdapterView.OnItemClickListener{
             override fun onItemClick(
                 parent: AdapterView<*>?,
                 view: View?,
@@ -211,6 +205,39 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 Toast.makeText(mContext, R.string.copied, Toast.LENGTH_SHORT).show()
             }
         })
+
+        // init popup window
+        personSettingsView = inflater.inflate(R.layout.person_settings, null)
+        popWindow = PopupWindow(personSettingsView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
+        personSettingsBtn.setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                popWindow.showAsDropDown(personSettingsBtn)
+            }
+        })
+
+        // init action menu window
+        actionMenuWindowView = inflater.inflate(R.layout.action_menu, null)
+        actionMenuExpandView = actionMenuWindowView.findViewById(R.id.expand_text) as TextView
+        actionMenuWindow = PopupWindow(actionMenuWindowView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
+        actionMenuWindowView.findViewById<View>(R.id.action_menu_detail).setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                actionMenuWindow.dismiss()
+                if (mContentListAdapter.hasExpandItem(clipboardMsg!!.id)) {
+                    mContentListAdapter.removeExpandItem(clipboardMsg!!.id)
+                } else {
+                    mContentListAdapter.addExpandItem(clipboardMsg!!.id)
+                }
+            }
+        })
+        actionMenuWindowView.findViewById<View>(R.id.action_menu_delete).setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                actionMenuWindow.dismiss()
+                SqliteHelper.helper!!.Delete(clipboardMsg!!.id)
+                deleteMessage(clipboardMsg!!.id)
+            }
+        })
+
+
         mContentListView!!.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
             override fun onItemLongClick(
                 parent: AdapterView<*>?,
@@ -219,44 +246,13 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 id: Long
             ): Boolean {
                 clipboardMsg = mContentList[position]
-                if (mContentListAdapter!!.hasExpandItem(clipboardMsg!!.id)) {
-                    actionMenuExpandView!!.text = mContext.getText(R.string.fold)
+                if (mContentListAdapter.hasExpandItem(clipboardMsg!!.id)) {
+                    actionMenuExpandView.text = mContext.getText(R.string.fold)
                 } else {
-                    actionMenuExpandView!!.text = mContext.getText(R.string.expand)
+                    actionMenuExpandView.text = mContext.getText(R.string.expand)
                 }
-                actionMenuWindow!!.showAsDropDown(view)
+                actionMenuWindow.showAsDropDown(view)
                 return true
-            }
-        })
-
-        // init popup window
-        personSettingsView = inflater.inflate(R.layout.person_settings, null)
-        popWindow = PopupWindow(personSettingsView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
-        personSettingsBtn!!.setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                popWindow!!.showAsDropDown(personSettingsBtn)
-            }
-        })
-
-        // init action menu window
-        actionMenuWindowView = inflater.inflate(R.layout.action_menu, null)
-        actionMenuExpandView = actionMenuWindowView!!.findViewById(R.id.expand_text) as TextView
-        actionMenuWindow = PopupWindow(actionMenuWindowView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
-        actionMenuWindowView!!.findViewById<View>(R.id.action_menu_detail).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                actionMenuWindow!!.dismiss()
-                if (mContentListAdapter!!.hasExpandItem(clipboardMsg!!.id)) {
-                    mContentListAdapter!!.removeExpandItem(clipboardMsg!!.id)
-                } else {
-                    mContentListAdapter!!.addExpandItem(clipboardMsg!!.id)
-                }
-            }
-        })
-        actionMenuWindowView!!.findViewById<View>(R.id.action_menu_delete).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                actionMenuWindow!!.dismiss()
-                SqliteHelper.helper!!.Delete(clipboardMsg!!.id)
-                deleteMessage(clipboardMsg!!.id)
             }
         })
     }
