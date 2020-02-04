@@ -112,17 +112,100 @@ function createWindow () {
   })
 
   let deviceNum = 0
-  NetUDP.listenMessage(function (msg, remoteInfo) {
-    let metaDataLen = msg[1]
-    console.log(`receive message from ${remoteInfo.address}:${remoteInfo.port}：${msg.slice(2, 2 + metaDataLen).toString()}`)
-    let metaDataJson = JSON.parse(msg.slice(2, 2 + metaDataLen).toString())
-    let newdeviceNum = 1
-    if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs !== null) {
-      newdeviceNum += metaDataJson.udp_addrs.length
+  let receiveMaxLen = 1000
+  let receiveIndexMap = {}
+  let receiveMap = {}
+  let resultMap = {}
+
+  function ackMsg (metaBuffer, remoteInfo) {
+    var buf = Buffer.alloc(metaBuffer.length + 2)
+    buf[0] = NetUDP.HeaderUdpDataSyncAck
+    buf[1] = metaBuffer.length
+    for (var i = 0; i < metaBuffer.length; i++) {
+      buf[i] = metaBuffer[i]
     }
-    if (deviceNum !== newdeviceNum) {
-      deviceNum = newdeviceNum
-      renderChannel.send('clipboard-sync-state-device', {deviceNum: deviceNum})
+    NetUDP.sendMsg(buf, remoteInfo)
+  }
+
+  function parseResult (key) {
+    if (receiveMap[key][receiveIndexMap[key].offset] !== undefined) {
+      let msg = receiveMap[key][receiveIndexMap[key].offset][0]
+      let baseInfoLen = msg[0]
+      let hasBaseInfo = false
+      let baseInfoStr = ''
+      let i = 0
+      while (receiveMap[key][(receiveIndexMap[key].offset + i) % receiveMaxLen] !== undefined) {
+        let msg = receiveMap[key][(receiveIndexMap[key].offset + i) % receiveMaxLen]
+        if (i === 0) {
+          msg = msg.slice(1)
+        }
+        if (baseInfoStr.length + msg.length < baseInfoLen) {
+          baseInfoStr = baseInfoStr + msg.toString()
+          i++
+          continue
+        }
+        baseInfoStr = baseInfoStr + msg.slice(0, baseInfoLen - baseInfoStr.length)
+        resultMap[key] = JSON.parse(baseInfoStr)
+        hasBaseInfo = true
+        if (baseInfoStr.length + msg.length > baseInfoLen) {
+          receiveMap[key][receiveIndexMap[key].offset] = msg.slice(baseInfoLen - baseInfoStr.length)
+        }
+        break
+      }
+      if (hasBaseInfo) {
+        receiveIndexMap[key].offset = (receiveIndexMap[key].offset + i) % receiveMaxLen
+        receiveIndexMap[key].index += i
+      }
+    }
+  }
+
+  function checkFinish (key) {
+    if (receiveIndexMap[key].index + 1 >= receiveIndexMap[key].total) {
+      let msg = resultMap[key]
+      Database.insert(msg, function (dbMsg) {
+        if (renderChannel !== undefined) {
+          renderChannel.send('clipboard-message-add', dbMsg)
+        }
+        msgList = clearMsg([...msgList, dbMsg])
+      })
+      receiveMap[key] = null
+      resultMap[key] = null
+    }
+  }
+
+  NetUDP.listenMessage(function (msg, remoteInfo) {
+    if (msg[0] === NetUDP.HeaderUdpServerSync) {
+      let metaDataLen = msg[1]
+      console.log(`receive message from ${remoteInfo.address}:${remoteInfo.port}：${msg.slice(2, 2 + metaDataLen).toString()}`)
+      let metaDataJson = JSON.parse(msg.slice(2, 2 + metaDataLen).toString())
+      let newdeviceNum = 1
+      if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs !== null) {
+        newdeviceNum += metaDataJson.udp_addrs.length
+      }
+      if (deviceNum !== newdeviceNum) {
+        deviceNum = newdeviceNum
+        renderChannel.send('clipboard-sync-state-device', {deviceNum: deviceNum})
+      }
+    } else if (msg[0] === NetUDP.HeaderUdpDataSync) {
+      let metaDataLen = msg[1]
+      let metaDataJson = JSON.parse(msg.slice(2, 2 + metaDataLen).toString())
+      if (metaDataJson.key === undefined || metaDataJson.key === null) return
+      if (receiveMap[metaDataJson.key] === null) return
+      if (receiveMap[metaDataJson.key] === undefined) {
+        receiveMap[metaDataJson.key] = Array(receiveMaxLen)
+        receiveIndexMap[metaDataJson.key] = {
+          total: metaDataJson.total,
+          offset: 0,
+          index: 0
+        }
+      }
+      if (receiveIndexMap[metaDataJson.key].index + receiveMaxLen <= metaDataJson.index) return
+      if (receiveIndexMap[metaDataJson.key].index <= metaDataJson.index && receiveIndexMap[metaDataJson.key].index + receiveMaxLen > metaDataJson.index) {
+        receiveMap[metaDataJson.key][(metaDataJson.index - receiveIndexMap[metaDataJson.key].index + receiveIndexMap[metaDataJson.key].offset) % receiveMaxLen] = msg.slice(2 + metaDataLen)
+        parseResult(metaDataJson.key)
+        checkFinish(metaDataJson.key)
+      }
+      ackMsg(msg.slice(2, 2 + metaDataLen), remoteInfo)
     }
   })
 

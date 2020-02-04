@@ -28,9 +28,14 @@ function str2UTF8 (str) {
 
 let intervalID
 
-const header = 0x00
+const HeaderUdpServerSync = 0x00
+const HeaderUdpDataSync = 0x01
+const HeaderUdpDataSyncAck = 0x02
 
 export default {
+  HeaderUdpServerSync: HeaderUdpServerSync,
+  HeaderUdpDataSync: HeaderUdpDataSync,
+  HeaderUdpDataSyncAck: HeaderUdpDataSyncAck,
   isStart: function () {
     return intervalID !== undefined
   },
@@ -41,7 +46,7 @@ export default {
         app_id: 'superclipboard'
       }))
       var buffer = Buffer.alloc(metaData.length + 2)
-      buffer[0] = header
+      buffer[0] = HeaderUdpServerSync
       buffer[1] = metaData.length
       for (var i = 0; i < metaData.length; i++) {
         buffer[2 + i] = metaData[i]
@@ -51,6 +56,9 @@ export default {
   },
   listenMessage: function (callback) {
     udpClient.on('message', callback)
+  },
+  sendMsg: function (buf, remoteInfo) {
+    udpClient.send(buf, 0, buf.length, remoteInfo.port, remoteInfo.address)
   },
   close: function () {
     if (intervalID === undefined) return
