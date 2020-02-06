@@ -36,7 +36,7 @@ function createWindow () {
   // init ipc
   let renderChannel
   let renderInited = false
-  let prevValue
+  let prevValue = clipboard.readText()
   let intervalID
   let msgList
   let skipValue = ''
@@ -62,7 +62,6 @@ function createWindow () {
       }
     }
 
-    if (msgList.length > 0) prevValue = msgList[msgList.length - 1].content
     intervalID = setInterval(function () {
       const newValue = clipboard.readText()
       if (newValue === '') return
@@ -82,6 +81,7 @@ function createWindow () {
             renderChannel.send('clipboard-message-add', dbMsg)
           }
           msgList = clearMsg([...msgList, dbMsg])
+          NetUDP.sendClipboardMsg(dbMsg)
         })
       }
     }, 500)
