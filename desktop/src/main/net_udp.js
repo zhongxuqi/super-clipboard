@@ -140,6 +140,7 @@ function createSyncWorker (remoteAddr) {
         sendBufferOffset = (sendBufferOffset + 1) % udpWindowMaxLen
         currMsg.index += 1
       }
+      if (currMsg.index >= currMsg.total) currMsg = undefined
     }
   }
 }
