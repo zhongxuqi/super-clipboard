@@ -238,7 +238,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         })
 
 
-        mContentListView!!.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
+        mContentListView.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
             override fun onItemLongClick(
                 parent: AdapterView<*>?,
                 view: View?,
@@ -255,5 +255,20 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 return true
             }
         })
+
+        // init udp listener
+        UdpClient.Instance!!.listener = object: UdpClient.Listener{
+            override fun onChangeDeviceNum(deviceNum: Int) {
+                Instance?.handler?.post {
+                    Instance?.syncStateTextView?.text = String.format(Instance?.mContext!!.getString(R.string.device_total, deviceNum))
+                }
+            }
+
+            override fun onReceiveMsg(msg: ClipBoardMessage) {
+                Instance?.handler?.post {
+                    MainService.instance?.insertMessage(msg)
+                }
+            }
+        }
     }
 }

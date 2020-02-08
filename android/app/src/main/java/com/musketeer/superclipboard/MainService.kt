@@ -11,7 +11,6 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
-import com.musketeer.superclipboard.net.UdpClient
 
 
 class MainService : Service() {
@@ -50,13 +49,17 @@ class MainService : Service() {
                     val newValue = addedText.toString()
                     if (prevValue.compareTo(newValue) != 0) {
                         prevValue = newValue
-                        SqliteHelper.helper!!.Insert(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
-                        ClipboardMainWindow.Instance?.addMessage(SqliteHelper.helper!!.GetLast()!!)
-                        notify(newValue)
+                        insertMessage(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
                     }
                 }
             }
         })
+    }
+
+    fun insertMessage(clipboardMessage: ClipBoardMessage) {
+        SqliteHelper.helper!!.Insert(clipboardMessage)
+        ClipboardMainWindow.Instance?.addMessage(SqliteHelper.helper!!.GetLast()!!)
+        notify(clipboardMessage.content)
     }
 
     fun notify(txt: String) {
@@ -76,14 +79,8 @@ class MainService : Service() {
         notificationManager.notify(msgID, builder.build())
     }
 
-    fun addSkip(s: Int) {
-        skipNum += s
-    }
-
     class MainServiceBinder: Binder() {
-        fun skip(s: Int) {
 
-        }
     }
 
     val binder: MainServiceBinder by lazy {

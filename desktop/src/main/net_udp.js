@@ -27,11 +27,28 @@ function str2UTF8 (str) {
   return bytes
 }
 
+function uint2Bytes (num) {
+  let bytes = Buffer.alloc(4)
+  bytes[0] = (num >> 24) & 0xff
+  bytes[1] = (num >> 16) & 0xff
+  bytes[2] = (num >> 8) & 0xff
+  bytes[3] = num & 0xff
+  return bytes
+}
+
+function bytes2Uint (bytes) {
+  let num = 0
+  for (let i = 0; i < bytes.length; i++) {
+    num = num << 8 + bytes[0]
+  }
+  return num
+}
+
 const HeaderUdpServerSync = 0x00
 const HeaderUdpDataSync = 0x01
 const HeaderUdpDataSyncAck = 0x02
 
-const udpWindowMaxLen = 1000
+const UdpWindowMaxLen = 1000
 
 // 回调函数
 let onChangeDeviceNum
@@ -46,10 +63,10 @@ function createSyncWorker (remoteAddr) {
   let port = parseInt(addrItems[1])
   let isRunning = true
 
-  let sendAcks = Array(udpWindowMaxLen)
-  let sendTimes = Array(udpWindowMaxLen)
+  let sendAcks = Array(UdpWindowMaxLen)
+  let sendTimes = Array(UdpWindowMaxLen)
   let sendRetryTime = 3000
-  let sendBuffers = Array(udpWindowMaxLen)
+  let sendBuffers = Array(UdpWindowMaxLen)
   let sendBufferOffset = 0
   let clipboardMsgs = []
   let currMsg
@@ -75,16 +92,16 @@ function createSyncWorker (remoteAddr) {
       }
     }
     let i = 0
-    for (; sendBuffers[(i + sendBufferOffset) % udpWindowMaxLen] !== undefined && i < udpWindowMaxLen; i++) {
-      let realIndex = (i + sendBufferOffset) % udpWindowMaxLen
+    for (; sendBuffers[(i + sendBufferOffset) % UdpWindowMaxLen] !== undefined && i < UdpWindowMaxLen; i++) {
+      let realIndex = (i + sendBufferOffset) % UdpWindowMaxLen
       if (sendAcks[realIndex] === undefined && sendTimes[realIndex] + sendRetryTime < Date.now()) {
         udpClient.send(sendBuffers[realIndex], 0, sendBuffers[realIndex].length, port, ip)
         sendTimes[realIndex] = Date.now()
       }
     }
-    for (; i < udpWindowMaxLen && i < currMsg.total; i++) {
+    for (; i < UdpWindowMaxLen && i < currMsg.total; i++) {
       if (i * sendBufferMaxLen < currMsg.baseInfoBuffer.length) {
-        let realIndex = (i + sendBufferOffset) % udpWindowMaxLen
+        let realIndex = (i + sendBufferOffset) % UdpWindowMaxLen
         let metaDataJson = {
           key: currMsg.key,
           total: currMsg.total,
@@ -93,7 +110,7 @@ function createSyncWorker (remoteAddr) {
         let metaData = str2UTF8(JSON.stringify(metaDataJson))
         let bufferLen = 0
         let isFirst = 0
-        if (metaDataJson.index === 0) isFirst = 1
+        if (metaDataJson.index === 0) isFirst = 4
         if (currMsg.baseInfoBuffer.length > i * sendBufferMaxLen + sendBufferMaxLen) {
           bufferLen = sendBufferMaxLen
         } else {
@@ -105,8 +122,11 @@ function createSyncWorker (remoteAddr) {
         for (let j = 0; j < metaData.length; j++) {
           buffer[2 + j] = metaData[j]
         }
-        if (isFirst === 1) {
-          buffer[2 + metaData.length] = currMsg.baseInfoBuffer.length
+        if (isFirst > 0) {
+          let lenBytes = uint2Bytes(currMsg.baseInfoBuffer.length)
+          for (let j = 0; j < isFirst; j++) {
+            buffer[2 + metaData.length + j] = lenBytes[j]
+          }
         }
         for (let j = 0; j < bufferLen; j++) {
           // TODO 需要升级支持文件
@@ -117,6 +137,7 @@ function createSyncWorker (remoteAddr) {
         udpClient.send(buffer, 0, buffer.length, port, ip)
       }
     }
+    // TODO 需要升级支持文件
   }, 500)
   return {
     close: function () {
@@ -126,21 +147,24 @@ function createSyncWorker (remoteAddr) {
       clipboardMsgs.splice(0, 0, msg)
     },
     ack: function (metaDataJson) {
-      if (metaDataJson.index >= currMsg.index && metaDataJson.index < currMsg.index + udpWindowMaxLen) {
-        sendAcks[(metaDataJson.index - currMsg.index + sendBufferOffset) % udpWindowMaxLen] = metaDataJson
+      if (metaDataJson.index >= currMsg.index && metaDataJson.index < currMsg.index + UdpWindowMaxLen) {
+        sendAcks[(metaDataJson.index - currMsg.index + sendBufferOffset) % UdpWindowMaxLen] = metaDataJson
       }
 
       // check acks
       let i = 0
-      for (; sendAcks[(i + sendBufferOffset) % udpWindowMaxLen] !== undefined; i++) {
-        let realIndex = (i + sendBufferOffset) % udpWindowMaxLen
+      for (; sendAcks[(i + sendBufferOffset) % UdpWindowMaxLen] !== undefined; i++) {
+        let realIndex = (i + sendBufferOffset) % UdpWindowMaxLen
         sendAcks[realIndex] = undefined
         sendTimes[realIndex] = undefined
         sendBuffers[realIndex] = undefined
-        sendBufferOffset = (sendBufferOffset + 1) % udpWindowMaxLen
+        sendBufferOffset = (sendBufferOffset + 1) % UdpWindowMaxLen
         currMsg.index += 1
       }
-      if (currMsg.index >= currMsg.total) currMsg = undefined
+      if (currMsg.index >= currMsg.total) {
+        currMsg = undefined
+        sendAcks = Array(UdpWindowMaxLen)
+      }
     }
   }
 }
@@ -176,6 +200,7 @@ let deviceNum = 0
 let receiveIndexMap = {}
 let receiveMap = {}
 let resultMap = {}
+let isFinishMap = {}
 
 function ackBuf (metaBuffer, remoteInfo) {
   var buf = Buffer.alloc(metaBuffer.length + 2)
@@ -187,53 +212,62 @@ function ackBuf (metaBuffer, remoteInfo) {
   udpClient.send(buf, 0, buf.length, remoteInfo.port, remoteInfo.address)
 }
 
-function parseResult (key) {
-  if (receiveMap[key][receiveIndexMap[key].offset] !== undefined) {
-    let msg = receiveMap[key][receiveIndexMap[key].offset][0]
-    let baseInfoLen = msg[0]
-    let hasBaseInfo = false
+function parseResult (msgKey) {
+  if (receiveMap[msgKey][receiveIndexMap[msgKey].index % UdpWindowMaxLen] === undefined) return
+  if (resultMap[msgKey] === undefined) {
+    let msgBuf = receiveMap[msgKey][receiveIndexMap[msgKey].index % UdpWindowMaxLen]
+    let baseInfoLen = bytes2Uint(msgBuf.slice(0, 4))
     let baseInfoStr = ''
     let i = 0
-    while (receiveMap[key][(receiveIndexMap[key].offset + i) % udpWindowMaxLen] !== undefined) {
-      let msg = receiveMap[key][(receiveIndexMap[key].offset + i) % udpWindowMaxLen]
+    let includeLast = 0
+    while (receiveMap[msgKey][(receiveIndexMap[msgKey].index + i) % UdpWindowMaxLen] !== undefined) {
+      let realIndex = (receiveIndexMap[msgKey].index + i) % UdpWindowMaxLen
+      msgBuf = receiveMap[msgKey][realIndex]
       if (i === 0) {
-        msg = msg.slice(1)
+        msgBuf = msgBuf.slice(4)
       }
-      if (baseInfoStr.length + msg.length < baseInfoLen) {
-        baseInfoStr = baseInfoStr + msg.toString()
+      if (baseInfoStr.length + msgBuf.length < baseInfoLen) {
+        baseInfoStr = baseInfoStr + msgBuf.toString()
         i++
         continue
       }
-      baseInfoStr = baseInfoStr + msg.slice(0, baseInfoLen - baseInfoStr.length)
-      resultMap[key] = JSON.parse(baseInfoStr)
-      hasBaseInfo = true
-      if (baseInfoStr.length + msg.length > baseInfoLen) {
-        receiveMap[key][receiveIndexMap[key].offset] = msg.slice(baseInfoLen - baseInfoStr.length)
+      if (baseInfoStr.length + msgBuf.length > baseInfoLen) {
+        receiveMap[msgKey][realIndex] = msgBuf.slice(baseInfoLen - baseInfoStr.length)
+        includeLast = 0
+      } else {
+        includeLast = 1
       }
+      baseInfoStr = baseInfoStr + msgBuf.slice(0, baseInfoLen - baseInfoStr.length)
+      resultMap[msgKey] = JSON.parse(baseInfoStr)
       break
     }
-    if (hasBaseInfo) {
-      receiveIndexMap[key].offset = (receiveIndexMap[key].offset + i) % udpWindowMaxLen
-      receiveIndexMap[key].index += i
+    if (resultMap[msgKey] !== undefined) {
+      for (let j = 0; j < i + includeLast; j++) {
+        receiveMap[msgKey][(receiveIndexMap[msgKey].index + j) % UdpWindowMaxLen] = undefined
+      }
+      receiveIndexMap[msgKey].index += i + includeLast
     }
-    // TODO 需要升级支持文件
   }
+  // TODO 需要升级支持文件
 }
 
-function checkFinish (key) {
-  if (receiveIndexMap[key].index + 1 >= receiveIndexMap[key].total) {
-    let msg = resultMap[key]
+function checkFinish (msgKey) {
+  if (receiveIndexMap[msgKey].index + 1 >= receiveIndexMap[msgKey].total) {
+    let msg = resultMap[msgKey]
     onReceiveMsg(msg)
-    receiveMap[key] = null
-    resultMap[key] = null
+    receiveMap[msgKey] = null
+    resultMap[msgKey] = null
+    isFinishMap[msgKey] = true
   }
 }
 
 udpClient.on('message', function (buf, remoteInfo) {
+  if (buf.length < 2) return
+  let metaDataLen = buf[1]
+  if (buf.length < 2 + metaDataLen) return
+  let metaDataJson = JSON.parse(buf.slice(2, 2 + metaDataLen).toString())
   if (buf[0] === HeaderUdpServerSync) {
-    let metaDataLen = buf[1]
-    console.log(`receive message from ${remoteInfo.address}:${remoteInfo.port}：${buf.slice(2, 2 + metaDataLen).toString()}`)
-    let metaDataJson = JSON.parse(buf.slice(2, 2 + metaDataLen).toString())
+    console.log(`receive server sync from ${remoteInfo.address}:${remoteInfo.port}：${buf.slice(2, 2 + metaDataLen).toString()}`)
     let newdeviceNum = 1
     if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs !== null) {
       newdeviceNum += metaDataJson.udp_addrs.length
@@ -245,28 +279,23 @@ udpClient.on('message', function (buf, remoteInfo) {
     if (newdeviceNum > 1) refreshSyncWork(metaDataJson.udp_addrs)
     else refreshSyncWork([])
   } else if (buf[0] === HeaderUdpDataSync) {
-    let metaDataLen = buf[1]
-    let metaDataJson = JSON.parse(buf.slice(2, 2 + metaDataLen).toString())
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
-    if (receiveMap[metaDataJson.key] === null) return
+    if (isFinishMap[metaDataJson.key] !== undefined) return
     if (receiveMap[metaDataJson.key] === undefined) {
-      receiveMap[metaDataJson.key] = Array(udpWindowMaxLen)
+      receiveMap[metaDataJson.key] = Array(UdpWindowMaxLen)
       receiveIndexMap[metaDataJson.key] = {
         total: metaDataJson.total,
-        offset: 0,
         index: 0
       }
     }
-    if (receiveIndexMap[metaDataJson.key].index + udpWindowMaxLen <= metaDataJson.index) return
-    if (receiveIndexMap[metaDataJson.key].index <= metaDataJson.index && receiveIndexMap[metaDataJson.key].index + udpWindowMaxLen > metaDataJson.index) {
-      receiveMap[metaDataJson.key][(metaDataJson.index - receiveIndexMap[metaDataJson.key].index + receiveIndexMap[metaDataJson.key].offset) % udpWindowMaxLen] = buf.slice(2 + metaDataLen)
+    if (receiveIndexMap[metaDataJson.key].index + UdpWindowMaxLen <= metaDataJson.index) return
+    if (receiveIndexMap[metaDataJson.key].index <= metaDataJson.index && receiveIndexMap[metaDataJson.key].index + UdpWindowMaxLen > metaDataJson.index) {
+      receiveMap[metaDataJson.key][metaDataJson.index % UdpWindowMaxLen] = buf.slice(2 + metaDataLen)
       parseResult(metaDataJson.key)
       checkFinish(metaDataJson.key)
     }
     ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)
   } else if (buf[0] === HeaderUdpDataSyncAck) {
-    let metaDataLen = buf[1]
-    let metaDataJson = JSON.parse(buf.slice(2, 2 + metaDataLen).toString())
     let worker = syncWorkerMap[`${remoteInfo.address}:${remoteInfo.port}`]
     if (worker !== undefined) worker.ack(metaDataJson)
   }
@@ -308,5 +337,6 @@ export default {
     if (heartBeatIntervalID === undefined) return
     clearInterval(heartBeatIntervalID)
     heartBeatIntervalID = undefined
+    deviceNum = 0
   }
 }
