@@ -33,12 +33,12 @@ class ClipBoardMessage {
         }
     }
 
-    val id: Int
-    val type: MessageType
-    val content: String
-    val extra: String
-    val createTime: Long
-    val updateTime: Long
+    var id: Int
+    var type: MessageType
+    var content: String
+    var extra: String
+    var createTime: Long
+    var updateTime: Long
 
     constructor(id: Int, type: MessageType, content: String, extra: String, createTime: Long, updateTime: Long) {
         this.id = id
@@ -47,5 +47,9 @@ class ClipBoardMessage {
         this.extra = extra
         this.createTime = createTime
         this.updateTime = updateTime
+    }
+
+    fun cloneMessage(): ClipBoardMessage {
+        return ClipBoardMessage(this.id, this.type, this.content, this.extra, this.createTime, this.updateTime)
     }
 }

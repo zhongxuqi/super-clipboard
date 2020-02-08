@@ -67,7 +67,6 @@ function createSyncWorker (remoteAddr) {
   let sendTimes = Array(UdpWindowMaxLen)
   let sendRetryTime = 3000
   let sendBuffers = Array(UdpWindowMaxLen)
-  let sendBufferOffset = 0
   let clipboardMsgs = []
   let currMsg
 
@@ -92,8 +91,8 @@ function createSyncWorker (remoteAddr) {
       }
     }
     let i = 0
-    for (; sendBuffers[(i + sendBufferOffset) % UdpWindowMaxLen] !== undefined && i < UdpWindowMaxLen; i++) {
-      let realIndex = (i + sendBufferOffset) % UdpWindowMaxLen
+    for (; sendBuffers[(i + currMsg.index) % UdpWindowMaxLen] !== undefined && i < UdpWindowMaxLen; i++) {
+      let realIndex = (i + currMsg.index) % UdpWindowMaxLen
       if (sendAcks[realIndex] === undefined && sendTimes[realIndex] + sendRetryTime < Date.now()) {
         udpClient.send(sendBuffers[realIndex], 0, sendBuffers[realIndex].length, port, ip)
         sendTimes[realIndex] = Date.now()
@@ -101,7 +100,7 @@ function createSyncWorker (remoteAddr) {
     }
     for (; i < UdpWindowMaxLen && i < currMsg.total; i++) {
       if (i * sendBufferMaxLen < currMsg.baseInfoBuffer.length) {
-        let realIndex = (i + sendBufferOffset) % UdpWindowMaxLen
+        let realIndex = (i + currMsg.index) % UdpWindowMaxLen
         let metaDataJson = {
           key: currMsg.key,
           total: currMsg.total,
@@ -111,13 +110,13 @@ function createSyncWorker (remoteAddr) {
         let bufferLen = 0
         let isFirst = 0
         if (metaDataJson.index === 0) isFirst = 4
-        if (currMsg.baseInfoBuffer.length > i * sendBufferMaxLen + sendBufferMaxLen) {
+        if (currMsg.baseInfoBuffer.length > (i + 1) * sendBufferMaxLen) {
           bufferLen = sendBufferMaxLen
         } else {
           bufferLen = currMsg.baseInfoBuffer.length - i * sendBufferMaxLen
         }
         let buffer = Buffer.alloc(2 + metaData.length + isFirst + bufferLen)
-        buffer[0] = HeaderUdpServerSync
+        buffer[0] = HeaderUdpDataSync
         buffer[1] = metaData.length
         for (let j = 0; j < metaData.length; j++) {
           buffer[2 + j] = metaData[j]
@@ -147,23 +146,24 @@ function createSyncWorker (remoteAddr) {
       clipboardMsgs.splice(0, 0, msg)
     },
     ack: function (metaDataJson) {
+      if (currMsg == null || metaDataJson.key !== currMsg.key) return
       if (metaDataJson.index >= currMsg.index && metaDataJson.index < currMsg.index + UdpWindowMaxLen) {
-        sendAcks[(metaDataJson.index - currMsg.index + sendBufferOffset) % UdpWindowMaxLen] = metaDataJson
+        sendAcks[metaDataJson.index % UdpWindowMaxLen] = metaDataJson
       }
 
       // check acks
       let i = 0
-      for (; sendAcks[(i + sendBufferOffset) % UdpWindowMaxLen] !== undefined; i++) {
-        let realIndex = (i + sendBufferOffset) % UdpWindowMaxLen
+      for (; sendAcks[(i + currMsg.index) % UdpWindowMaxLen] !== undefined; i++) {
+        let realIndex = (i + currMsg.index) % UdpWindowMaxLen
         sendAcks[realIndex] = undefined
         sendTimes[realIndex] = undefined
         sendBuffers[realIndex] = undefined
-        sendBufferOffset = (sendBufferOffset + 1) % UdpWindowMaxLen
         currMsg.index += 1
       }
       if (currMsg.index >= currMsg.total) {
         currMsg = undefined
         sendAcks = Array(UdpWindowMaxLen)
+        sendBuffers = Array(UdpWindowMaxLen)
       }
     }
   }

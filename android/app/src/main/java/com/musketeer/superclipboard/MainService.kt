@@ -11,6 +11,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
+import com.musketeer.superclipboard.net.UdpClient
 
 
 class MainService : Service() {
@@ -49,6 +50,10 @@ class MainService : Service() {
                     val newValue = addedText.toString()
                     if (prevValue.compareTo(newValue) != 0) {
                         prevValue = newValue
+                        val msgObj = ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", 0, 0)
+                        UdpClient.Instance!!.sendClipboardMsg(msgObj)
+                        msgObj.createTime = millisTs
+                        msgObj.updateTime = millisTs
                         insertMessage(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
                     }
                 }

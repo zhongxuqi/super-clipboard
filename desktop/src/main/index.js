@@ -81,7 +81,7 @@ function createWindow () {
             renderChannel.send('clipboard-message-add', dbMsg)
           }
           msgList = clearMsg([...msgList, dbMsg])
-          NetUDP.sendClipboardMsg(dbMsg)
+          NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
         })
       }
     }, 500)
