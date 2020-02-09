@@ -223,7 +223,7 @@ function parseResult (msgKey) {
   if (resultMap[msgKey] === undefined) {
     let msgBuf = receiveMap[msgKey][receiveIndexMap[msgKey].index % UdpWindowMaxLen]
     let baseInfoLen = bytes2Uint(msgBuf.slice(0, 4))
-    console.log('===>>> baseInfoLen', `${baseInfoLen}`)
+    // console.log('===>>> baseInfoLen', `${baseInfoLen}`)
     let baseInfoByte = []
     let i = 0
     let includeLast = 0
@@ -233,7 +233,7 @@ function parseResult (msgKey) {
       if (i === 0) {
         msgBuf = msgBuf.slice(4)
       }
-      console.log('===>>>', msgBuf.slice(0, 10).toString(), realIndex)
+      // console.log('===>>>', msgBuf.slice(0, 10).toString(), realIndex)
       if (baseInfoByte.length + msgBuf.length < baseInfoLen) {
         for (let j = 0; j < msgBuf.length; j++) {
           baseInfoByte.push(msgBuf[j])
@@ -251,10 +251,10 @@ function parseResult (msgKey) {
       for (let j = 0; j < validMsgBuf.length; j++) {
         baseInfoByte.push(validMsgBuf[j])
       }
-      console.log('===>>> baseInfoByte.length', `${baseInfoByte.length}`)
+      // console.log('===>>> baseInfoByte.length', `${baseInfoByte.length}`)
       try {
         let baseInfoStr = Buffer.from(baseInfoByte).toString()
-        console.log('===>>>', baseInfoStr)
+        // console.log('===>>>', baseInfoStr)
         resultMap[msgKey] = JSON.parse(baseInfoStr)
       } catch (e) {
         console.log(e)
@@ -303,7 +303,7 @@ udpClient.on('message', function (buf, remoteInfo) {
     if (newdeviceNum > 1) refreshSyncWork(metaDataJson.udp_addrs)
     else refreshSyncWork([])
   } else if (buf[0] === HeaderUdpDataSync) {
-    console.log(`${buf.toString()}`)
+    // console.log(`${buf.toString()}`)
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
     if (isFinishMap[metaDataJson.key] !== undefined) {
       ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)

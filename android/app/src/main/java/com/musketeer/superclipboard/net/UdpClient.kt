@@ -190,7 +190,7 @@ class UdpClient {
                                     if (isFirst > 0) {
                                         val lenBytes = int2Bytes(currMsg!!.baseInfoBuffer.size)
                                         lenBytes.copyInto(buffer, 2 + metaData.size)
-                                        Log.d("===>>>", "baseInfoBuffer.size ${currMsg!!.baseInfoBuffer.size}")
+//                                        Log.d("===>>>", "baseInfoBuffer.size ${currMsg!!.baseInfoBuffer.size}")
                                     }
                                     currMsg!!.baseInfoBuffer.copyInto(buffer, 2 + metaData.size + isFirst, metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + bufferLen)
                                     sendBuffers[realIndex] = buffer
@@ -203,7 +203,7 @@ class UdpClient {
                                             port
                                         )
                                     )
-                                    Log.d("===>>> send", "${buffer.size} ${metaDataJson.index} ${String(currMsg!!.baseInfoBuffer.sliceArray(IntRange(metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + 10)))}")
+//                                    Log.d("===>>> send", "${buffer.size} ${metaDataJson.index} ${String(currMsg!!.baseInfoBuffer.sliceArray(IntRange(metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + 10)))}")
                                 }
                                 i++
                             }
@@ -214,7 +214,7 @@ class UdpClient {
         }
 
         fun close() {
-            Log.d("===>>>", "close ${address.hostAddress}:$port")
+//            Log.d("===>>>", "close ${address.hostAddress}:$port")
             isRun = false
         }
 
@@ -297,7 +297,7 @@ class UdpClient {
                             ackBuf(metaData.toByteArray(), packet.address, packet.port)
                         }
                         HeaderUdpDataSyncAck -> {
-                            Log.d("===>>> ack", metaData)
+//                            Log.d("===>>> ack", metaData)
                             val worker = syncWorkerMap["${packet.address.hostAddress}:${packet.getPort()}"]
                             worker?.ack(metaDataJson)
                         }
