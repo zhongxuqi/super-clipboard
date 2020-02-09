@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.experimental.and
 
 
 class UdpClient {
@@ -255,7 +256,7 @@ class UdpClient {
                 val metaMessageLen = packet.data[1].toInt()
                 if (packet.length < 2 + metaMessageLen) continue@receiveLoop
                 val metaData = String(packet.data, 2, metaMessageLen)
-                Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
+                //Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
                 try {
                     val metaDataJson = JSON.parseObject(metaData, MetaData::class.java)
                     when (packet.data[0]) {
@@ -279,12 +280,12 @@ class UdpClient {
                                 receiveIndexMap[msgKey] = ReceiveIndex(metaDataJson.total, 0)
                             }
                             if (receiveIndexMap[msgKey]!!.index + UdpWindowMaxLen <= metaDataJson.index) continue@receiveLoop
-                            if (receiveIndexMap[msgKey]!!.index <= metaDataJson.index && receiveIndexMap[msgKey]!!.index + UdpWindowMaxLen <= metaDataJson.index) {
+                            if (receiveIndexMap[msgKey]!!.index <= metaDataJson.index && receiveIndexMap[msgKey]!!.index + UdpWindowMaxLen > metaDataJson.index) {
                                 receiveMap[msgKey]!![metaDataJson.index % UdpWindowMaxLen] = packet.data.sliceArray(IntRange(2 + metaMessageLen, packet.length))
                                 parseResult(msgKey)
                                 checkFinish(msgKey)
                             }
-                            ackBuf(packet.data.sliceArray(IntRange(0, 1 + metaMessageLen)), packet.address, packet.port)
+                            ackBuf(metaData.toByteArray(), packet.address, packet.port)
                         }
                         HeaderUdpDataSyncAck -> {
                             val worker = syncWorkerMap["${packet.address.hostAddress}:${packet.getPort()}"]
@@ -349,6 +350,17 @@ class UdpClient {
         }
     }
 
+    private val hexArray = "0123456789ABCDEF".toCharArray()
+    fun bytesToHex(bytes: ByteArray): String {
+        val hexChars = CharArray(bytes.size * 2)
+        for (j in bytes.indices) {
+            val v = (bytes[j] and 0xFF.toByte()).toInt()
+            hexChars[j * 2] = hexArray[v ushr 4]
+            hexChars[j * 2 + 1] = hexArray[v and 0x0F]
+        }
+        return String(hexChars)
+    }
+
     private fun ackBuf(metaData: ByteArray, address: InetAddress, port: Int) {
         val buf = ByteArray(2 + metaData.size)
         buf[0] = HeaderUdpDataSyncAck
@@ -356,8 +368,8 @@ class UdpClient {
         metaData.copyInto(buf, 2)
         client.send(
             DatagramPacket(
-                buffer,
-                buffer.size,
+                buf,
+                buf.size,
                 address,
                 port
             )
@@ -395,6 +407,7 @@ class UdpClient {
                 try {
                     clipboardMessage = JSON.parseObject(baseInfoStr.toString(), ClipBoardMessage::class.java)
                     resultMap[msgKey] = clipboardMessage
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -410,8 +423,12 @@ class UdpClient {
     }
 
     private fun checkFinish(msgKey: String) {
+        if (resultMap[msgKey] == null) return
         if (receiveIndexMap[msgKey]!!.index + 1 >= receiveIndexMap[msgKey]!!.total) {
             val msgObj = resultMap[msgKey]!!
+            val millisTs = System.currentTimeMillis()
+            msgObj.createTime = millisTs
+            msgObj.updateTime = millisTs
             listener?.onReceiveMsg(ClipBoardMessage(0, msgObj.type, msgObj.content, msgObj.extra, msgObj.createTime, msgObj.updateTime))
             isFinishMap[msgKey] = true
             receiveMap.remove(msgKey)

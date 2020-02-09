@@ -129,7 +129,7 @@ function createSyncWorker (remoteAddr) {
         }
         for (let j = 0; j < bufferLen; j++) {
           // TODO 需要升级支持文件
-          buffer[2 + metaData.length + isFirst + j] = currMsg.baseInfoBuffer.slice(metaDataJson.index * sendBufferMaxLen, metaDataJson.index * sendBufferMaxLen + bufferLen)
+          buffer[2 + metaData.length + isFirst + j] = currMsg.baseInfoBuffer[i * sendBufferMaxLen + j]
         }
         sendBuffers[realIndex] = buffer
         sendTimes[realIndex] = Date.now()
@@ -143,6 +143,9 @@ function createSyncWorker (remoteAddr) {
       isRunning = false
     },
     sendClipboardMsg: function (msg) {
+      msg.id = undefined
+      msg.create_time = undefined
+      msg.update_time = undefined
       clipboardMsgs.splice(0, 0, msg)
     },
     ack: function (metaDataJson) {
@@ -164,6 +167,7 @@ function createSyncWorker (remoteAddr) {
         currMsg = undefined
         sendAcks = Array(UdpWindowMaxLen)
         sendBuffers = Array(UdpWindowMaxLen)
+        sendTimes = Array(UdpWindowMaxLen)
       }
     }
   }
@@ -178,6 +182,7 @@ function refreshSyncWork (remoteAddrs) {
   // 删除无效SyncWorker
   let addrs2Remove = []
   for (let addr in syncWorkerMap) {
+    if (syncWorkerMap[addr] === undefined) continue
     if (remoteAddrMap[addr] === undefined) {
       syncWorkerMap[addr].close()
       addrs2Remove.push(addr)
@@ -232,13 +237,17 @@ function parseResult (msgKey) {
         continue
       }
       if (baseInfoStr.length + msgBuf.length > baseInfoLen) {
-        receiveMap[msgKey][realIndex] = msgBuf.slice(baseInfoLen - baseInfoStr.length)
+        receiveMap[msgKey][realIndex] = msgBuf.slice(baseInfoLen - baseInfoStr.length).toString()
         includeLast = 0
       } else {
         includeLast = 1
       }
-      baseInfoStr = baseInfoStr + msgBuf.slice(0, baseInfoLen - baseInfoStr.length)
-      resultMap[msgKey] = JSON.parse(baseInfoStr)
+      baseInfoStr = baseInfoStr + msgBuf.slice(0, baseInfoLen - baseInfoStr.length).toString()
+      try {
+        resultMap[msgKey] = JSON.parse(baseInfoStr)
+      } catch (e) {
+        console.log(e)
+      }
       break
     }
     if (resultMap[msgKey] !== undefined) {
@@ -267,7 +276,7 @@ udpClient.on('message', function (buf, remoteInfo) {
   if (buf.length < 2 + metaDataLen) return
   let metaDataJson = JSON.parse(buf.slice(2, 2 + metaDataLen).toString())
   if (buf[0] === HeaderUdpServerSync) {
-    console.log(`receive server sync from ${remoteInfo.address}:${remoteInfo.port}：${buf.slice(2, 2 + metaDataLen).toString()}`)
+    // console.log(`receive server sync from ${remoteInfo.address}:${remoteInfo.port}：${buf.slice(2, 2 + metaDataLen).toString()}`)
     let newdeviceNum = 1
     if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs !== null) {
       newdeviceNum += metaDataJson.udp_addrs.length
@@ -318,7 +327,7 @@ export default {
       for (var i = 0; i < metaData.length; i++) {
         buffer[2 + i] = metaData[i]
       }
-      udpClient.send(buffer, 0, buffer.length, 9000, '127.0.0.1')
+      udpClient.send(buffer, 0, buffer.length, 9000, '192.168.100.107')
     }, 1000)
   },
   setOnChangeDeviceNum: function (f) {
@@ -330,6 +339,7 @@ export default {
   sendClipboardMsg: function (msg) {
     if (heartBeatIntervalID === undefined) return
     for (let addr in syncWorkerMap) {
+      if (syncWorkerMap[addr] === undefined) continue
       syncWorkerMap[addr].sendClipboardMsg(msg)
     }
   },

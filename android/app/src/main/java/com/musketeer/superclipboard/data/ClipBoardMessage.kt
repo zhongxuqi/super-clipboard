@@ -1,5 +1,7 @@
 package com.musketeer.superclipboard.data
 
+import com.alibaba.fastjson.annotation.JSONCreator
+
 class ClipBoardMessage {
     enum class MessageType(val t: Int) {
         Unknow(0),
@@ -33,12 +35,15 @@ class ClipBoardMessage {
         }
     }
 
-    var id: Int
-    var type: MessageType
-    var content: String
-    var extra: String
-    var createTime: Long
-    var updateTime: Long
+    var id: Int = 0
+    var type: MessageType = MessageType.Unknow
+    var content: String = ""
+    var extra: String = ""
+    var createTime: Long = 0
+    var updateTime: Long = 0
+
+    @JSONCreator
+    constructor()
 
     constructor(id: Int, type: MessageType, content: String, extra: String, createTime: Long, updateTime: Long) {
         this.id = id
