@@ -72,6 +72,6 @@ class SqliteHelper: SQLiteOpenHelper {
 
     fun Insert(msg: ClipBoardMessage) {
         val db = writableDatabase
-        db.execSQL("insert into $TABLE_NAME (type,content,extra,create_time,update_time) values (${ClipBoardMessage.FromMessageType(msg.type)},'${msg.content}','${msg.extra}',${msg.createTime},${msg.updateTime})")
+        db.execSQL("insert into $TABLE_NAME (type,content,extra,create_time,update_time) values (${ClipBoardMessage.FromMessageType(msg.type)},'${msg.content.replace("'","''")}','${msg.extra.replace("'","''")}',${msg.createTime},${msg.updateTime})")
     }
 }

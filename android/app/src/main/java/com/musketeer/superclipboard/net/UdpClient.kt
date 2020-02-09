@@ -39,7 +39,7 @@ class UdpClient {
         fun bytes2Int(bytes: ByteArray): Int {
             var num = 0
             for (b in bytes) {
-                num = (num shl 8) + b
+                num = (num shl 8) + b + if (b < 0) 256 else 0
             }
             return num
         }
@@ -274,14 +274,17 @@ class UdpClient {
                         HeaderUdpDataSync -> {
                             if (metaDataJson.key == null || metaDataJson.key == "") continue@receiveLoop
                             val msgKey = metaDataJson.key!!
-                            if (isFinishMap.containsKey(msgKey) && isFinishMap[msgKey]!!) continue@receiveLoop
+                            if (isFinishMap.containsKey(msgKey) && isFinishMap[msgKey]!!) {
+                                ackBuf(metaData.toByteArray(), packet.address, packet.port)
+                                continue@receiveLoop
+                            }
                             if (!receiveMap.containsKey(msgKey)) {
                                 receiveMap[msgKey] = Array<ByteArray?>(UdpWindowMaxLen, {null})
                                 receiveIndexMap[msgKey] = ReceiveIndex(metaDataJson.total, 0)
                             }
                             if (receiveIndexMap[msgKey]!!.index + UdpWindowMaxLen <= metaDataJson.index) continue@receiveLoop
                             if (receiveIndexMap[msgKey]!!.index <= metaDataJson.index && receiveIndexMap[msgKey]!!.index + UdpWindowMaxLen > metaDataJson.index) {
-                                receiveMap[msgKey]!![metaDataJson.index % UdpWindowMaxLen] = packet.data.sliceArray(IntRange(2 + metaMessageLen, packet.length))
+                                receiveMap[msgKey]!![metaDataJson.index % UdpWindowMaxLen] = packet.data.sliceArray(IntRange(2 + metaMessageLen, packet.length - 1))
                                 parseResult(msgKey)
                                 checkFinish(msgKey)
                             }
@@ -383,7 +386,7 @@ class UdpClient {
             if (msgBuf.size < 4) return
             val baseInfoLen = bytes2Int(msgBuf.sliceArray(IntRange(0, 3)))
             var clipboardMessage: ClipBoardMessage? = null
-            var baseInfoStr = StringBuffer("")
+            var baseInfoByte = ArrayList<Byte>(baseInfoLen)
             var i = 0
             var includeLast = 0
             while (receiveMap[msgKey]!![(receiveIndexMap[msgKey]!!.index + i) % UdpWindowMaxLen] != null) {
@@ -392,22 +395,22 @@ class UdpClient {
                 if (i == 0) {
                     msgBuf = msgBuf.sliceArray(IntRange(4, msgBuf.size - 1))
                 }
-                if (baseInfoStr.length + msgBuf.size < baseInfoLen) {
-                    baseInfoStr.append(String(msgBuf))
+                if (baseInfoByte.size + msgBuf.size < baseInfoLen) {
+                    for (b in msgBuf.sliceArray(IntRange(0, msgBuf.size -1))) baseInfoByte.add(b)
                     i++
                     continue
                 }
-                if (baseInfoStr.length + msgBuf.size > baseInfoLen) {
-                    receiveMap[msgKey]!![realIndex] = msgBuf.sliceArray(IntRange(baseInfoLen - baseInfoStr.length, msgBuf.size - 1))
+                if (baseInfoByte.size + msgBuf.size > baseInfoLen) {
+                    receiveMap[msgKey]!![realIndex] = msgBuf.sliceArray(IntRange(baseInfoLen - baseInfoByte.size, msgBuf.size - 1))
                     includeLast = 0
                 } else {
                     includeLast = 1
                 }
-                baseInfoStr.append(String(msgBuf, 0, baseInfoLen - baseInfoStr.length))
+                for (b in msgBuf.sliceArray(IntRange(0, baseInfoLen - baseInfoByte.size -1))) baseInfoByte.add(b)
                 try {
-                    clipboardMessage = JSON.parseObject(baseInfoStr.toString(), ClipBoardMessage::class.java)
+                    val baseInfoStr = String(baseInfoByte.toByteArray())
+                    clipboardMessage = JSON.parseObject(baseInfoStr, ClipBoardMessage::class.java)
                     resultMap[msgKey] = clipboardMessage
-
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -417,7 +420,7 @@ class UdpClient {
                 for (j in 0 until i + includeLast) {
                     receiveMap[msgKey]!![(receiveIndexMap[msgKey]!!.index + j) % UdpWindowMaxLen] = null
                 }
-                receiveIndexMap[msgKey]!!.index += 1
+                receiveIndexMap[msgKey]!!.index += i + includeLast
             }
         }
     }

@@ -40,6 +40,7 @@ function bytes2Uint (bytes) {
   let num = 0
   for (let i = 0; i < bytes.length; i++) {
     num = num << 8 + bytes[0]
+    if (bytes[0] < 0) num += 256
   }
   return num
 }
