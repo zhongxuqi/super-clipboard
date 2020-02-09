@@ -99,8 +99,8 @@ function createSyncWorker (remoteAddr) {
         sendTimes[realIndex] = Date.now()
       }
     }
-    for (; i < UdpWindowMaxLen && i < currMsg.total; i++) {
-      if (i * sendBufferMaxLen < currMsg.baseInfoBuffer.length) {
+    for (; (i + currMsg.index) < UdpWindowMaxLen && (i + currMsg.index) < currMsg.total; i++) {
+      if ((i + currMsg.index) * sendBufferMaxLen < currMsg.baseInfoBuffer.length) {
         let realIndex = (i + currMsg.index) % UdpWindowMaxLen
         let metaDataJson = {
           key: currMsg.key,
@@ -111,10 +111,10 @@ function createSyncWorker (remoteAddr) {
         let bufferLen = 0
         let isFirst = 0
         if (metaDataJson.index === 0) isFirst = 4
-        if (currMsg.baseInfoBuffer.length > (i + 1) * sendBufferMaxLen) {
+        if (currMsg.baseInfoBuffer.length > (metaDataJson.index + 1) * sendBufferMaxLen) {
           bufferLen = sendBufferMaxLen
         } else {
-          bufferLen = currMsg.baseInfoBuffer.length - i * sendBufferMaxLen
+          bufferLen = currMsg.baseInfoBuffer.length - metaDataJson.index * sendBufferMaxLen
         }
         let buffer = Buffer.alloc(2 + metaData.length + isFirst + bufferLen)
         buffer[0] = HeaderUdpDataSync
@@ -130,7 +130,7 @@ function createSyncWorker (remoteAddr) {
         }
         for (let j = 0; j < bufferLen; j++) {
           // TODO 需要升级支持文件
-          buffer[2 + metaData.length + isFirst + j] = currMsg.baseInfoBuffer[i * sendBufferMaxLen + j]
+          buffer[2 + metaData.length + isFirst + j] = currMsg.baseInfoBuffer[metaDataJson.index * sendBufferMaxLen + j]
         }
         sendBuffers[realIndex] = buffer
         sendTimes[realIndex] = Date.now()
@@ -223,6 +223,7 @@ function parseResult (msgKey) {
   if (resultMap[msgKey] === undefined) {
     let msgBuf = receiveMap[msgKey][receiveIndexMap[msgKey].index % UdpWindowMaxLen]
     let baseInfoLen = bytes2Uint(msgBuf.slice(0, 4))
+    console.log('===>>> baseInfoLen', `${baseInfoLen}`)
     let baseInfoByte = []
     let i = 0
     let includeLast = 0
@@ -232,7 +233,7 @@ function parseResult (msgKey) {
       if (i === 0) {
         msgBuf = msgBuf.slice(4)
       }
-      console.log('===>>> msgBuf', msgBuf.length, msgBuf.toString())
+      console.log('===>>>', msgBuf.slice(0, 10).toString(), realIndex)
       if (baseInfoByte.length + msgBuf.length < baseInfoLen) {
         for (let j = 0; j < msgBuf.length; j++) {
           baseInfoByte.push(msgBuf[j])
@@ -247,11 +248,10 @@ function parseResult (msgKey) {
         includeLast = 1
       }
       let validMsgBuf = msgBuf.slice(0, baseInfoLen - baseInfoByte.length)
-      console.log(`${msgBuf.length} ${validMsgBuf.length} ${baseInfoLen} ${baseInfoByte.length}`)
       for (let j = 0; j < validMsgBuf.length; j++) {
         baseInfoByte.push(validMsgBuf[j])
       }
-      baseInfoByte.concat(validMsgBuf)
+      console.log('===>>> baseInfoByte.length', `${baseInfoByte.length}`)
       try {
         let baseInfoStr = Buffer.from(baseInfoByte).toString()
         console.log('===>>>', baseInfoStr)
@@ -303,10 +303,12 @@ udpClient.on('message', function (buf, remoteInfo) {
     if (newdeviceNum > 1) refreshSyncWork(metaDataJson.udp_addrs)
     else refreshSyncWork([])
   } else if (buf[0] === HeaderUdpDataSync) {
-    console.log(`${buf.length} ${2 + metaDataJson}`)
-    console.log(`${buf.slice(2, 2 + metaDataLen).toString()}`)
+    console.log(`${buf.toString()}`)
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
-    if (isFinishMap[metaDataJson.key] !== undefined) return
+    if (isFinishMap[metaDataJson.key] !== undefined) {
+      ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)
+      return
+    }
     if (receiveMap[metaDataJson.key] === undefined) {
       receiveMap[metaDataJson.key] = Array(UdpWindowMaxLen)
       receiveIndexMap[metaDataJson.key] = {

@@ -163,24 +163,25 @@ class UdpClient {
                                             port
                                         )
                                     )
+                                    sendTimes[realIndex] = System.currentTimeMillis()
                                 }
                                 i++
                             }
-                            while (i < UdpWindowMaxLen && i < currMsg!!.total) {
-                                if (i * SendBufferMaxLen < currMsg!!.baseInfoBuffer.size) {
+                            while ((i + currMsg!!.index) < UdpWindowMaxLen && (i + currMsg!!.index) < currMsg!!.total) {
+                                if ((i + currMsg!!.index) * SendBufferMaxLen < currMsg!!.baseInfoBuffer.size) {
                                     val realIndex = (i + currMsg!!.index) % UdpWindowMaxLen
                                     val metaDataJson = MetaData()
                                     metaDataJson.key = currMsg!!.key
                                     metaDataJson.total = currMsg!!.total
-                                    metaDataJson.index = currMsg!!.index
+                                    metaDataJson.index = currMsg!!.index + i
                                     val metaData = JSON.toJSONString(metaDataJson).toByteArray()
                                     var bufferLen = 0
                                     var isFirst = 0
                                     if (metaDataJson.index == 0) isFirst = 4
-                                    if (currMsg!!.baseInfoBuffer.size > (i + 1) * SendBufferMaxLen) {
+                                    if (currMsg!!.baseInfoBuffer.size > (metaDataJson.index + 1) * SendBufferMaxLen) {
                                         bufferLen = SendBufferMaxLen
                                     } else {
-                                        bufferLen = currMsg!!.baseInfoBuffer.size - i * SendBufferMaxLen
+                                        bufferLen = currMsg!!.baseInfoBuffer.size - metaDataJson.index * SendBufferMaxLen
                                     }
                                     val buffer = ByteArray(2 + metaData.size + isFirst + bufferLen)
                                     buffer[0] = HeaderUdpDataSync
@@ -189,8 +190,9 @@ class UdpClient {
                                     if (isFirst > 0) {
                                         val lenBytes = int2Bytes(currMsg!!.baseInfoBuffer.size)
                                         lenBytes.copyInto(buffer, 2 + metaData.size)
+                                        Log.d("===>>>", "baseInfoBuffer.size ${currMsg!!.baseInfoBuffer.size}")
                                     }
-                                    currMsg!!.baseInfoBuffer.copyInto(buffer, 2 + metaData.size + isFirst, i * SendBufferMaxLen, i * SendBufferMaxLen + bufferLen)
+                                    currMsg!!.baseInfoBuffer.copyInto(buffer, 2 + metaData.size + isFirst, metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + bufferLen)
                                     sendBuffers[realIndex] = buffer
                                     sendTimes[realIndex] = System.currentTimeMillis()
                                     udpClient.client.send(
@@ -201,7 +203,7 @@ class UdpClient {
                                             port
                                         )
                                     )
-                                    Log.d("===>>> send", "${buffer.size}")
+                                    Log.d("===>>> send", "${buffer.size} ${metaDataJson.index} ${String(currMsg!!.baseInfoBuffer.sliceArray(IntRange(metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + 10)))}")
                                 }
                                 i++
                             }
@@ -243,6 +245,7 @@ class UdpClient {
                     currMsg = null
                     sendAcks.fill(false)
                     sendBuffers.fill(null)
+                    sendTimes.fill(0)
                 }
             }
         }
