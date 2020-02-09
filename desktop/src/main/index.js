@@ -1,7 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow, screen, clipboard, ipcMain } from 'electron'
-import Consts from '../common/Consts'
+// import Consts from '../common/Consts'
 import Database from './Database'
 import NetUDP from './net_udp'
 
@@ -68,21 +68,21 @@ function createWindow () {
       if (prevValue !== newValue && skipValue !== newValue) {
         skipValue = ''
         prevValue = newValue
-        let now = Date.now()
-        let msg = {
-          type: Consts.MessageType.Text,
-          content: newValue,
-          extra: '',
-          create_time: now,
-          update_time: now
-        }
-        Database.insert(msg, function (dbMsg) {
-          if (renderChannel !== undefined) {
-            renderChannel.send('clipboard-message-add', dbMsg)
-          }
-          msgList = clearMsg([...msgList, dbMsg])
-          NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
-        })
+        // let now = Date.now()
+        // let msg = {
+        //   type: Consts.MessageType.Text,
+        //   content: newValue,
+        //   extra: '',
+        //   create_time: now,
+        //   update_time: now
+        // }
+        // Database.insert(msg, function (dbMsg) {
+        //   if (renderChannel !== undefined) {
+        //     renderChannel.send('clipboard-message-add', dbMsg)
+        //   }
+        //   msgList = clearMsg([...msgList, dbMsg])
+        //   NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
+        // })
       }
     }, 500)
   })
@@ -92,8 +92,12 @@ function createWindow () {
     renderInited = false
     if (msgList !== undefined) {
       renderInited = true
-      for (var i = 0; i < msgList.length; i++) {
-        renderChannel.send('clipboard-message-add', msgList[i])
+      try {
+        for (var i = 0; i < msgList.length; i++) {
+          renderChannel.send('clipboard-message-add', msgList[i])
+        }
+      } catch (e) {
+
       }
     }
   })

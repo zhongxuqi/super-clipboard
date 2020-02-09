@@ -29,10 +29,10 @@ class UdpClient {
 
         fun int2Bytes(num: Int): ByteArray {
             val bytes = ByteArray(4)
-            bytes[0] = (num shr 24 or 0xff).toByte()
-            bytes[1] = (num shr 16 or 0xff).toByte()
-            bytes[2] = (num shr 8 or 0xff).toByte()
-            bytes[3] = (num or 0xff).toByte()
+            bytes[0] = (num shr 24 and 0xff).toByte()
+            bytes[1] = (num shr 16 and 0xff).toByte()
+            bytes[2] = (num shr 8 and 0xff).toByte()
+            bytes[3] = (num and 0xff).toByte()
             return bytes
         }
 
@@ -138,7 +138,7 @@ class UdpClient {
                                     val originMsg = clipboardMsgs.pop()
                                     originMsg.createTime = 0
                                     originMsg.updateTime = 0
-                                    val baseInfoStr = JSON.toJSONString(originMsg)
+                                    val baseInfoStr = originMsg.toJSON()
                                     val baseInfoByteArray = baseInfoStr.toByteArray()
                                     currMsg = SendMsg(
                                         originMsg, baseInfoByteArray, sha256(baseInfoStr),
@@ -190,6 +190,7 @@ class UdpClient {
                                         val lenBytes = int2Bytes(currMsg!!.baseInfoBuffer.size)
                                         lenBytes.copyInto(buffer, 2 + metaData.size)
                                     }
+                                    currMsg!!.baseInfoBuffer.copyInto(buffer, 2 + metaData.size + isFirst, i * SendBufferMaxLen, i * SendBufferMaxLen + bufferLen)
                                     sendBuffers[realIndex] = buffer
                                     sendTimes[realIndex] = System.currentTimeMillis()
                                     udpClient.client.send(
@@ -200,6 +201,7 @@ class UdpClient {
                                             port
                                         )
                                     )
+                                    Log.d("===>>> send", "${buffer.size}")
                                 }
                                 i++
                             }
@@ -210,6 +212,7 @@ class UdpClient {
         }
 
         fun close() {
+            Log.d("===>>>", "close ${address.hostAddress}:$port")
             isRun = false
         }
 
@@ -291,6 +294,7 @@ class UdpClient {
                             ackBuf(metaData.toByteArray(), packet.address, packet.port)
                         }
                         HeaderUdpDataSyncAck -> {
+                            Log.d("===>>> ack", metaData)
                             val worker = syncWorkerMap["${packet.address.hostAddress}:${packet.getPort()}"]
                             worker?.ack(metaDataJson)
                         }
@@ -427,7 +431,7 @@ class UdpClient {
 
     private fun checkFinish(msgKey: String) {
         if (resultMap[msgKey] == null) return
-        if (receiveIndexMap[msgKey]!!.index + 1 >= receiveIndexMap[msgKey]!!.total) {
+        if (receiveIndexMap[msgKey]!!.index >= receiveIndexMap[msgKey]!!.total) {
             val msgObj = resultMap[msgKey]!!
             val millisTs = System.currentTimeMillis()
             msgObj.createTime = millisTs

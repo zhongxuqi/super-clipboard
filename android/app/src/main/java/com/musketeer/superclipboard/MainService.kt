@@ -50,11 +50,11 @@ class MainService : Service() {
                     val newValue = addedText.toString()
                     if (prevValue.compareTo(newValue) != 0) {
                         prevValue = newValue
-//                        val msgObj = ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", 0, 0)
-//                        UdpClient.Instance!!.sendClipboardMsg(msgObj)
-//                        msgObj.createTime = millisTs
-//                        msgObj.updateTime = millisTs
-//                        insertMessage(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
+                        val msgObj = ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", 0, 0)
+                        UdpClient.Instance!!.sendClipboardMsg(msgObj)
+                        msgObj.createTime = millisTs
+                        msgObj.updateTime = millisTs
+                        insertMessage(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
                     }
                 }
             }
