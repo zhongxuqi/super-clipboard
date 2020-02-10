@@ -18,6 +18,8 @@ import kotlin.experimental.and
 
 class UdpClient {
     companion object {
+        val UdpServerHost = "www.easypass.tech"
+
         val HeaderUdpServerSync: Byte = 0x00
         val HeaderUdpDataSync: Byte = 0x01
         val HeaderUdpDataSyncAck: Byte = 0x02
@@ -320,7 +322,7 @@ class UdpClient {
                         DatagramPacket(
                             buffer,
                             buffer.size,
-                            InetAddress.getByName("192.168.100.107"),
+                            InetAddress.getByName(UdpServerHost),
                             9000
                         )
                     )

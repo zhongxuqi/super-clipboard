@@ -346,7 +346,7 @@ export default {
       for (var i = 0; i < metaData.length; i++) {
         buffer[2 + i] = metaData[i]
       }
-      udpClient.send(buffer, 0, buffer.length, 9001, 'www.easypass.tech')
+      udpClient.send(buffer, 0, buffer.length, 9000, 'www.easypass.tech')
     }, 1000)
   },
   setOnChangeDeviceNum: function (f) {
