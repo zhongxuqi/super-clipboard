@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity() {
         super.onAttachedToWindow()
         if (checkDrawOverlayPermission()) {
             clipboardMainWindow!!.showFloatView()
-            finish()
         }
     }
 
@@ -37,7 +36,6 @@ class MainActivity : AppCompatActivity() {
                 clipboardMainWindow!!.showFloatView()
             }
         }
-        finish()
     }
 
     private fun checkDrawOverlayPermission(): Boolean {

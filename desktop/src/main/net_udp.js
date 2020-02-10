@@ -1,6 +1,22 @@
 import dgram from 'dgram'
 import { sha256 } from 'js-sha256'
+import os from 'os'
+
+let localUdpAddrMap = {}
 let udpClient = dgram.createSocket('udp4')
+udpClient.on('listening', function () {
+  var address = udpClient.address()
+  var ifaces = os.networkInterfaces()
+  for (let dev in ifaces) {
+    for (let i = 0; i < ifaces[dev].length; i++) {
+      if (ifaces[dev][i].family !== 'IPv4' || ifaces[dev][i].address === '127.0.0.1') continue
+      localUdpAddrMap[`${ifaces[dev][i].address}:${address.port}`] = true
+    }
+  }
+})
+
+const ServerHost = 'www.easypass.tech'
+// const ServerHost = '192.168.100.107'
 
 function str2UTF8 (str) {
   var bytes = []
@@ -46,8 +62,9 @@ function bytes2Uint (bytes) {
 }
 
 const HeaderUdpServerSync = 0x00
-const HeaderUdpDataSync = 0x01
-const HeaderUdpDataSyncAck = 0x02
+const HeaderUdpClientSync = 0x01
+const HeaderUdpDataSync = 0x02
+const HeaderUdpDataSyncAck = 0x03
 
 const UdpWindowMaxLen = 1000
 
@@ -58,11 +75,13 @@ let onReceiveMsg
 // 内容发送
 const syncWorkerMap = {}
 const sendBufferMaxLen = 400
+const SyncWorkerTimeout = 3000
 function createSyncWorker (remoteAddr) {
   let addrItems = remoteAddr.split(':')
   let ip = addrItems[0]
   let port = parseInt(addrItems[1])
   let isRunning = true
+  let lastSyncTime = 0
 
   let sendAcks = Array(UdpWindowMaxLen)
   let sendTimes = Array(UdpWindowMaxLen)
@@ -76,25 +95,32 @@ function createSyncWorker (remoteAddr) {
       clearInterval(intervalID)
       return
     }
-    if (currMsg === undefined) {
-      if (clipboardMsgs.length > 0) {
-        currMsg = {
-          originMsg: clipboardMsgs.pop()
-        }
-        currMsg.originMsg.create_time = undefined
-        currMsg.originMsg.update_time = undefined
-        currMsg.baseInfoBuffer = Buffer.from(JSON.stringify(currMsg.originMsg), 'utf-8')
-        currMsg.key = sha256(currMsg.baseInfoBuffer.toString())
-        currMsg.total = Math.ceil(currMsg.baseInfoBuffer.length / sendBufferMaxLen)
-        currMsg.index = 0
-      } else {
-        return
+    if (lastSyncTime + SyncWorkerTimeout < Date.now() || (currMsg === undefined && clipboardMsgs.length <= 0)) {
+      let metaData = str2UTF8(JSON.stringify({}))
+      let buffer = Buffer.alloc(2 + metaData.length)
+      buffer[0] = HeaderUdpClientSync
+      buffer[1] = metaData.length
+      for (let i = 0; i < metaData.length; i++) {
+        buffer[2 + i] = metaData[i]
       }
+      udpClient.send(buffer, 0, buffer.length, port, ip)
+      return
+    } else if (currMsg === undefined && clipboardMsgs.length > 0) {
+      currMsg = {
+        originMsg: clipboardMsgs.pop()
+      }
+      currMsg.originMsg.create_time = undefined
+      currMsg.originMsg.update_time = undefined
+      currMsg.baseInfoBuffer = Buffer.from(JSON.stringify(currMsg.originMsg), 'utf-8')
+      currMsg.key = sha256(currMsg.baseInfoBuffer.toString())
+      currMsg.total = Math.ceil(currMsg.baseInfoBuffer.length / sendBufferMaxLen)
+      currMsg.index = 0
     }
     let i = 0
     for (; sendBuffers[(i + currMsg.index) % UdpWindowMaxLen] !== undefined && i < UdpWindowMaxLen; i++) {
       let realIndex = (i + currMsg.index) % UdpWindowMaxLen
       if (sendAcks[realIndex] === undefined && sendTimes[realIndex] + sendRetryTime < Date.now()) {
+        console.log(`${sendBuffers[realIndex].toString()} ${port} ${ip}`)
         udpClient.send(sendBuffers[realIndex], 0, sendBuffers[realIndex].length, port, ip)
         sendTimes[realIndex] = Date.now()
       }
@@ -134,6 +160,7 @@ function createSyncWorker (remoteAddr) {
         }
         sendBuffers[realIndex] = buffer
         sendTimes[realIndex] = Date.now()
+        // console.log(`${buffer.toString()} ${port} ${ip}`)
         udpClient.send(buffer, 0, buffer.length, port, ip)
       }
     }
@@ -149,7 +176,11 @@ function createSyncWorker (remoteAddr) {
       msg.update_time = undefined
       clipboardMsgs.splice(0, 0, msg)
     },
+    feed: function () {
+      lastSyncTime = Date.now()
+    },
     ack: function (metaDataJson) {
+      lastSyncTime = Date.now()
       if (currMsg == null || metaDataJson.key !== currMsg.key) return
       if (metaDataJson.index >= currMsg.index && metaDataJson.index < currMsg.index + UdpWindowMaxLen) {
         sendAcks[metaDataJson.index % UdpWindowMaxLen] = metaDataJson
@@ -292,16 +323,24 @@ udpClient.on('message', function (buf, remoteInfo) {
   let metaDataJson = JSON.parse(buf.slice(2, 2 + metaDataLen).toString())
   if (buf[0] === HeaderUdpServerSync) {
     // console.log(`receive server sync from ${remoteInfo.address}:${remoteInfo.port}：${buf.slice(2, 2 + metaDataLen).toString()}`)
-    let newdeviceNum = 1
-    if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs !== null) {
-      newdeviceNum += metaDataJson.udp_addrs.length
+    let validUdpAddrs = []
+    if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs != null) {
+      for (let i = 0; i < metaDataJson.udp_addrs.length; i++) {
+        if (localUdpAddrMap[metaDataJson.udp_addrs[i]] === true) continue
+        validUdpAddrs.push(metaDataJson.udp_addrs[i])
+      }
     }
+    let newdeviceNum = validUdpAddrs.length
     if (deviceNum !== newdeviceNum) {
       deviceNum = newdeviceNum
       if (typeof onChangeDeviceNum === 'function') onChangeDeviceNum(deviceNum)
     }
-    if (newdeviceNum > 1) refreshSyncWork(metaDataJson.udp_addrs)
+    if (newdeviceNum > 0) refreshSyncWork(validUdpAddrs)
     else refreshSyncWork([])
+  } else if (buf[0] === HeaderUdpClientSync) {
+    console.log(`${buf.toString()}`)
+    let worker = syncWorkerMap[`${remoteInfo.address}:${remoteInfo.port}`]
+    if (worker !== undefined) worker.feed(metaDataJson)
   } else if (buf[0] === HeaderUdpDataSync) {
     // console.log(`${buf.toString()}`)
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
@@ -337,8 +376,13 @@ export default {
   start: function () {
     if (heartBeatIntervalID !== undefined) return
     heartBeatIntervalID = setInterval(function () {
+      let udpAddrs = []
+      for (let udpAddr in localUdpAddrMap) {
+        udpAddrs.push(udpAddr)
+      }
       var metaData = str2UTF8(JSON.stringify({
-        app_id: 'superclipboard'
+        app_id: 'superclipboard',
+        udp_addrs: udpAddrs
       }))
       var buffer = Buffer.alloc(metaData.length + 2)
       buffer[0] = HeaderUdpServerSync
@@ -346,8 +390,8 @@ export default {
       for (var i = 0; i < metaData.length; i++) {
         buffer[2 + i] = metaData[i]
       }
-      udpClient.send(buffer, 0, buffer.length, 9000, 'www.easypass.tech')
-    }, 1000)
+      udpClient.send(buffer, 0, buffer.length, 9000, ServerHost)
+    }, 3000)
   },
   setOnChangeDeviceNum: function (f) {
     onChangeDeviceNum = f
@@ -364,6 +408,11 @@ export default {
   },
   close: function () {
     if (heartBeatIntervalID === undefined) return
+    for (let addr in syncWorkerMap) {
+      if (syncWorkerMap[addr] === undefined) continue
+      syncWorkerMap[addr].close()
+      syncWorkerMap[addr] = undefined
+    }
     clearInterval(heartBeatIntervalID)
     heartBeatIntervalID = undefined
     deviceNum = 0

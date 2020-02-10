@@ -2,30 +2,33 @@ package com.musketeer.superclipboard.net
 
 import android.util.Log
 import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.annotation.JSONField
 import com.musketeer.superclipboard.data.ClipBoardMessage
-import java.lang.Exception
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
+import com.musketeer.superclipboard.data.ServerSyncMessage
+import java.net.*
 import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 import kotlin.experimental.and
 
 
 class UdpClient {
     companion object {
         val UdpServerHost = "www.easypass.tech"
+//        val UdpServerHost = "192.168.100.107"
 
         val HeaderUdpServerSync: Byte = 0x00
-        val HeaderUdpDataSync: Byte = 0x01
-        val HeaderUdpDataSyncAck: Byte = 0x02
+        val HeaderUdpClientSync: Byte = 0x01
+        val HeaderUdpDataSync: Byte = 0x02
+        val HeaderUdpDataSyncAck: Byte = 0x03
 
         val UdpWindowMaxLen = 1000
         val SendBufferMaxLen = 400
+        val SyncWorkerTimeout = 3000
 
         var Instance: UdpClient? = null
 
@@ -53,7 +56,8 @@ class UdpClient {
     }
 
     class MetaData {
-        var udp_addrs: Array<String>? = null
+        @JSONField(name="udp_addrs")
+        var udpAddrs: Array<String>? = null
         var key: String? = null
         var total: Int = 0
         var index: Int = 0
@@ -69,6 +73,7 @@ class UdpClient {
         }
     }
 
+    val localUdpAddrMap: HashSet<String> = HashSet<String>()
     val client: DatagramSocket
     val buffer: ByteArray = ByteArray(1024)
     val packet: DatagramPacket
@@ -84,11 +89,11 @@ class UdpClient {
     val isFinishMap = HashMap<String, Boolean>()
     val syncWorkerMap = HashMap<String, SyncWorker>()
 
-    class SyncWorker(udpClient:UdpClient, remoteAddr: String) {
-        private val udpClient = udpClient
+    class SyncWorker(udpClient: UdpClient, remoteAddr: String) {
         private val address: InetAddress
         private val port: Int
         private var isRun = true
+        private var lastSyncTime = 0L
 
         class SendMsg(originMsg: ClipBoardMessage, baseInfoBuffer: ByteArray, key: String, total: Int) {
             val originMsg: ClipBoardMessage = originMsg
@@ -134,21 +139,33 @@ class UdpClient {
                 override fun run() {
                     sendLoop@ while (isRun) {
                         Thread.sleep(500)
-                        if (currMsg == null) {
-                            if (clipboardMsgs.size > 0) {
-                                synchronized(clipboardMsgs) {
-                                    val originMsg = clipboardMsgs.pop()
-                                    originMsg.createTime = 0
-                                    originMsg.updateTime = 0
-                                    val baseInfoStr = originMsg.toJSON()
-                                    val baseInfoByteArray = baseInfoStr.toByteArray()
-                                    currMsg = SendMsg(
-                                        originMsg, baseInfoByteArray, sha256(baseInfoStr),
-                                        kotlin.math.ceil(baseInfoByteArray.size.toDouble() / SendBufferMaxLen.toDouble()).toInt()
-                                    )
-                                }
-                            } else {
-                                continue@sendLoop
+                        if (!isRun) return
+                        if (lastSyncTime + SyncWorkerTimeout < System.currentTimeMillis() || (currMsg == null && clipboardMsgs.size <= 0)) {
+                            val buffer = ByteArray(4)
+                            buffer[0] = HeaderUdpClientSync
+                            buffer[1] = 2
+                            buffer[2] = '{'.toByte()
+                            buffer[3] = '}'.toByte()
+                            udpClient.client.send(
+                                DatagramPacket(
+                                    buffer,
+                                    buffer.size,
+                                    address,
+                                    port
+                                )
+                            )
+                            continue@sendLoop
+                        } else if (currMsg == null && clipboardMsgs.size > 0) {
+                            synchronized(clipboardMsgs) {
+                                val originMsg = clipboardMsgs.pop()
+                                originMsg.createTime = 0
+                                originMsg.updateTime = 0
+                                val baseInfoStr = originMsg.toJSON()
+                                val baseInfoByteArray = baseInfoStr.toByteArray()
+                                currMsg = SendMsg(
+                                    originMsg, baseInfoByteArray, sha256(baseInfoStr),
+                                    kotlin.math.ceil(baseInfoByteArray.size.toDouble() / SendBufferMaxLen.toDouble()).toInt()
+                                )
                             }
                         }
                         synchronized(this) {
@@ -226,8 +243,13 @@ class UdpClient {
             }
         }
 
+        fun feed() {
+            lastSyncTime = System.currentTimeMillis()
+        }
+
         fun ack(metaDataJson: MetaData) {
             synchronized(this) {
+                lastSyncTime = System.currentTimeMillis()
                 if (currMsg == null || metaDataJson.key != currMsg!!.key) return
                 if (metaDataJson.index >= currMsg!!.index && metaDataJson.index < currMsg!!.index + UdpWindowMaxLen) {
                     sendAcks[metaDataJson.index % UdpWindowMaxLen] = true
@@ -255,6 +277,22 @@ class UdpClient {
 
     init {
         client = DatagramSocket()
+        try {
+            val en: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
+            while (en.hasMoreElements()) {
+                val intf: NetworkInterface = en.nextElement()
+                val enumIpAddr: Enumeration<InetAddress> = intf.getInetAddresses()
+                while (enumIpAddr.hasMoreElements()) {
+                    val inetAddress = enumIpAddr.nextElement()
+                    if (inetAddress !is Inet4Address) continue
+                    if (!inetAddress.isLoopbackAddress && !inetAddress.isLinkLocalAddress) {
+                        localUdpAddrMap.add("${inetAddress.hostAddress}:${client.localPort}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("error", e.toString())
+        }
         packet = DatagramPacket(buffer, buffer.size)
         threadPool = Executors.newFixedThreadPool(3)
         threadPool.submit(Runnable {
@@ -264,20 +302,25 @@ class UdpClient {
                 val metaMessageLen = packet.data[1].toInt()
                 if (packet.length < 2 + metaMessageLen) continue@receiveLoop
                 val metaData = String(packet.data, 2, metaMessageLen)
-                //Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
+//                Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
                 try {
                     val metaDataJson = JSON.parseObject(metaData, MetaData::class.java)
                     when (packet.data[0]) {
                         HeaderUdpServerSync -> {
-                            var newDeviceNum = 1
-                            if (metaDataJson.udp_addrs != null) {
-                                newDeviceNum = metaDataJson.udp_addrs!!.size + 1
+                            val validUdpAddrs = ArrayList<String>(0)
+                            val udpAddrs = metaDataJson.udpAddrs
+                            if (udpAddrs != null) {
+                                for (udpAddr in udpAddrs) {
+                                    if (localUdpAddrMap.contains(udpAddr)) continue
+                                    validUdpAddrs.add(udpAddr)
+                                }
                             }
-                            if (deviceNum != newDeviceNum) {
-                                deviceNum = newDeviceNum
-                                listener?.onChangeDeviceNum(deviceNum)
-                            }
-                            refreshSyncWork(metaDataJson.udp_addrs)
+                            listener?.onChangeDeviceNum(validUdpAddrs.size)
+                            refreshSyncWork(validUdpAddrs.toTypedArray())
+                        }
+                        HeaderUdpClientSync -> {
+                            val worker = syncWorkerMap["${packet.address.hostAddress}:${packet.getPort()}"]
+                            worker?.feed()
                         }
                         HeaderUdpDataSync -> {
                             if (metaDataJson.key == null || metaDataJson.key == "") continue@receiveLoop
@@ -313,11 +356,13 @@ class UdpClient {
         threadPool.submit(Runnable {
             while (true) {
                 if (isRunning) {
-                    val msg = "{\"app_id\":\"superclipboard\"}".toByteArray()
-                    val buffer = ByteArray(2 + msg.size)
+                    val msg = ServerSyncMessage()
+                    msg.udpAddrs = localUdpAddrMap.toTypedArray()
+                    val msgByte = msg.toJSON().toByteArray()
+                    val buffer = ByteArray(2 + msgByte.size)
                     buffer[0] = HeaderUdpServerSync
-                    buffer[1] = msg.size.toByte()
-                    msg.copyInto(buffer, 2)
+                    buffer[1] = msgByte.size.toByte()
+                    msgByte.copyInto(buffer, 2)
                     client.send(
                         DatagramPacket(
                             buffer,
@@ -327,7 +372,7 @@ class UdpClient {
                         )
                     )
                 }
-                Thread.sleep(500)
+                Thread.sleep(3000)
             }
         })
     }
