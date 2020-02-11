@@ -357,6 +357,7 @@ class UdpClient {
                             val msgKey = metaDataJson.key!!
                             if (isFinishMap.containsKey(msgKey) && isFinishMap[msgKey]!!) {
                                 ackBuf(metaData.toByteArray(), packet.address, packet.port)
+                                if (metaDataJson.index == 0 && resultMap.containsKey(msgKey)) listener?.onReceiveMsg(resultMap[msgKey]!!)
                                 continue@receiveLoop
                             }
                             if (!receiveMap.containsKey(msgKey)) {
@@ -522,7 +523,6 @@ class UdpClient {
             listener?.onReceiveMsg(ClipBoardMessage(0, msgObj.type, msgObj.content, msgObj.extra, msgObj.createTime, msgObj.updateTime))
             isFinishMap[msgKey] = true
             receiveMap.remove(msgKey)
-            resultMap.remove(msgKey)
         }
     }
 

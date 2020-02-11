@@ -53,6 +53,24 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private val actionMenuWindowView: View
     private var clipboardMsg: ClipBoardMessage? = null
 
+    fun getSameMessage(msg: ClipBoardMessage): ClipBoardMessage? {
+        for (contentItem in mContentList) {
+            if (contentItem.content == msg.content) return contentItem
+        }
+        return null
+    }
+
+    fun topMessage(msg: ClipBoardMessage) {
+        for (item in mContentList.iterator()) {
+            if (item.id.compareTo(msg.id) == 0) {
+                mContentList.remove(msg)
+                mContentList.addFirst(msg)
+                mContentListAdapter.notifyDataSetChanged()
+                return
+            }
+        }
+    }
+
     fun addMessage(msg: ClipBoardMessage) {
         mContentList.addFirst(msg)
         mContentListAdapter.notifyDataSetChanged()

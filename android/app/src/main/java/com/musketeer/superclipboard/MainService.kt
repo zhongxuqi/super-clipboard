@@ -62,6 +62,13 @@ class MainService : Service() {
     }
 
     fun insertMessage(clipboardMessage: ClipBoardMessage) {
+        val existMsg = ClipboardMainWindow.Instance?.getSameMessage(clipboardMessage)
+        if (existMsg != null) {
+            existMsg.updateTime = System.currentTimeMillis()
+            SqliteHelper.helper!!.Update(existMsg)
+            ClipboardMainWindow.Instance?.topMessage(existMsg)
+            return
+        }
         SqliteHelper.helper!!.Insert(clipboardMessage)
         ClipboardMainWindow.Instance?.addMessage(SqliteHelper.helper!!.GetLast()!!)
         notify(clipboardMessage.content)
