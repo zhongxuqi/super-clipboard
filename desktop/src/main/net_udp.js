@@ -407,27 +407,29 @@ udpClient.on('message', function (buf, remoteInfo) {
 })
 
 let heartBeatIntervalID
+function heartBeat () {
+  let udpAddrs = []
+  if (localUdpAddrsJoin !== '') udpAddrs.push(localUdpAddrsJoin)
+  var metaData = str2UTF8(JSON.stringify({
+    app_id: 'superclipboard',
+    udp_addrs: udpAddrs
+  }))
+  var buffer = Buffer.alloc(metaData.length + 2)
+  buffer[0] = HeaderUdpServerSync
+  buffer[1] = metaData.length
+  for (var i = 0; i < metaData.length; i++) {
+    buffer[2 + i] = metaData[i]
+  }
+  udpClient.send(buffer, 0, buffer.length, 9000, ServerHost)
+}
 export default {
   isStart: function () {
     return heartBeatIntervalID !== undefined
   },
   start: function () {
     if (heartBeatIntervalID !== undefined) return
-    heartBeatIntervalID = setInterval(function () {
-      let udpAddrs = []
-      if (localUdpAddrsJoin !== '') udpAddrs.push(localUdpAddrsJoin)
-      var metaData = str2UTF8(JSON.stringify({
-        app_id: 'superclipboard',
-        udp_addrs: udpAddrs
-      }))
-      var buffer = Buffer.alloc(metaData.length + 2)
-      buffer[0] = HeaderUdpServerSync
-      buffer[1] = metaData.length
-      for (var i = 0; i < metaData.length; i++) {
-        buffer[2 + i] = metaData[i]
-      }
-      udpClient.send(buffer, 0, buffer.length, 9000, ServerHost)
-    }, 2000)
+    heartBeat()
+    heartBeatIntervalID = setInterval(heartBeat, 2000)
   },
   setOnChangeDeviceNum: function (f) {
     onChangeDeviceNum = f

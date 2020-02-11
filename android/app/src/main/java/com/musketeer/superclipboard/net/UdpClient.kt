@@ -387,28 +387,33 @@ class UdpClient {
                 packet.length = buffer.size
             }
         })
+        heartBeat()
         threadPool.submit(Runnable {
             while (true) {
                 if (isRunning) {
-                    val msg = ServerSyncMessage()
-                    if (localUdpAddrsJoin.isNotEmpty()) msg.udpAddrs = arrayOf(localUdpAddrsJoin)
-                    val msgByte = msg.toJSON().toByteArray()
-                    val buffer = ByteArray(2 + msgByte.size)
-                    buffer[0] = HeaderUdpServerSync
-                    buffer[1] = msgByte.size.toByte()
-                    msgByte.copyInto(buffer, 2)
-                    SendBuffer(
-                        DatagramPacket(
-                            buffer,
-                            buffer.size,
-                            InetAddress.getByName(UdpServerHost),
-                            9000
-                        )
-                    )
+                    heartBeat()
                 }
                 Thread.sleep(2000)
             }
         })
+    }
+
+    private fun heartBeat() {
+        val msg = ServerSyncMessage()
+        if (localUdpAddrsJoin.isNotEmpty()) msg.udpAddrs = arrayOf(localUdpAddrsJoin)
+        val msgByte = msg.toJSON().toByteArray()
+        val buffer = ByteArray(2 + msgByte.size)
+        buffer[0] = HeaderUdpServerSync
+        buffer[1] = msgByte.size.toByte()
+        msgByte.copyInto(buffer, 2)
+        SendBuffer(
+            DatagramPacket(
+                buffer,
+                buffer.size,
+                InetAddress.getByName(UdpServerHost),
+                9000
+            )
+        )
     }
 
     private fun refreshSyncWork(remoteAddrs: Array<String>?) {
