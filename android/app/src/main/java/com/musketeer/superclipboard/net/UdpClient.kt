@@ -18,8 +18,8 @@ import kotlin.experimental.and
 
 class UdpClient {
     companion object {
-        val UdpServerHost = "www.easypass.tech"
-//        val UdpServerHost = "192.168.100.107"
+//        val UdpServerHost = "www.easypass.tech"
+        val UdpServerHost = "192.168.100.107"
 
         val HeaderUdpServerSync: Byte = 0x00
         val HeaderUdpClientSync: Byte = 0x01
@@ -405,7 +405,7 @@ class UdpClient {
                         )
                     )
                 }
-                Thread.sleep(3000)
+                Thread.sleep(2000)
             }
         })
     }

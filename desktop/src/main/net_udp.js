@@ -19,8 +19,8 @@ udpClient.on('listening', function () {
   localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
 })
 
-const ServerHost = 'www.easypass.tech'
-// const ServerHost = '192.168.100.107'
+// const ServerHost = 'www.easypass.tech'
+const ServerHost = '192.168.100.107'
 
 function str2UTF8 (str) {
   var bytes = []
@@ -427,7 +427,7 @@ export default {
         buffer[2 + i] = metaData[i]
       }
       udpClient.send(buffer, 0, buffer.length, 9000, ServerHost)
-    }, 3000)
+    }, 2000)
   },
   setOnChangeDeviceNum: function (f) {
     onChangeDeviceNum = f

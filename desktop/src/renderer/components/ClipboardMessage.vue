@@ -1,9 +1,7 @@
 <template>
   <div class="scb-clipboard-message">
     <i class="iconfont scb-clipboard-message-icon" v-bind:class="iconClass"></i>
-    <div class="scb-clipboard-message-content"><pre v-bind:class="{
-      'scb-clipboard-message-content-fold': !this.expand
-    }">{{content}}</pre></div>
+    <div class="scb-clipboard-message-content"><pre>{{content}}</pre></div>
     <b-dropdown ref="dropdown" text="" variant="light" size="sm" style="margin-right:0.5rem">
       <b-dropdown-item-button v-on:click="setExpand(!expand)">{{expand?textFold:textExpand}}</b-dropdown-item-button>
       <b-dropdown-item v-on:click="clickDelete">Delete</b-dropdown-item>
@@ -25,16 +23,10 @@ export default {
   data: function () {
     return {
       textExpand: Language.getLanguageText('expand'),
-      textFold: Language.getLanguageText('fold'),
-
-      expand: false
+      textFold: Language.getLanguageText('fold')
     }
   },
   methods: {
-    setExpand: function (e) {
-      this.$refs.dropdown.hide(true)
-      this.expand = e
-    },
     clickDelete: function () {
       this.$refs.dropdown.hide(true)
       this.$emit('ondelete')
@@ -87,12 +79,6 @@ export default {
 .scb-clipboard-message-content pre {
   margin: 0rem;
   padding: 0rem;
-  word-break: break-all;
-  overflow: hidden;
-  white-space: pre-wrap;
-}
-
-.scb-clipboard-message-content pre.scb-clipboard-message-content-fold {
   word-break: keep-all;
   white-space: nowrap;
   text-overflow: ellipsis;
