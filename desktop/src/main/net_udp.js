@@ -19,8 +19,8 @@ udpClient.on('listening', function () {
   localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
 })
 
-// const ServerHost = 'www.easypass.tech'
-const ServerHost = '192.168.100.107'
+const ServerHost = 'www.easypass.tech'
+// const ServerHost = '192.168.100.107'
 
 function str2UTF8 (str) {
   var bytes = []
@@ -200,7 +200,6 @@ function createSyncWorker (remoteAddr) {
     },
     feed: function (metaDataJson, syncUdpAddr) {
       // if (metaDataJson.key !== udpClientSyncKey) return
-      console.log(remoteAddr, syncUdpAddr)
       if (remoteAddr.search(syncUdpAddr) < 0) return
       let addrItems = syncUdpAddr.split(':')
       activeRemoteAddr = {
@@ -369,7 +368,7 @@ udpClient.on('message', function (buf, remoteInfo) {
     if (typeof onChangeDeviceNum === 'function') onChangeDeviceNum(deviceNum)
     refreshSyncWork(validUdpAddrs)
   } else if (buf[0] === HeaderUdpClientSync) {
-    console.log(`${buf.toString()}`)
+    // console.log(`${buf.toString()}`)
     let syncUdpAddr = `${remoteInfo.address}:${remoteInfo.port}`
     for (let udpAddrkey in syncWorkerMap) {
       if (syncWorkerMap[udpAddrkey] === undefined) continue
@@ -377,7 +376,7 @@ udpClient.on('message', function (buf, remoteInfo) {
       syncWorkerMap[udpAddrkey].feed(metaDataJson, syncUdpAddr)
     }
   } else if (buf[0] === HeaderUdpDataSync) {
-    // console.log(`${buf.toString()}`)
+    console.log(`${buf.toString()}`)
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
     if (isFinishMap[metaDataJson.key] !== undefined) {
       ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)

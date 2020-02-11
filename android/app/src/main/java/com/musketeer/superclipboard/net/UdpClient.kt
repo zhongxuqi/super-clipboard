@@ -18,8 +18,8 @@ import kotlin.experimental.and
 
 class UdpClient {
     companion object {
-//        val UdpServerHost = "www.easypass.tech"
-        val UdpServerHost = "192.168.100.107"
+        val UdpServerHost = "www.easypass.tech"
+//        val UdpServerHost = "192.168.100.107"
 
         val HeaderUdpServerSync: Byte = 0x00
         val HeaderUdpClientSync: Byte = 0x01
@@ -90,6 +90,16 @@ class UdpClient {
     val isFinishMap = HashMap<String, Boolean>()
     val syncWorkerMap = HashMap<String, SyncWorker>()
 
+    fun SendBuffer(p: DatagramPacket) {
+        synchronized(this) {
+            try {
+                client.send(p)
+            } catch (e: java.lang.Exception) {
+                Log.e("error", e.toString())
+            }
+        }
+    }
+
     class SyncWorker(udpClient: UdpClient, val remoteAddr: String) {
         class RemoteAddr(val address: InetAddress, val port: Int)
         private val localUdpClientSyncKey = System.currentTimeMillis().toString()
@@ -154,7 +164,7 @@ class UdpClient {
                             buffer[1] = metaData.size.toByte()
                             metaData.copyInto(buffer, 2)
                             for (remoteAddrItem in remoteAddrs) {
-                                udpClient.client.send(
+                                udpClient.SendBuffer(
                                     DatagramPacket(
                                         buffer,
                                         buffer.size,
@@ -166,76 +176,75 @@ class UdpClient {
                             }
                             continue@sendLoop
                         } else if (currMsg == null && clipboardMsgs.size > 0) {
+                            var originMsg: ClipBoardMessage? = null
                             synchronized(clipboardMsgs) {
-                                val originMsg = clipboardMsgs.pop()
-                                originMsg.createTime = 0
-                                originMsg.updateTime = 0
-                                val baseInfoStr = originMsg.toJSON()
-                                val baseInfoByteArray = baseInfoStr.toByteArray()
-                                currMsg = SendMsg(
-                                    originMsg, baseInfoByteArray, sha256(baseInfoStr),
-                                    kotlin.math.ceil(baseInfoByteArray.size.toDouble() / SendBufferMaxLen.toDouble()).toInt()
+                                originMsg = clipboardMsgs.pop()
+                            }
+                            originMsg!!.createTime = 0
+                            originMsg!!.updateTime = 0
+                            val baseInfoStr = originMsg!!.toJSON()
+                            val baseInfoByteArray = baseInfoStr.toByteArray()
+                            currMsg = SendMsg(
+                                originMsg!!, baseInfoByteArray, sha256(baseInfoStr),
+                                kotlin.math.ceil(baseInfoByteArray.size.toDouble() / SendBufferMaxLen.toDouble()).toInt()
+                            )
+                        }
+                        var i = 0
+                        while (i < UdpWindowMaxLen && sendBuffers[(i + currMsg!!.index) % UdpWindowMaxLen] != null) {
+                            val realIndex = (i + currMsg!!.index) % UdpWindowMaxLen
+                            val buffer = sendBuffers[realIndex]
+                            if (!sendAcks[realIndex] && sendTimes[realIndex] + sendRetryTime < System.currentTimeMillis() && buffer != null) {
+                                udpClient.SendBuffer(
+                                    DatagramPacket(
+                                        buffer,
+                                        buffer.size,
+                                        avtiveRemoteAddr!!.address,
+                                        avtiveRemoteAddr!!.port
+                                    )
+                                )
+                                sendTimes[realIndex] = System.currentTimeMillis()
+                            }
+                            i++
+                        }
+                        while ((i + currMsg!!.index) < UdpWindowMaxLen && (i + currMsg!!.index) < currMsg!!.total) {
+                            if ((i + currMsg!!.index) * SendBufferMaxLen < currMsg!!.baseInfoBuffer.size) {
+                                val realIndex = (i + currMsg!!.index) % UdpWindowMaxLen
+                                val metaDataJson = MetaData()
+                                metaDataJson.key = currMsg!!.key
+                                metaDataJson.total = currMsg!!.total
+                                metaDataJson.index = currMsg!!.index + i
+                                val metaData = JSON.toJSONString(metaDataJson).toByteArray()
+                                var bufferLen = 0
+                                var isFirst = 0
+                                if (metaDataJson.index == 0) isFirst = 4
+                                if (currMsg!!.baseInfoBuffer.size > (metaDataJson.index + 1) * SendBufferMaxLen) {
+                                    bufferLen = SendBufferMaxLen
+                                } else {
+                                    bufferLen = currMsg!!.baseInfoBuffer.size - metaDataJson.index * SendBufferMaxLen
+                                }
+                                val buffer = ByteArray(2 + metaData.size + isFirst + bufferLen)
+                                buffer[0] = HeaderUdpDataSync
+                                buffer[1] = metaData.size.toByte()
+                                metaData.copyInto(buffer, 2)
+                                if (isFirst > 0) {
+                                    val lenBytes = int2Bytes(currMsg!!.baseInfoBuffer.size)
+                                    lenBytes.copyInto(buffer, 2 + metaData.size)
+//                                  Log.d("===>>>", "baseInfoBuffer.size ${currMsg!!.baseInfoBuffer.size}")
+                                }
+                                currMsg!!.baseInfoBuffer.copyInto(buffer, 2 + metaData.size + isFirst, metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + bufferLen)
+                                sendBuffers[realIndex] = buffer
+                                sendTimes[realIndex] = System.currentTimeMillis()
+//                                Log.d("===>>> send", "${buffer.size} ${metaDataJson.index} ${String(currMsg!!.baseInfoBuffer.sliceArray(IntRange(metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + 10)))}")
+                                udpClient.SendBuffer(
+                                    DatagramPacket(
+                                        buffer,
+                                        buffer.size,
+                                        avtiveRemoteAddr!!.address,
+                                        avtiveRemoteAddr!!.port
+                                    )
                                 )
                             }
-                        }
-                        synchronized(this) {
-                            var i = 0
-                            while (i < UdpWindowMaxLen && sendBuffers[(i + currMsg!!.index) % UdpWindowMaxLen] != null) {
-                                val realIndex = (i + currMsg!!.index) % UdpWindowMaxLen
-                                val buffer = sendBuffers[realIndex]
-                                if (!sendAcks[realIndex] && sendTimes[realIndex] + sendRetryTime < System.currentTimeMillis() && buffer != null) {
-                                    udpClient.client.send(
-                                        DatagramPacket(
-                                            buffer,
-                                            buffer.size,
-                                            avtiveRemoteAddr!!.address,
-                                            avtiveRemoteAddr!!.port
-                                        )
-                                    )
-                                    sendTimes[realIndex] = System.currentTimeMillis()
-                                }
-                                i++
-                            }
-                            while ((i + currMsg!!.index) < UdpWindowMaxLen && (i + currMsg!!.index) < currMsg!!.total) {
-                                if ((i + currMsg!!.index) * SendBufferMaxLen < currMsg!!.baseInfoBuffer.size) {
-                                    val realIndex = (i + currMsg!!.index) % UdpWindowMaxLen
-                                    val metaDataJson = MetaData()
-                                    metaDataJson.key = currMsg!!.key
-                                    metaDataJson.total = currMsg!!.total
-                                    metaDataJson.index = currMsg!!.index + i
-                                    val metaData = JSON.toJSONString(metaDataJson).toByteArray()
-                                    var bufferLen = 0
-                                    var isFirst = 0
-                                    if (metaDataJson.index == 0) isFirst = 4
-                                    if (currMsg!!.baseInfoBuffer.size > (metaDataJson.index + 1) * SendBufferMaxLen) {
-                                        bufferLen = SendBufferMaxLen
-                                    } else {
-                                        bufferLen = currMsg!!.baseInfoBuffer.size - metaDataJson.index * SendBufferMaxLen
-                                    }
-                                    val buffer = ByteArray(2 + metaData.size + isFirst + bufferLen)
-                                    buffer[0] = HeaderUdpDataSync
-                                    buffer[1] = metaData.size.toByte()
-                                    metaData.copyInto(buffer, 2)
-                                    if (isFirst > 0) {
-                                        val lenBytes = int2Bytes(currMsg!!.baseInfoBuffer.size)
-                                        lenBytes.copyInto(buffer, 2 + metaData.size)
-//                                        Log.d("===>>>", "baseInfoBuffer.size ${currMsg!!.baseInfoBuffer.size}")
-                                    }
-                                    currMsg!!.baseInfoBuffer.copyInto(buffer, 2 + metaData.size + isFirst, metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + bufferLen)
-                                    sendBuffers[realIndex] = buffer
-                                    sendTimes[realIndex] = System.currentTimeMillis()
-                                    Log.d("===>>> send", "${buffer.size} ${metaDataJson.index} ${String(currMsg!!.baseInfoBuffer.sliceArray(IntRange(metaDataJson.index * SendBufferMaxLen, metaDataJson.index * SendBufferMaxLen + 10)))}")
-                                    udpClient.client.send(
-                                        DatagramPacket(
-                                            buffer,
-                                            buffer.size,
-                                            avtiveRemoteAddr!!.address,
-                                            avtiveRemoteAddr!!.port
-                                        )
-                                    )
-                                }
-                                i++
-                            }
+                            i++
                         }
                     }
                 }
@@ -387,7 +396,7 @@ class UdpClient {
                     buffer[0] = HeaderUdpServerSync
                     buffer[1] = msgByte.size.toByte()
                     msgByte.copyInto(buffer, 2)
-                    client.send(
+                    SendBuffer(
                         DatagramPacket(
                             buffer,
                             buffer.size,
@@ -447,7 +456,7 @@ class UdpClient {
         buf[0] = HeaderUdpDataSyncAck
         buf[1] = metaData.size.toByte()
         metaData.copyInto(buf, 2)
-        client.send(
+        SendBuffer(
             DatagramPacket(
                 buf,
                 buf.size,

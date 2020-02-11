@@ -51,7 +51,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
 
     private val actionMenuWindow: PopupWindow
     private val actionMenuWindowView: View
-    private val actionMenuExpandView: TextView
     private var clipboardMsg: ClipBoardMessage? = null
 
     fun addMessage(msg: ClipBoardMessage) {
@@ -217,18 +216,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
 
         // init action menu window
         actionMenuWindowView = inflater.inflate(R.layout.action_menu, null)
-        actionMenuExpandView = actionMenuWindowView.findViewById(R.id.expand_text) as TextView
         actionMenuWindow = PopupWindow(actionMenuWindowView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
-        actionMenuWindowView.findViewById<View>(R.id.action_menu_detail).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                actionMenuWindow.dismiss()
-                if (mContentListAdapter.hasExpandItem(clipboardMsg!!.id)) {
-                    mContentListAdapter.removeExpandItem(clipboardMsg!!.id)
-                } else {
-                    mContentListAdapter.addExpandItem(clipboardMsg!!.id)
-                }
-            }
-        })
         actionMenuWindowView.findViewById<View>(R.id.action_menu_delete).setOnClickListener(object: View.OnClickListener{
             override fun onClick(v: View?) {
                 actionMenuWindow.dismiss()
@@ -246,11 +234,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 id: Long
             ): Boolean {
                 clipboardMsg = mContentList[position]
-                if (mContentListAdapter.hasExpandItem(clipboardMsg!!.id)) {
-                    actionMenuExpandView.text = mContext.getText(R.string.fold)
-                } else {
-                    actionMenuExpandView.text = mContext.getText(R.string.expand)
-                }
                 actionMenuWindow.showAsDropDown(view)
                 return true
             }

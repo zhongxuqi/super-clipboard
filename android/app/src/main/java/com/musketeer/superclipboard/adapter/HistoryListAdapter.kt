@@ -17,23 +17,8 @@ class HistoryListAdapter: ArrayAdapter<ClipBoardMessage> {
         var iconView: ImageView? = null
         var contentView: TextView? = null
     }
-    val expandItemSet = HashSet<Int>()
 
     constructor(ctx: Context, resID: Int, contentList: List<ClipBoardMessage>): super(ctx, resID, contentList)
-
-    fun addExpandItem(id: Int) {
-        expandItemSet.add(id)
-        notifyDataSetChanged()
-    }
-
-    fun removeExpandItem(id: Int) {
-        expandItemSet.remove(id)
-        notifyDataSetChanged()
-    }
-
-    fun hasExpandItem(id: Int): Boolean {
-        return expandItemSet.contains(id)
-    }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val contentObj: ClipBoardMessage = getItem(position)!!
@@ -62,11 +47,6 @@ class HistoryListAdapter: ArrayAdapter<ClipBoardMessage> {
             else -> {
 
             }
-        }
-        if (expandItemSet.contains(contentObj.id)) {
-            viewHolder.contentView!!.maxLines = Int.MAX_VALUE
-        } else {
-            viewHolder.contentView!!.maxLines = 2
         }
         viewHolder.contentView!!.text = contentObj.content
         return view!!
