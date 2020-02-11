@@ -339,7 +339,6 @@ function checkFinish (msgKey) {
     msg.update_time = now
     onReceiveMsg(msg)
     receiveMap[msgKey] = null
-    resultMap[msgKey] = null
     isFinishMap[msgKey] = true
   }
 }
@@ -376,10 +375,11 @@ udpClient.on('message', function (buf, remoteInfo) {
       syncWorkerMap[udpAddrkey].feed(metaDataJson, syncUdpAddr)
     }
   } else if (buf[0] === HeaderUdpDataSync) {
-    console.log(`${buf.toString()}`)
+    // console.log(`${buf.toString()}`)
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
     if (isFinishMap[metaDataJson.key] !== undefined) {
       ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)
+      if (metaDataJson.index === 0 && resultMap[metaDataJson.key] !== undefined) onReceiveMsg(resultMap[metaDataJson.key])
       return
     }
     if (receiveMap[metaDataJson.key] === undefined) {

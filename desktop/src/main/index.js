@@ -38,7 +38,7 @@ function createWindow () {
   let renderInited = false
   let prevValue = clipboard.readText()
   let intervalID
-  let msgList
+  let msgList = []
   let skipValue = ''
 
   function clearMsg (rows) {
@@ -51,6 +51,31 @@ function createWindow () {
       if (renderChannel !== undefined) renderChannel.send('clipboard-message-delete', rows[i])
     }
     return rows.slice(end)
+  }
+
+  function upsertMsg (msg) {
+    for (let i = msgList.length - 1; i >= 0; i--) {
+      if (msg.content !== msgList[i].content) continue
+      msg = msgList[i]
+      msg.update_time = Date.now()
+      Database.update(msg, function (dbMsg) {
+        if (renderChannel !== undefined) {
+          renderChannel.send('clipboard-message-delete', dbMsg)
+          renderChannel.send('clipboard-message-add', dbMsg)
+        }
+        msgList.splice(i, 1)
+        msgList = clearMsg([...msgList, dbMsg])
+        NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
+      })
+      return
+    }
+    Database.insert(msg, function (dbMsg) {
+      if (renderChannel !== undefined) {
+        renderChannel.send('clipboard-message-add', dbMsg)
+      }
+      msgList = clearMsg([...msgList, dbMsg])
+      NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
+    })
   }
 
   Database.listAll(function (rows) {
@@ -76,13 +101,7 @@ function createWindow () {
           create_time: now,
           update_time: now
         }
-        Database.insert(msg, function (dbMsg) {
-          if (renderChannel !== undefined) {
-            renderChannel.send('clipboard-message-add', dbMsg)
-          }
-          msgList = clearMsg([...msgList, dbMsg])
-          NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
-        })
+        upsertMsg(msg)
       }
     }, 500)
   })
@@ -120,12 +139,7 @@ function createWindow () {
   })
 
   NetUDP.setOnReceiveMsg(function (msg) {
-    Database.insert(msg, function (dbMsg) {
-      if (renderChannel !== undefined) {
-        renderChannel.send('clipboard-message-add', dbMsg)
-      }
-      msgList = clearMsg([...msgList, dbMsg])
-    })
+    upsertMsg(msg)
   })
 
   ipcMain.on('clipboard-sync-state', (event, arg) => {

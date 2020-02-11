@@ -3,7 +3,6 @@
     <i class="iconfont scb-clipboard-message-icon" v-bind:class="iconClass"></i>
     <div class="scb-clipboard-message-content"><pre>{{content}}</pre></div>
     <b-dropdown ref="dropdown" text="" variant="light" size="sm" style="margin-right:0.5rem">
-      <b-dropdown-item-button v-on:click="setExpand(!expand)">{{expand?textFold:textExpand}}</b-dropdown-item-button>
       <b-dropdown-item v-on:click="clickDelete">Delete</b-dropdown-item>
     </b-dropdown>
     <b-button variant="success" size="sm" v-on:click="clickCopy"><i class="iconfont icon-copy"></i></b-button>
