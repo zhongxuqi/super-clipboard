@@ -2,21 +2,25 @@ import dgram from 'dgram'
 import { sha256 } from 'js-sha256'
 import os from 'os'
 
-let localUdpAddrMap = {}
+const UdpAddrSeparator = ','
+let localUdpAddrsJoin = ''
 let udpClient = dgram.createSocket('udp4')
 udpClient.on('listening', function () {
-  var address = udpClient.address()
-  var ifaces = os.networkInterfaces()
+  let address = udpClient.address()
+  let ifaces = os.networkInterfaces()
+  let localUdpAddrs = []
   for (let dev in ifaces) {
     for (let i = 0; i < ifaces[dev].length; i++) {
       if (ifaces[dev][i].family !== 'IPv4' || ifaces[dev][i].address === '127.0.0.1') continue
-      localUdpAddrMap[`${ifaces[dev][i].address}:${address.port}`] = true
+      localUdpAddrs.push(`${ifaces[dev][i].address}:${address.port}`)
     }
   }
+  localUdpAddrs.sort()
+  localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
 })
 
-const ServerHost = 'www.easypass.tech'
-// const ServerHost = '192.168.100.107'
+// const ServerHost = 'www.easypass.tech'
+const ServerHost = '192.168.100.107'
 
 function str2UTF8 (str) {
   var bytes = []
@@ -77,9 +81,18 @@ const syncWorkerMap = {}
 const sendBufferMaxLen = 400
 const SyncWorkerTimeout = 3000
 function createSyncWorker (remoteAddr) {
-  let addrItems = remoteAddr.split(':')
-  let ip = addrItems[0]
-  let port = parseInt(addrItems[1])
+  let udpClientSyncKey = `${Date.now()}`
+  let remoteAddrs = []
+  let remoteAddrList = remoteAddr.split(UdpAddrSeparator)
+  for (let i = 0; i < remoteAddrList.length; i++) {
+    let addrItems = remoteAddrList[i].split(':')
+    if (addrItems.length < 2) continue
+    remoteAddrs.push({
+      ip: addrItems[0],
+      port: parseInt(addrItems[1])
+    })
+  }
+  let activeRemoteAddr = {}
   let isRunning = true
   let lastSyncTime = 0
 
@@ -95,15 +108,21 @@ function createSyncWorker (remoteAddr) {
       clearInterval(intervalID)
       return
     }
+    // console.log(`${lastSyncTime} ${SyncWorkerTimeout} ${Date.now()}`)
     if (lastSyncTime + SyncWorkerTimeout < Date.now() || (currMsg === undefined && clipboardMsgs.length <= 0)) {
-      let metaData = str2UTF8(JSON.stringify({}))
+      let metaData = str2UTF8(JSON.stringify({
+        key: udpClientSyncKey
+      }))
       let buffer = Buffer.alloc(2 + metaData.length)
       buffer[0] = HeaderUdpClientSync
       buffer[1] = metaData.length
       for (let i = 0; i < metaData.length; i++) {
         buffer[2 + i] = metaData[i]
       }
-      udpClient.send(buffer, 0, buffer.length, port, ip)
+      for (let i = 0; i < remoteAddrs.length; i++) {
+        let remoteAddrItem = remoteAddrs[i]
+        udpClient.send(buffer, 0, buffer.length, remoteAddrItem.port, remoteAddrItem.ip)
+      }
       return
     } else if (currMsg === undefined && clipboardMsgs.length > 0) {
       currMsg = {
@@ -120,8 +139,8 @@ function createSyncWorker (remoteAddr) {
     for (; sendBuffers[(i + currMsg.index) % UdpWindowMaxLen] !== undefined && i < UdpWindowMaxLen; i++) {
       let realIndex = (i + currMsg.index) % UdpWindowMaxLen
       if (sendAcks[realIndex] === undefined && sendTimes[realIndex] + sendRetryTime < Date.now()) {
-        console.log(`${sendBuffers[realIndex].toString()} ${port} ${ip}`)
-        udpClient.send(sendBuffers[realIndex], 0, sendBuffers[realIndex].length, port, ip)
+        // console.log(`${sendBuffers[realIndex].toString()} ${activeRemoteAddr.port} ${activeRemoteAddr.ip}`)
+        udpClient.send(sendBuffers[realIndex], 0, sendBuffers[realIndex].length, activeRemoteAddr.port, activeRemoteAddr.ip)
         sendTimes[realIndex] = Date.now()
       }
     }
@@ -161,7 +180,7 @@ function createSyncWorker (remoteAddr) {
         sendBuffers[realIndex] = buffer
         sendTimes[realIndex] = Date.now()
         // console.log(`${buffer.toString()} ${port} ${ip}`)
-        udpClient.send(buffer, 0, buffer.length, port, ip)
+        udpClient.send(buffer, 0, buffer.length, activeRemoteAddr.port, activeRemoteAddr.ip)
       }
     }
     // TODO 需要升级支持文件
@@ -170,13 +189,24 @@ function createSyncWorker (remoteAddr) {
     close: function () {
       isRunning = false
     },
+    isActive: function () {
+      return lastSyncTime + SyncWorkerTimeout > Date.now()
+    },
     sendClipboardMsg: function (msg) {
       msg.id = undefined
       msg.create_time = undefined
       msg.update_time = undefined
       clipboardMsgs.splice(0, 0, msg)
     },
-    feed: function () {
+    feed: function (metaDataJson, syncUdpAddr) {
+      // if (metaDataJson.key !== udpClientSyncKey) return
+      console.log(remoteAddr, syncUdpAddr)
+      if (remoteAddr.search(syncUdpAddr) < 0) return
+      let addrItems = syncUdpAddr.split(':')
+      activeRemoteAddr = {
+        ip: addrItems[0],
+        port: parseInt(addrItems[1])
+      }
       lastSyncTime = Date.now()
     },
     ack: function (metaDataJson) {
@@ -233,7 +263,6 @@ function refreshSyncWork (remoteAddrs) {
 }
 
 // 内容接收
-let deviceNum = 0
 let receiveIndexMap = {}
 let receiveMap = {}
 let resultMap = {}
@@ -326,21 +355,27 @@ udpClient.on('message', function (buf, remoteInfo) {
     let validUdpAddrs = []
     if (metaDataJson.udp_addrs !== undefined && metaDataJson.udp_addrs != null) {
       for (let i = 0; i < metaDataJson.udp_addrs.length; i++) {
-        if (localUdpAddrMap[metaDataJson.udp_addrs[i]] === true) continue
+        if (localUdpAddrsJoin === metaDataJson.udp_addrs[i]) continue
         validUdpAddrs.push(metaDataJson.udp_addrs[i])
       }
     }
-    let newdeviceNum = validUdpAddrs.length
-    if (deviceNum !== newdeviceNum) {
-      deviceNum = newdeviceNum
-      if (typeof onChangeDeviceNum === 'function') onChangeDeviceNum(deviceNum)
+    let deviceNum = 0
+    for (let udpAddrkey in syncWorkerMap) {
+      if (syncWorkerMap[udpAddrkey] === undefined) continue
+      if (syncWorkerMap[udpAddrkey] !== undefined && syncWorkerMap[udpAddrkey].isActive) {
+        deviceNum++
+      }
     }
-    if (newdeviceNum > 0) refreshSyncWork(validUdpAddrs)
-    else refreshSyncWork([])
+    if (typeof onChangeDeviceNum === 'function') onChangeDeviceNum(deviceNum)
+    refreshSyncWork(validUdpAddrs)
   } else if (buf[0] === HeaderUdpClientSync) {
     console.log(`${buf.toString()}`)
-    let worker = syncWorkerMap[`${remoteInfo.address}:${remoteInfo.port}`]
-    if (worker !== undefined) worker.feed(metaDataJson)
+    let syncUdpAddr = `${remoteInfo.address}:${remoteInfo.port}`
+    for (let udpAddrkey in syncWorkerMap) {
+      if (syncWorkerMap[udpAddrkey] === undefined) continue
+      if (udpAddrkey.search(syncUdpAddr) < 0) continue
+      syncWorkerMap[udpAddrkey].feed(metaDataJson, syncUdpAddr)
+    }
   } else if (buf[0] === HeaderUdpDataSync) {
     // console.log(`${buf.toString()}`)
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
@@ -363,8 +398,12 @@ udpClient.on('message', function (buf, remoteInfo) {
     }
     ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)
   } else if (buf[0] === HeaderUdpDataSyncAck) {
-    let worker = syncWorkerMap[`${remoteInfo.address}:${remoteInfo.port}`]
-    if (worker !== undefined) worker.ack(metaDataJson)
+    let currUdpAddr = `${remoteInfo.address}:${remoteInfo.port}`
+    for (let udpAddrkey in syncWorkerMap) {
+      if (syncWorkerMap[udpAddrkey] === undefined) continue
+      if (udpAddrkey.search(currUdpAddr) < 0) continue
+      syncWorkerMap[udpAddrkey].ack(metaDataJson, currUdpAddr)
+    }
   }
 })
 
@@ -377,9 +416,7 @@ export default {
     if (heartBeatIntervalID !== undefined) return
     heartBeatIntervalID = setInterval(function () {
       let udpAddrs = []
-      for (let udpAddr in localUdpAddrMap) {
-        udpAddrs.push(udpAddr)
-      }
+      if (localUdpAddrsJoin !== '') udpAddrs.push(localUdpAddrsJoin)
       var metaData = str2UTF8(JSON.stringify({
         app_id: 'superclipboard',
         udp_addrs: udpAddrs
@@ -415,6 +452,5 @@ export default {
     }
     clearInterval(heartBeatIntervalID)
     heartBeatIntervalID = undefined
-    deviceNum = 0
   }
 }
