@@ -134,6 +134,10 @@ function createWindow () {
     clipboard.writeText(arg)
   })
 
+  ipcMain.on('clipboard-message-action-sync', (event, arg) => {
+    NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(arg)))
+  })
+
   NetUDP.setOnChangeDeviceNum(function (deviceNum) {
     renderChannel.send('clipboard-sync-state-device', {deviceNum: deviceNum})
   })
@@ -153,6 +157,7 @@ function createWindow () {
       NetUDP.close()
     }
     event.returnValue = NetUDP.isStart()
+    renderChannel.send('clipboard-sync-state-sync', {state: arg.state})
   })
 
   mainWindow.loadURL(winURL)

@@ -3,7 +3,8 @@
     <i class="iconfont scb-clipboard-message-icon" v-bind:class="iconClass"></i>
     <div class="scb-clipboard-message-content"><pre>{{content}}</pre></div>
     <b-dropdown ref="dropdown" text="" variant="light" size="sm" style="margin-right:0.5rem">
-      <b-dropdown-item v-on:click="clickDelete">Delete</b-dropdown-item>
+      <b-dropdown-item v-if="syncState" v-on:click="clickSync">{{textSync}}</b-dropdown-item>
+      <b-dropdown-item v-on:click="clickDelete">{{textDelete}}</b-dropdown-item>
     </b-dropdown>
     <b-button variant="success" size="sm" v-on:click="clickCopy"><i class="iconfont icon-copy"></i></b-button>
   </div>
@@ -12,6 +13,7 @@
 <script>
 import Consts from '../../common/Consts'
 import Language from '../utils/Language'
+import { ipcRenderer } from 'electron'
 
 export default {
   name: 'clipboard-message',
@@ -22,10 +24,18 @@ export default {
   data: function () {
     return {
       textExpand: Language.getLanguageText('expand'),
-      textFold: Language.getLanguageText('fold')
+      textFold: Language.getLanguageText('fold'),
+      textDelete: Language.getLanguageText('delete'),
+      textSync: Language.getLanguageText('sync'),
+
+      syncState: false
     }
   },
   methods: {
+    clickSync: function () {
+      this.$refs.dropdown.hide(true)
+      this.$emit('onsync')
+    },
     clickDelete: function () {
       this.$refs.dropdown.hide(true)
       this.$emit('ondelete')
@@ -47,6 +57,12 @@ export default {
       }
       return c
     }
+  },
+  mounted: function () {
+    this.syncState = ipcRenderer.sendSync('clipboard-sync-state')
+    ipcRenderer.on('clipboard-sync-state-sync', function (event, arg) {
+      this.syncState = arg.state
+    }.bind(this))
   }
 }
 </script>
