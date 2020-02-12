@@ -37,6 +37,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private var mFloatViewLastY = 0
     private var mFloatViewFirstX = 0
     private var mFloatViewFirstY = 0
+    private var mFloatViewMove = false
     private val personSettingsBtn: ImageView
     private val maxMainView: View
     private val minMainView: View
@@ -97,6 +98,9 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         if (!mIsFloatViewShowing) {
             mIsFloatViewShowing = true
             mWindowManager.addView(mFloatView, mFloatViewLayoutParams)
+        } else {
+            maxMainView.visibility = View.VISIBLE
+            minMainView.visibility = View.GONE
         }
     }
 
@@ -118,9 +122,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         maxMainView = mFloatView.findViewById(R.id.max_view)
         maxMainView.layoutParams = Constraints.LayoutParams((screenWidth * 0.6).toInt(), (screenHeight * 0.6).toInt())
         maxMainView.visibility = View.VISIBLE
-        maxMainView.findViewById<ImageView>(R.id.btn_window_close).setOnClickListener {
-            dismissFloatView()
-        }
         syncStateTextView = maxMainView.findViewById(R.id.sync_state_desc)
         maxMainView.findViewById<SwitchMaterial>(R.id.sync_switcher).setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
             override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
@@ -145,7 +146,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         mFloatViewLayoutParams.x = screenWidth - maxMainView.layoutParams.width
         mFloatViewLayoutParams.y = 0
 
-        mFloatView.setOnTouchListener(object: View.OnTouchListener{
+        val onTouchListener = object: View.OnTouchListener{
             override fun onTouch(v: View?, event: MotionEvent?): Boolean {
                 if (event == null) return false
                 var ret = false
@@ -156,9 +157,13 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                         mFloatViewLastY = event.rawY.toInt()
                         mFloatViewFirstX = mFloatViewLastX
                         mFloatViewFirstY = mFloatViewLastY
+                        mFloatViewMove = false
                         ret = true
                     }
                     MotionEvent.ACTION_UP -> {
+                        if (!mFloatViewMove) {
+                            v?.performClick()
+                        }
                         ret = true
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -166,6 +171,9 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                         val deltaY = event.rawY.toInt() - mFloatViewLastY
                         mFloatViewLastX = event.rawX.toInt()
                         mFloatViewLastY = event.rawY.toInt()
+                        if (kotlin.math.abs(mFloatViewLastX - mFloatViewFirstX) > 5 && kotlin.math.abs(mFloatViewLastY - mFloatViewFirstY) > 5) {
+                            mFloatViewMove = true
+                        }
                         if (prm.x < 0) {
                             prm.x = 0
                         } else if (prm.x >= screenWidth - mFloatView.width) {
@@ -190,18 +198,28 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 }
                 return ret
             }
-        })
+        }
+        mFloatView.setOnTouchListener(onTouchListener)
 
         minMainView = mFloatView.findViewById(R.id.min_view)
         minMainView.visibility = View.GONE
-        minMainView.findViewById<ImageView>(R.id.btn_window_max).setOnClickListener {
+        val minMainViewBtn = minMainView.findViewById<ImageView>(R.id.btn_window_max)
+        minMainViewBtn.setOnClickListener {
             maxMainView.visibility = View.VISIBLE
             minMainView.visibility = View.GONE
         }
-        maxMainView.findViewById<ImageView>(R.id.btn_window_min).setOnClickListener {
+        minMainViewBtn.setOnTouchListener(onTouchListener)
+        val maxMainViewBtn = maxMainView.findViewById<ImageView>(R.id.btn_window_min)
+        maxMainViewBtn.setOnClickListener {
             maxMainView.visibility = View.GONE
             minMainView.visibility = View.VISIBLE
         }
+        maxMainViewBtn.setOnTouchListener(onTouchListener)
+        val closeMainViewBtn = maxMainView.findViewById<ImageView>(R.id.btn_window_close)
+        closeMainViewBtn.setOnClickListener {
+            dismissFloatView()
+        }
+        closeMainViewBtn.setOnTouchListener(onTouchListener)
 
         // init history list
         val msgList = SqliteHelper.helper!!.ListAll()

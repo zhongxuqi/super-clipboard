@@ -15,13 +15,18 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        clipboardMainWindow = ClipboardMainWindow(this)
+        if (ClipboardMainWindow.Instance != null) {
+            clipboardMainWindow = ClipboardMainWindow.Instance
+        } else {
+            clipboardMainWindow = ClipboardMainWindow(this)
+        }
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         if (checkDrawOverlayPermission()) {
             clipboardMainWindow!!.showFloatView()
+            finish()
         }
     }
 
@@ -36,6 +41,7 @@ class MainActivity : AppCompatActivity() {
                 clipboardMainWindow!!.showFloatView()
             }
         }
+        finish()
     }
 
     private fun checkDrawOverlayPermission(): Boolean {

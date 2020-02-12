@@ -31,7 +31,6 @@ export default {
         if (item.id === arg.id) return false
         return true
       })
-      console.log(this.msgList, arg)
     },
     deleteMsg: function (msg) {
       ipcRenderer.send('clipboard-message-action-delete', msg)
