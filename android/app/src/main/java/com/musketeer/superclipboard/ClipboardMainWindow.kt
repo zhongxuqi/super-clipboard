@@ -1,5 +1,6 @@
 package com.musketeer.superclipboard
 
+import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.Context
 import android.content.Context.WINDOW_SERVICE
@@ -8,7 +9,6 @@ import android.os.Build
 import android.os.Handler
 import android.util.DisplayMetrics
 import android.view.*
-import android.view.View.OnTouchListener
 import android.widget.*
 import androidx.constraintlayout.widget.Constraints
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -163,6 +163,26 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                     MotionEvent.ACTION_UP -> {
                         if (!mFloatViewMove) {
                             v?.performClick()
+                        } else {
+                            if (v != null) {
+                                var valueAnimator: ValueAnimator? = null
+                                if (v.width / 2 + prm.x > screenWidth / 2) {
+                                    valueAnimator = ValueAnimator.ofInt(prm.x, screenWidth - v.width)
+                                    valueAnimator.duration = (1000F * (screenWidth - v.width - prm.x) / screenWidth).toLong()
+                                } else {
+                                    valueAnimator = ValueAnimator.ofInt(prm.x, 0)
+                                    valueAnimator.duration = (1000F * prm.x / screenWidth).toLong()
+                                }
+                                valueAnimator.addUpdateListener(object: ValueAnimator.AnimatorUpdateListener {
+                                    override fun onAnimationUpdate(animation: ValueAnimator?) {
+                                        if (animation != null) {
+                                            mFloatViewLayoutParams.x = animation.animatedValue.toString().toInt()
+                                            mWindowManager.updateViewLayout(mFloatView, mFloatViewLayoutParams)
+                                        }
+                                    }
+                                });
+                                valueAnimator.start()
+                            }
                         }
                         ret = true
                     }
@@ -211,8 +231,15 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         minMainViewBtn.setOnTouchListener(onTouchListener)
         val maxMainViewBtn = maxMainView.findViewById<ImageView>(R.id.btn_window_min)
         maxMainViewBtn.setOnClickListener {
+            val prm = mFloatViewLayoutParams
+            if (prm.x + maxMainView.width / 2 > screenWidth / 2) {
+                prm.x = screenWidth
+            } else {
+                prm.x = 0
+            }
             maxMainView.visibility = View.GONE
             minMainView.visibility = View.VISIBLE
+            mWindowManager.updateViewLayout(mFloatView, prm)
         }
         maxMainViewBtn.setOnTouchListener(onTouchListener)
         val closeMainViewBtn = maxMainView.findViewById<ImageView>(R.id.btn_window_close)
