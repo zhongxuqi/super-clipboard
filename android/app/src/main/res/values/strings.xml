@@ -18,4 +18,7 @@
     <string name="fold">Fold</string>
     <string name="copied">Copied</string>
     <string name="device_total">%d Device Total</string>
+    <string name="confirm_close">Sure to close?</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
 </resources>

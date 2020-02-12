@@ -54,6 +54,8 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private val actionMenuWindowView: View
     private var clipboardMsg: ClipBoardMessage? = null
 
+    private val confirmCLoseWindow: PopupWindow
+
     fun getSameMessage(msg: ClipBoardMessage): ClipBoardMessage? {
         for (contentItem in mContentList) {
             if (contentItem.content == msg.content) return contentItem
@@ -242,9 +244,19 @@ class ClipboardMainWindow constructor(val mContext: Context) {
             mWindowManager.updateViewLayout(mFloatView, prm)
         }
         maxMainViewBtn.setOnTouchListener(onTouchListener)
+
+        val confirmCLoseWindowView = inflater.inflate(R.layout.confirm_close, null)
+        confirmCLoseWindow = PopupWindow(confirmCLoseWindowView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
+        confirmCLoseWindowView.findViewById<TextView>(R.id.confirm_close_cancel).setOnClickListener {
+            confirmCLoseWindow.dismiss()
+        }
+        confirmCLoseWindowView.findViewById<TextView>(R.id.confirm_close_confirm).setOnClickListener {
+            confirmCLoseWindow.dismiss()
+            dismissFloatView()
+        }
         val closeMainViewBtn = maxMainView.findViewById<ImageView>(R.id.btn_window_close)
         closeMainViewBtn.setOnClickListener {
-            dismissFloatView()
+            confirmCLoseWindow.showAsDropDown(it, 0, 0, Gravity.START)
         }
         closeMainViewBtn.setOnTouchListener(onTouchListener)
 
@@ -288,7 +300,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
             }
         })
 
-
         mContentListView.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
             override fun onItemLongClick(
                 parent: AdapterView<*>?,
@@ -297,7 +308,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 id: Long
             ): Boolean {
                 clipboardMsg = mContentList[position]
-                actionMenuWindow.showAsDropDown(view)
+                actionMenuWindow.showAsDropDown(view, 0, 0, Gravity.END)
                 return true
             }
         })
