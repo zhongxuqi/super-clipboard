@@ -338,6 +338,10 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         // init action menu window
         actionMenuWindowView = inflater.inflate(R.layout.action_menu, null)
         actionMenuWindow = PopupWindow(actionMenuWindowView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
+        actionMenuWindowView.findViewById<View>(R.id.action_menu_sync).setOnClickListener {
+            actionMenuWindow.dismiss()
+            UdpClient.Instance?.sendClipboardMsg(clipboardMsg!!)
+        }
         actionMenuWindowView.findViewById<View>(R.id.action_menu_delete).setOnClickListener(object: View.OnClickListener{
             override fun onClick(v: View?) {
                 actionMenuWindow.dismiss()

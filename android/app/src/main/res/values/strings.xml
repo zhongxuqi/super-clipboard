@@ -21,7 +21,8 @@
     <string name="confirm_close">Sure to close?</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
-    <string name="keyword_input_hint">input keyword...</string>
+    <string name="keyword_input_hint">input keyword</string>
     <string name="keyworkd_search">Keyword Search</string>
     <string name="keyworkd_clear">Keyword Clear</string>
+    <string name="sync">Sync</string>
 </resources>

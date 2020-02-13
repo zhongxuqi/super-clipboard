@@ -379,7 +379,10 @@ udpClient.on('message', function (buf, remoteInfo) {
     if (metaDataJson.key === undefined || metaDataJson.key === null) return
     if (isFinishMap[metaDataJson.key] !== undefined) {
       ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)
-      if (metaDataJson.index === 0 && resultMap[metaDataJson.key] !== undefined) onReceiveMsg(resultMap[metaDataJson.key])
+      if (metaDataJson.index === 0 && resultMap[metaDataJson.key] !== undefined) {
+        console.log(resultMap[metaDataJson.key])
+        onReceiveMsg(resultMap[metaDataJson.key])
+      }
       return
     }
     if (receiveMap[metaDataJson.key] === undefined) {

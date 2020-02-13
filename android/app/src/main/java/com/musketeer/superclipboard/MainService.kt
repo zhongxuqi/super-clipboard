@@ -91,9 +91,7 @@ class MainService : Service() {
         notificationManager.notify(msgID, builder.build())
     }
 
-    class MainServiceBinder: Binder() {
-
-    }
+    class MainServiceBinder: Binder()
 
     val binder: MainServiceBinder by lazy {
         MainServiceBinder()
