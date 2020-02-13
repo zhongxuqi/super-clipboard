@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
+import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 
 
@@ -55,5 +57,10 @@ class MainActivity : AppCompatActivity() {
         } else {
             true
         }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        Log.d("===>>>", "test")
+        return true
     }
 }

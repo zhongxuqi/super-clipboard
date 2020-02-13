@@ -36,7 +36,6 @@ function createWindow () {
   // init ipc
   let renderChannel
   let renderInited = false
-  let prevValue = clipboard.readText()
   let intervalID
   let msgList = []
   let skipValue = ''
@@ -90,9 +89,8 @@ function createWindow () {
     intervalID = setInterval(function () {
       const newValue = clipboard.readText()
       if (newValue === '') return
-      if (prevValue !== newValue && skipValue !== newValue) {
+      if (skipValue !== newValue) {
         skipValue = ''
-        prevValue = newValue
         let now = Date.now()
         let msg = {
           type: Consts.MessageType.Text,

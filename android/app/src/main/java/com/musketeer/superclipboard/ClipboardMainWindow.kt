@@ -7,6 +7,8 @@ import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.DisplayMetrics
 import android.view.*
 import android.widget.*
@@ -40,9 +42,12 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private var mFloatViewMove = false
     private val personSettingsBtn: ImageView
     private val maxMainView: View
-    private val minMainView: View
+    val minMainView: View
     val syncStateTextView: TextView
+    private val keywordInput: EditText
+    private val keywordClear: View
 
+    private val mAllContentList: LinkedList<ClipBoardMessage> = LinkedList()
     private val mContentListView: ListView
     private val mContentListAdapter: HistoryListAdapter
     private val mContentList: LinkedList<ClipBoardMessage> = LinkedList()
@@ -55,6 +60,19 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private var clipboardMsg: ClipBoardMessage? = null
 
     private val confirmCLoseWindow: PopupWindow
+
+    fun minWindow() {
+        val prm = mFloatViewLayoutParams
+        if (prm.x + maxMainView.width / 2 > screenWidth / 2) {
+            prm.x = screenWidth
+        } else {
+            prm.x = 0
+        }
+        prm.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        maxMainView.visibility = View.GONE
+        minMainView.visibility = View.VISIBLE
+        mWindowManager.updateViewLayout(mFloatView, prm)
+    }
 
     fun getSameMessage(msg: ClipBoardMessage): ClipBoardMessage? {
         for (contentItem in mContentList) {
@@ -75,11 +93,30 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     }
 
     fun addMessage(msg: ClipBoardMessage) {
-        mContentList.addFirst(msg)
+        mAllContentList.addFirst(msg)
+        val keyword = keywordInput.text.toString()
+        if (keyword == "" || msg.content.indexOf(keyword) >= 0) {
+            mContentList.addFirst(msg)
+            mContentListAdapter.notifyDataSetChanged()
+        }
+    }
+
+    fun refreshKeyword() {
+        mContentList.clear()
+        mContentList.addAll(mAllContentList.filter {
+            val keyword = keywordInput.text.toString()
+            keyword == "" || it.content.contains(keyword)
+        })
         mContentListAdapter.notifyDataSetChanged()
     }
 
     fun deleteMessage(id: Int) {
+        for (msg in mAllContentList.iterator()) {
+            if (msg.id.compareTo(id) == 0) {
+                mContentList.remove(msg)
+                break
+            }
+        }
         for (msg in mContentList.iterator()) {
             if (msg.id.compareTo(id) == 0) {
                 mContentList.remove(msg)
@@ -137,6 +174,13 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 }
             }
         })
+        keywordInput = maxMainView.findViewById(R.id.keyword_input)
+        keywordClear = maxMainView.findViewById(R.id.keyword_clear)
+        keywordClear.visibility = View.GONE
+        keywordClear.setOnClickListener {
+            keywordInput.setText("")
+            refreshKeyword()
+        }
 
         mFloatViewLayoutParams = WindowManager.LayoutParams()
         mFloatViewLayoutParams.format = PixelFormat.TRANSLUCENT
@@ -147,6 +191,10 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         mFloatViewLayoutParams.gravity = Gravity.TOP or Gravity.START
         mFloatViewLayoutParams.x = screenWidth - maxMainView.layoutParams.width
         mFloatViewLayoutParams.y = 0
+        mFloatViewLayoutParams.flags = WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
 
         val onTouchListener = object: View.OnTouchListener{
             override fun onTouch(v: View?, event: MotionEvent?): Boolean {
@@ -227,21 +275,18 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         minMainView.visibility = View.GONE
         val minMainViewBtn = minMainView.findViewById<ImageView>(R.id.btn_window_max)
         minMainViewBtn.setOnClickListener {
+            mFloatViewLayoutParams.flags = WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
             maxMainView.visibility = View.VISIBLE
             minMainView.visibility = View.GONE
+            mWindowManager.updateViewLayout(mFloatView, mFloatViewLayoutParams)
         }
         minMainViewBtn.setOnTouchListener(onTouchListener)
         val maxMainViewBtn = maxMainView.findViewById<ImageView>(R.id.btn_window_min)
         maxMainViewBtn.setOnClickListener {
-            val prm = mFloatViewLayoutParams
-            if (prm.x + maxMainView.width / 2 > screenWidth / 2) {
-                prm.x = screenWidth
-            } else {
-                prm.x = 0
-            }
-            maxMainView.visibility = View.GONE
-            minMainView.visibility = View.VISIBLE
-            mWindowManager.updateViewLayout(mFloatView, prm)
+            minWindow()
         }
         maxMainViewBtn.setOnTouchListener(onTouchListener)
 
@@ -262,6 +307,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
 
         // init history list
         val msgList = SqliteHelper.helper!!.ListAll()
+        mAllContentList.addAll(msgList)
         mContentList.addAll(msgList)
         mContentListView = mFloatView.findViewById(R.id.history_list) as ListView
         mContentListAdapter = HistoryListAdapter(mContext, R.id.history_list_item_content, mContentList)
@@ -300,6 +346,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
             }
         })
 
+        // init events
         mContentListView.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
             override fun onItemLongClick(
                 parent: AdapterView<*>?,
@@ -310,6 +357,24 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 clipboardMsg = mContentList[position]
                 actionMenuWindow.showAsDropDown(view, 0, 0, Gravity.END)
                 return true
+            }
+        })
+        keywordInput.addTextChangedListener(object: TextWatcher{
+            override fun afterTextChanged(s: Editable?) {
+                refreshKeyword()
+                if (s.toString().isNotEmpty()) {
+                    keywordClear.visibility = View.VISIBLE
+                } else {
+                    keywordClear.visibility = View.GONE
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
             }
         })
 
