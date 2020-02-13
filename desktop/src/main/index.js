@@ -1,9 +1,10 @@
 'use strict'
 
-import { app, BrowserWindow, screen, clipboard, ipcMain } from 'electron'
+import { app, BrowserWindow, screen, clipboard, ipcMain, Notification } from 'electron'
 import Consts from '../common/Consts'
 import Database from './Database'
 import NetUDP from './net_udp'
+import Language from './language'
 
 const MAX_LEN = 10
 
@@ -32,6 +33,17 @@ function createWindow () {
     icon: require('path').join(__dirname, 'icons', '64x64.png')
   })
   mainWindow.setMenuBarVisibility(false)
+  Language.setLanguage(app.getLocale())
+
+  let notifyMsg
+  function sendNotification (title, body) {
+    if (notifyMsg !== undefined) notifyMsg.close()
+    notifyMsg = new Notification({
+      title: title,
+      body: body
+    })
+    notifyMsg.show()
+  }
 
   // init ipc
   let renderChannel
@@ -53,7 +65,7 @@ function createWindow () {
     return rows.slice(end)
   }
 
-  function upsertMsg (msg) {
+  function upsertMsg (msg, callback) {
     for (let i = msgList.length - 1; i >= 0; i--) {
       if (msg.content !== msgList[i].content) continue
       msg = msgList[i]
@@ -65,6 +77,7 @@ function createWindow () {
         }
         msgList.splice(i, 1)
         msgList = clearMsg([...msgList, dbMsg])
+        if (typeof callback === 'function') callback(dbMsg)
         NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
       })
       return
@@ -74,6 +87,7 @@ function createWindow () {
         renderChannel.send('clipboard-message-add', dbMsg)
       }
       msgList = clearMsg([...msgList, dbMsg])
+      if (typeof callback === 'function') callback(dbMsg)
       NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
     })
   }
@@ -101,7 +115,9 @@ function createWindow () {
           create_time: now,
           update_time: now
         }
-        upsertMsg(msg)
+        upsertMsg(msg, function (dbMsg) {
+          sendNotification(Language.getLanguageText('catch_clipboard_content'), dbMsg.content)
+        })
       }
     }, 500)
   })
@@ -132,6 +148,7 @@ function createWindow () {
   ipcMain.on('clipboard-message-action-copy', (event, arg) => {
     skipValue = arg
     clipboard.writeText(arg)
+    sendNotification(Language.getLanguageText('copy_clipboard_content'), arg)
   })
 
   ipcMain.on('clipboard-message-action-sync', (event, arg) => {
@@ -143,7 +160,9 @@ function createWindow () {
   })
 
   NetUDP.setOnReceiveMsg(function (msg) {
-    upsertMsg(msg)
+    upsertMsg(msg, function (dbMsg) {
+      sendNotification(Language.getLanguageText('receive_clipboard_content'), dbMsg.content)
+    })
   })
 
   ipcMain.on('clipboard-sync-state', (event, arg) => {

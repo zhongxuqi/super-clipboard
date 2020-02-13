@@ -8,7 +8,7 @@
     </b-form>
     <div class="scb-cliboard-list">
       <div class="scb-cliboard-list-item" v-for="item in msgListFilter" v-bind:key="item.id">
-        <ClipboardMessage v-bind:type="item.type" v-bind:content="item.content" v-on:ondelete="deleteMsg(item)" v-on:onsync="syncMsg(item)" v-on:oncopy="copyMsg(item)"></ClipboardMessage>
+        <ClipboardMessage v-bind:type="item.type" v-bind:syncState="syncState" v-bind:content="item.content" v-on:ondelete="deleteMsg(item)" v-on:onsync="syncMsg(item)" v-on:oncopy="copyMsg(item)"></ClipboardMessage>
       </div>
     </div>
   </div>
@@ -29,7 +29,8 @@ export default {
       textKeywordInputHint: Language.getLanguageText('keyword_input_hint'),
 
       msgList: [],
-      keyword: ''
+      keyword: '',
+      syncState: false
     }
   },
   methods: {
@@ -64,10 +65,15 @@ export default {
     ipcRenderer.send('clipboard-message-connect', '')
     ipcRenderer.on('clipboard-message-add', this.onAddMessage.bind(this))
     ipcRenderer.on('clipboard-message-delete', this.onDeleteMessage.bind(this))
+    this.syncState = ipcRenderer.sendSync('clipboard-sync-state')
+    ipcRenderer.on('clipboard-sync-state-sync', function (event, arg) {
+      this.syncState = arg.state
+    }.bind(this))
   },
   beforeDestroy: function () {
     ipcRenderer.removeAllListeners('clipboard-message-add')
     ipcRenderer.removeAllListeners('clipboard-message-delete')
+    ipcRenderer.removeAllListeners('clipboard-sync-state-sync')
   }
 }
 </script>

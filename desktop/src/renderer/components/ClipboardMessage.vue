@@ -3,22 +3,28 @@
     <i class="iconfont scb-clipboard-message-icon" v-bind:class="iconClass"></i>
     <div class="scb-clipboard-message-content"><pre>{{content}}</pre></div>
     <b-dropdown ref="dropdown" text="" variant="light" size="sm" style="margin-right:0.5rem">
-      <b-dropdown-item v-if="syncState" v-on:click="clickSync">{{textSync}}</b-dropdown-item>
-      <b-dropdown-item v-on:click="clickDelete">{{textDelete}}</b-dropdown-item>
+      <b-dropdown-item v-if="syncState" v-on:click="clickSync">
+        <i class="iconfont icon-refresh scb-action-icon"></i>
+        {{textSync}}
+      </b-dropdown-item>
+      <b-dropdown-item v-on:click="clickDelete">
+        <i class="iconfont icon-delete scb-action-icon"></i>
+        {{textDelete}}
+      </b-dropdown-item>
     </b-dropdown>
-    <b-button variant="success" size="sm" v-on:click="clickCopy"><i class="iconfont icon-copy"></i></b-button>
+    <b-button variant="success" size="sm" v-on:click="clickCopy" v-bind:pressed="copying"><i class="iconfont" v-bind:class="{'icon-copy':!copying,'icon-ok':copying}"></i></b-button>
   </div>
 </template>
 
 <script>
 import Consts from '../../common/Consts'
 import Language from '../utils/Language'
-import { ipcRenderer } from 'electron'
 
 export default {
   name: 'clipboard-message',
   props: {
     type: Number,
+    syncState: Boolean,
     content: String
   },
   data: function () {
@@ -28,7 +34,7 @@ export default {
       textDelete: Language.getLanguageText('delete'),
       textSync: Language.getLanguageText('sync'),
 
-      syncState: false
+      copying: false
     }
   },
   methods: {
@@ -41,7 +47,12 @@ export default {
       this.$emit('ondelete')
     },
     clickCopy: function () {
+      if (this.copying) return
+      this.copying = true
       this.$emit('oncopy')
+      setTimeout(function () {
+        this.copying = false
+      }.bind(this), 1000)
     }
   },
   computed: {
@@ -57,12 +68,6 @@ export default {
       }
       return c
     }
-  },
-  mounted: function () {
-    this.syncState = ipcRenderer.sendSync('clipboard-sync-state')
-    ipcRenderer.on('clipboard-sync-state-sync', function (event, arg) {
-      this.syncState = arg.state
-    }.bind(this))
   }
 }
 </script>
@@ -98,5 +103,11 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.scb-action-icon {
+  display: inline-block;
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
 }
 </style>

@@ -103,11 +103,7 @@ function createSyncWorker (remoteAddr) {
   let clipboardMsgs = []
   let currMsg
 
-  let intervalID = setInterval(function () {
-    if (!isRunning) {
-      clearInterval(intervalID)
-      return
-    }
+  function sendData () {
     // console.log(`${lastSyncTime} ${SyncWorkerTimeout} ${Date.now()}`)
     if (lastSyncTime + SyncWorkerTimeout < Date.now() || (currMsg === undefined && clipboardMsgs.length <= 0)) {
       let metaData = str2UTF8(JSON.stringify({
@@ -184,6 +180,15 @@ function createSyncWorker (remoteAddr) {
       }
     }
     // TODO 需要升级支持文件
+  }
+
+  sendData()
+  let intervalID = setInterval(function () {
+    if (!isRunning) {
+      clearInterval(intervalID)
+      return
+    }
+    sendData()
   }, 500)
   return {
     close: function () {
@@ -380,7 +385,6 @@ udpClient.on('message', function (buf, remoteInfo) {
     if (isFinishMap[metaDataJson.key] !== undefined) {
       ackBuf(buf.slice(2, 2 + metaDataLen), remoteInfo)
       if (metaDataJson.index === 0 && resultMap[metaDataJson.key] !== undefined) {
-        console.log(resultMap[metaDataJson.key])
         onReceiveMsg(resultMap[metaDataJson.key])
       }
       return
