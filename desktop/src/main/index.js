@@ -38,6 +38,7 @@ function createWindow () {
   let renderInited = false
   let intervalID
   let msgList = []
+  let preValue = clipboard.readText()
   let skipValue = ''
 
   function clearMsg (rows) {
@@ -89,7 +90,8 @@ function createWindow () {
     intervalID = setInterval(function () {
       const newValue = clipboard.readText()
       if (newValue === '') return
-      if (skipValue !== newValue) {
+      if (preValue !== newValue && skipValue !== newValue) {
+        preValue = newValue
         skipValue = ''
         let now = Date.now()
         let msg = {

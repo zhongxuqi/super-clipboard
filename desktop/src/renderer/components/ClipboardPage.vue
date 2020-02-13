@@ -7,7 +7,7 @@
       ></b-form-input>
     </b-form>
     <div class="scb-cliboard-list">
-      <div class="scb-cliboard-list-item" v-for="item in msgList" v-bind:key="item.id">
+      <div class="scb-cliboard-list-item" v-for="item in msgListFilter" v-bind:key="item.id">
         <ClipboardMessage v-bind:type="item.type" v-bind:content="item.content" v-on:ondelete="deleteMsg(item)" v-on:onsync="syncMsg(item)" v-on:oncopy="copyMsg(item)"></ClipboardMessage>
       </div>
     </div>
@@ -52,14 +52,14 @@ export default {
       ipcRenderer.send('clipboard-message-action-copy', msg.content)
     }
   },
-  // computed: {
-  //   msgListFilter: function () {
-  //     return this.msgList.filter(function (item) {
-  //       if (this.keyword === '') return true
-  //       return item.content.search(this.keyword) >= 0
-  //     }.bind(this))
-  //   }
-  // },
+  computed: {
+    msgListFilter: function () {
+      return this.msgList.filter(function (item) {
+        if (this.keyword === '') return true
+        return item.content.search(this.keyword) >= 0
+      }.bind(this))
+    }
+  },
   mounted: function () {
     ipcRenderer.send('clipboard-message-connect', '')
     ipcRenderer.on('clipboard-message-add', this.onAddMessage.bind(this))
