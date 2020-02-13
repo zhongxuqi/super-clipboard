@@ -1,7 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow, screen, clipboard, ipcMain } from 'electron'
-// import Consts from '../common/Consts'
+import Consts from '../common/Consts'
 import Database from './Database'
 import NetUDP from './net_udp'
 
@@ -91,15 +91,15 @@ function createWindow () {
       if (newValue === '') return
       if (skipValue !== newValue) {
         skipValue = ''
-        // let now = Date.now()
-        // let msg = {
-        //   type: Consts.MessageType.Text,
-        //   content: newValue,
-        //   extra: '',
-        //   create_time: now,
-        //   update_time: now
-        // }
-        // upsertMsg(msg)
+        let now = Date.now()
+        let msg = {
+          type: Consts.MessageType.Text,
+          content: newValue,
+          extra: '',
+          create_time: now,
+          update_time: now
+        }
+        upsertMsg(msg)
       }
     }, 500)
   })
