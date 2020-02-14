@@ -351,7 +351,7 @@ class UdpClient {
                             refreshSyncWork(validUdpAddrs.toTypedArray())
                         }
                         HeaderUdpClientSync -> {
-                            Log.d("UdpClient", "$metaData")
+//                            Log.d("UdpClient", "$metaData")
                             val remoteAddr = "${packet.address.hostAddress}:${packet.port}"
                             for (udpAddr in syncWorkerMap.keys) {
                                 if (udpAddr.indexOf(remoteAddr) < 0) continue
@@ -359,6 +359,7 @@ class UdpClient {
                             }
                         }
                         HeaderUdpDataSync -> {
+//                            Log.d("UdpClient", "$metaData from ${String(packet.data, 0, packet.length)}")
                             if (metaDataJson.key == null || metaDataJson.key == "") continue@receiveLoop
                             val msgKey = metaDataJson.key!!
                             if (isFinishMap.containsKey(msgKey) && isFinishMap[msgKey]!!) {
