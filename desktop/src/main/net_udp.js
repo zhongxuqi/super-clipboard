@@ -19,8 +19,8 @@ udpClient.on('listening', function () {
   localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
 })
 
-// const ServerHost = 'www.easypass.tech'
-const ServerHost = '192.168.100.107'
+const ServerHost = 'www.easypass.tech'
+// const ServerHost = '192.168.100.107'
 
 function str2UTF8 (str) {
   var bytes = []

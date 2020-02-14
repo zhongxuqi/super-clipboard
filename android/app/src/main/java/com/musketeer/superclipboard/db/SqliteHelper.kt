@@ -8,7 +8,7 @@ import java.util.*
 
 class SqliteHelper: SQLiteOpenHelper {
     companion object {
-        val MaxSize = 10
+        val MaxSize = 100
         private val DB_VERSION = 1
         private val DB_NAME = "my.db"
         val TABLE_NAME = "clipboard_history"
