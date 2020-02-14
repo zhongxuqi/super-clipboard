@@ -25,4 +25,6 @@
     <string name="keyworkd_search">Keyword Search</string>
     <string name="keyworkd_clear">Keyword Clear</string>
     <string name="sync">Sync</string>
+    <string name="action_done">Action Down</string>
+    <string name="receive_new_content">Received New Content</string>
 </resources>

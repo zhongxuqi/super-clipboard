@@ -21,7 +21,8 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center">
             <ImageView
                 android:id="@+id/btn_window_max"
                 android:layout_width="28dp"
@@ -31,6 +32,17 @@
                 android:scaleType="centerInside"
                 android:tint="@color/green"
                 android:contentDescription="@string/window_max"/>
+            <TextView
+                android:id="@+id/receive_msg_notice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="0dp"
+                android:textColor="@color/grey"
+                android:textSize="12sp"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:scrollHorizontally="true"
+                android:singleLine="true"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
