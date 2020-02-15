@@ -48,6 +48,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private val keywordInput: EditText
     private val keywordClear: View
     private val receiveMsgNotice: TextView
+    private val receiveMsgValueAnimator: ValueAnimator
 
     private val mAllContentList: LinkedList<ClipBoardMessage> = LinkedList()
     private val mContentListView: ListView
@@ -168,7 +169,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         val actionDoneValueAnimator = ValueAnimator.ofFloat(0f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 0f)
         actionDoneValueAnimator.duration = 2000
         val receiveMsgMaxLenght = (screenWidth * 0.4).toInt()
-        val receiveMsgValueAnimator = ValueAnimator.ofInt(0, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, 0)
+        receiveMsgValueAnimator = ValueAnimator.ofInt(0, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, 0)
         receiveMsgValueAnimator.duration = 2000
 
         // init base view
@@ -445,17 +446,21 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                     override fun run() {
                         MainService.instance?.insertMessage(msg)
                         Toast.makeText(mContext, mContext.getString(R.string.receive_new_content), Toast.LENGTH_SHORT).show()
-                        if (receiveMsgNotice.visibility != View.VISIBLE) return
-                        receiveMsgNotice.text = msg.content
-                        receiveMsgValueAnimator.end()
-                        receiveMsgValueAnimator.removeAllUpdateListeners()
-                        receiveMsgValueAnimator.addUpdateListener {
-                            receiveMsgNotice.width = it.animatedValue.toString().toInt()
-                        }
-                        receiveMsgValueAnimator.start()
+                        showContent(msg.content)
                     }
                 })
             }
         }
+    }
+
+    fun showContent(content: String) {
+        if (minMainView.visibility != View.VISIBLE) return
+        receiveMsgNotice.text = content
+        receiveMsgValueAnimator.end()
+        receiveMsgValueAnimator.removeAllUpdateListeners()
+        receiveMsgValueAnimator.addUpdateListener {
+            receiveMsgNotice.width = it.animatedValue.toString().toInt()
+        }
+        receiveMsgValueAnimator.start()
     }
 }
