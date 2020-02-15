@@ -137,12 +137,20 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     }
 
     fun showFloatView() {
+        mFloatViewLayoutParams.flags = WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
         if (!mIsFloatViewShowing) {
             mIsFloatViewShowing = true
             mWindowManager.addView(mFloatView, mFloatViewLayoutParams)
+            maxMainView.visibility = View.VISIBLE
+            minMainView.visibility = View.GONE
         } else {
             maxMainView.visibility = View.VISIBLE
             minMainView.visibility = View.GONE
+            mWindowManager.updateViewLayout(mFloatView, mFloatViewLayoutParams)
+
         }
     }
 

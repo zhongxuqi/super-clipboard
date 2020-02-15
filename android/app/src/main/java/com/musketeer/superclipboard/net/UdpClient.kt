@@ -552,5 +552,9 @@ class UdpClient {
     fun close() {
         isRunning = false
         deviceNum = 0
+        for (worker in syncWorkerMap.values) {
+            worker.close()
+        }
+        syncWorkerMap.clear()
     }
 }

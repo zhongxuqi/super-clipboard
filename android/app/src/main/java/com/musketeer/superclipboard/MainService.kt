@@ -1,5 +1,6 @@
 package com.musketeer.superclipboard
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -7,6 +8,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.musketeer.superclipboard.data.ClipBoardMessage
@@ -75,20 +77,26 @@ class MainService : Service() {
     }
 
     fun notify(txt: String) {
-        val builder = NotificationCompat.Builder(this, channelID)
-        builder.setSmallIcon(R.mipmap.ic_launcher)
-        if (txt.isEmpty()) {
-            builder.setContentText(getText(R.string.clipboard_empty))
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            notificationManager.createNotificationChannel(NotificationChannel(channelID, getString(R.string.app_name), NotificationManager.IMPORTANCE_DEFAULT));
+            val builder = NotificationCompat.Builder(this, channelID);
+            startForeground(msgID, builder.build())
         } else {
-            builder.setContentText(txt)
+            val builder = NotificationCompat.Builder(this, channelID)
+            builder.setSmallIcon(R.mipmap.ic_launcher)
+            if (txt.isEmpty()) {
+                builder.setContentText(getText(R.string.clipboard_empty))
+            } else {
+                builder.setContentText(txt)
+            }
+            builder.setOngoing(true)
+
+            val intent = Intent(this, MainActivity::class.java)
+            val pIntent = PendingIntent.getActivity(this, 0, intent, 0)
+            builder.setContentIntent(pIntent)
+
+            notificationManager.notify(msgID, builder.build())
         }
-        builder.setOngoing(true)
-
-        val intent = Intent(this, MainActivity::class.java)
-        val pIntent = PendingIntent.getActivity(this, 0, intent, 0)
-        builder.setContentIntent(pIntent)
-
-        notificationManager.notify(msgID, builder.build())
     }
 
     class MainServiceBinder: Binder()

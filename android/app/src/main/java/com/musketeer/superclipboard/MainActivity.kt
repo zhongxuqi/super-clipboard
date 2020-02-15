@@ -58,9 +58,4 @@ class MainActivity : AppCompatActivity() {
             true
         }
     }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        Log.d("===>>>", "test")
-        return true
-    }
 }
