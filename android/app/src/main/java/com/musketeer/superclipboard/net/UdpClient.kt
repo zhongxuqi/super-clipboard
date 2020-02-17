@@ -256,6 +256,10 @@ class UdpClient {
             }).start()
         }
 
+        fun isActive(): Boolean {
+            return isRun && lastSyncTime + SyncWorkerTimeout > System.currentTimeMillis()
+        }
+
         fun close() {
 //            Log.d("===>>>", "close ${address.hostAddress}:$port")
             isRun = false
@@ -347,7 +351,15 @@ class UdpClient {
                                     validUdpAddrs.add(udpAddr)
                                 }
                             }
-                            listener?.onChangeDeviceNum(validUdpAddrs.size)
+                            var deviceNum = 0
+                            for (udpAddr in validUdpAddrs) {
+                                if (!syncWorkerMap.containsKey(udpAddr)) continue
+                                val worker = syncWorkerMap[udpAddr]!!
+                                if (worker.isActive()) {
+                                    deviceNum++
+                                }
+                            }
+                            listener?.onChangeDeviceNum(deviceNum)
                             refreshSyncWork(validUdpAddrs.toTypedArray())
                         }
                         HeaderUdpClientSync -> {

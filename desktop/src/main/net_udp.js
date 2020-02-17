@@ -365,7 +365,7 @@ udpClient.on('message', function (buf, remoteInfo) {
     let deviceNum = 0
     for (let udpAddrkey in syncWorkerMap) {
       if (syncWorkerMap[udpAddrkey] === undefined) continue
-      if (syncWorkerMap[udpAddrkey] !== undefined && syncWorkerMap[udpAddrkey].isActive) {
+      if (syncWorkerMap[udpAddrkey] !== undefined && syncWorkerMap[udpAddrkey].isActive()) {
         deviceNum++
       }
     }
