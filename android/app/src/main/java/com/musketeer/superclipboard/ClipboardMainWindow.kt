@@ -61,6 +61,8 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private val actionMenuWindow: PopupWindow
     private val actionMenuWindowView: View
     private val actionMenuSyncView: View
+    private val actionMenuExpandView: View
+    private val actionMenuFoldView: View
     private var clipboardMsg: ClipBoardMessage? = null
 
     private val confirmCLoseWindow: PopupWindow
@@ -385,6 +387,20 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 deleteMessage(clipboardMsg!!.id)
             }
         })
+        actionMenuExpandView = actionMenuWindowView.findViewById(R.id.action_menu_expand)
+        actionMenuExpandView.setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                mContentListAdapter.expandItem(clipboardMsg!!.id)
+                actionMenuWindow.dismiss()
+            }
+        })
+        actionMenuFoldView = actionMenuWindowView.findViewById(R.id.action_menu_fold)
+        actionMenuFoldView.setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                mContentListAdapter.foldItem(clipboardMsg!!.id)
+                actionMenuWindow.dismiss()
+            }
+        })
 
         // init events
         maxMainView.findViewById<SwitchMaterial>(R.id.sync_switcher).setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
@@ -411,6 +427,13 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 clipboardMsg = mContentList[position]
                 actionMenuWindow.showAsDropDown(view, 0, 0, Gravity.END)
                 itemView = view
+                if (mContentListAdapter.isExpand(clipboardMsg!!.id)) {
+                    actionMenuExpandView.visibility = View.GONE
+                    actionMenuFoldView.visibility = View.VISIBLE
+                } else {
+                    actionMenuExpandView.visibility = View.VISIBLE
+                    actionMenuFoldView.visibility = View.GONE
+                }
                 return true
             }
         })

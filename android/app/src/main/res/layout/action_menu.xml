@@ -48,6 +48,64 @@
                 </LinearLayout>
             </LinearLayout>
             <LinearLayout
+                android:id="@+id/action_menu_expand"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:focusable="true"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackground">
+                <ImageView
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+                    android:layout_margin="3dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_unfold_more_black_24dp"
+                    android:tint="@color/grey"
+                    android:contentDescription="@string/sync"/>
+                <LinearLayout
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:text="@string/expand"
+                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        android:padding="8dp"/>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/action_menu_fold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:focusable="true"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackground">
+                <ImageView
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+                    android:layout_margin="3dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_unfold_less_black_24dp"
+                    android:tint="@color/grey"
+                    android:contentDescription="@string/sync"/>
+                <LinearLayout
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:text="@string/fold"
+                        android:layout_height="wrap_content"
+                        android:layout_width="match_parent"
+                        android:padding="8dp"/>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
                 android:id="@+id/action_menu_delete"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
