@@ -109,4 +109,8 @@ class MainService : Service() {
     override fun onBind(intent: Intent): IBinder? {
         return binder
     }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return super.onStartCommand(intent, flags, startId)
+    }
 }

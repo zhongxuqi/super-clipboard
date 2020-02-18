@@ -434,7 +434,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         })
 
         // init udp listener
-        UdpClient.Instance!!.listener = object: UdpClient.Listener{
+        UdpClient.listener = object: UdpClient.Listener{
             override fun onChangeDeviceNum(deviceNum: Int) {
                 Instance?.handler?.post {
                     Instance?.syncStateTextView?.text = String.format(Instance?.mContext!!.getString(R.string.device_total, deviceNum))

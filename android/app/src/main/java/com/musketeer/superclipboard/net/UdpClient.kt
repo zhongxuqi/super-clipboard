@@ -32,6 +32,7 @@ class UdpClient {
         val SyncWorkerTimeout = 3000
 
         var Instance: UdpClient? = null
+        var listener: Listener? = null
 
         fun int2Bytes(num: Int): ByteArray {
             val bytes = ByteArray(4)
@@ -81,7 +82,6 @@ class UdpClient {
     val threadPool: ExecutorService
 
     var isRunning: Boolean = false
-    var listener: Listener? = null
 
     var deviceNum: Int = 0
     val receiveIndexMap = HashMap<String, ReceiveIndex>()
@@ -333,13 +333,14 @@ class UdpClient {
         threadPool = Executors.newFixedThreadPool(3)
         threadPool.submit(Runnable {
             receiveLoop@ while (true) {
-                client.receive(packet)
-                if (packet.length < 2) continue
-                val metaMessageLen = packet.data[1].toInt()
-                if (packet.length < 2 + metaMessageLen) continue@receiveLoop
-                val metaData = String(packet.data, 2, metaMessageLen)
-//                Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
                 try {
+                    client.receive(packet)
+                    if (packet.length < 2) continue
+                    val metaMessageLen = packet.data[1].toInt()
+                    if (packet.length < 2 + metaMessageLen) continue@receiveLoop
+                    val metaData = String(packet.data, 2, metaMessageLen)
+//                  Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
+
                     val metaDataJson = JSON.parseObject(metaData, MetaData::class.java)
                     when (packet.data[0]) {
                         HeaderUdpServerSync -> {
@@ -409,7 +410,11 @@ class UdpClient {
         threadPool.submit(Runnable {
             while (true) {
                 if (isRunning) {
-                    heartBeat()
+                    try {
+                        heartBeat()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
                 Thread.sleep(2000)
             }
