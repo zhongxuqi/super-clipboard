@@ -115,9 +115,7 @@ function createWindow () {
           create_time: now,
           update_time: now
         }
-        upsertMsg(msg, function (dbMsg) {
-          sendNotification(Language.getLanguageText('catch_clipboard_content'), dbMsg.content)
-        })
+        upsertMsg(msg, function (dbMsg) {})
       }
     }, 500)
   })
