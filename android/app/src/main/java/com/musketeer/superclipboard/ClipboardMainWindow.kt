@@ -468,7 +468,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 Instance?.handler?.post(object: Runnable{
                     override fun run() {
                         MainService.instance?.insertMessage(msg)
-                        Toast.makeText(mContext, mContext.getString(R.string.receive_new_content), Toast.LENGTH_SHORT).show()
                         showContent(msg.content)
                     }
                 })
