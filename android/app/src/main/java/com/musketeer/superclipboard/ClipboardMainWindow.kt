@@ -4,6 +4,7 @@ import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.Context
 import android.content.Context.WINDOW_SERVICE
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
@@ -168,7 +169,16 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         mWindowManager.defaultDisplay.getMetrics(metrics)
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
-        val actionDoneValueAnimator = ValueAnimator.ofFloat(0f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 0f)
+        val actionDoneValueAnimator = ValueAnimator.ofArgb(
+            mContext.resources.getColor(R.color.transparent),
+            mContext.resources.getColor(R.color.light_green),
+            mContext.resources.getColor(R.color.light_green),
+            mContext.resources.getColor(R.color.light_green),
+            mContext.resources.getColor(R.color.light_green),
+            mContext.resources.getColor(R.color.light_green),
+            mContext.resources.getColor(R.color.light_green),
+            mContext.resources.getColor(R.color.transparent)
+        )
         actionDoneValueAnimator.duration = 2000
         val receiveMsgMaxLenght = (screenWidth * 0.4).toInt()
         receiveMsgValueAnimator = ValueAnimator.ofInt(0, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, 0)
@@ -332,13 +342,10 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 val clipboardMsg = mContentList[position]
                 MainService.instance!!.skipNum++
                 MainService.instance!!.manager.setPrimaryClip(ClipData.newPlainText(clipboardMsg.content, clipboardMsg.content))
-                Toast.makeText(mContext, mContext.getString(R.string.copied), Toast.LENGTH_SHORT).show()
                 actionDoneValueAnimator.end()
                 actionDoneValueAnimator.removeAllUpdateListeners()
-                val actionDoneView = view!!.findViewById<ImageView>(R.id.action_done)
                 actionDoneValueAnimator.addUpdateListener {
-                    actionDoneView.scaleX = it.animatedValue.toString().toFloat()
-                    actionDoneView.scaleY = it.animatedValue.toString().toFloat()
+                    view?.setBackgroundColor(it.animatedValue.toString().toInt())
                 }
                 actionDoneValueAnimator.start()
             }
@@ -363,15 +370,12 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 actionMenuWindow.dismiss()
                 if (UdpClient.Instance == null || !UdpClient.Instance!!.isRunning) return
                 UdpClient.Instance?.sendClipboardMsg(clipboardMsg!!)
-                Toast.makeText(mContext, mContext.getString(R.string.sync), Toast.LENGTH_SHORT).show()
                 actionDoneValueAnimator.end()
                 actionDoneValueAnimator.removeAllUpdateListeners()
                 val view = itemView
                 if (view != null) {
-                    val actionDoneView = view.findViewById<ImageView>(R.id.action_done)
                     actionDoneValueAnimator.addUpdateListener {
-                        actionDoneView.scaleX = it.animatedValue.toString().toFloat()
-                        actionDoneView.scaleY = it.animatedValue.toString().toFloat()
+                        v?.setBackgroundColor(it.animatedValue.toString().toInt())
                     }
                     actionDoneValueAnimator.start()
                 }
