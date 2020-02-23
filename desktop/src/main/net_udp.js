@@ -19,6 +19,14 @@ udpClient.on('listening', function () {
   localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
 })
 
+function sendUdpPackage (buffer, offset, length, port, ip) {
+  try {
+    udpClient.send(buffer, offset, length, port, ip)
+  } catch (e) {
+
+  }
+}
+
 const ServerHost = 'www.easypass.tech'
 // const ServerHost = '192.168.100.107'
 
@@ -117,7 +125,7 @@ function createSyncWorker (remoteAddr) {
       }
       for (let i = 0; i < remoteAddrs.length; i++) {
         let remoteAddrItem = remoteAddrs[i]
-        udpClient.send(buffer, 0, buffer.length, remoteAddrItem.port, remoteAddrItem.ip)
+        sendUdpPackage(buffer, 0, buffer.length, remoteAddrItem.port, remoteAddrItem.ip)
       }
       return
     } else if (currMsg === undefined && clipboardMsgs.length > 0) {
@@ -136,7 +144,7 @@ function createSyncWorker (remoteAddr) {
       let realIndex = (i + currMsg.index) % UdpWindowMaxLen
       if (sendAcks[realIndex] === undefined && sendTimes[realIndex] + sendRetryTime < Date.now()) {
         // console.log(`${sendBuffers[realIndex].toString()} ${activeRemoteAddr.port} ${activeRemoteAddr.ip}`)
-        udpClient.send(sendBuffers[realIndex], 0, sendBuffers[realIndex].length, activeRemoteAddr.port, activeRemoteAddr.ip)
+        sendUdpPackage(sendBuffers[realIndex], 0, sendBuffers[realIndex].length, activeRemoteAddr.port, activeRemoteAddr.ip)
         sendTimes[realIndex] = Date.now()
       }
     }
@@ -176,7 +184,8 @@ function createSyncWorker (remoteAddr) {
         sendBuffers[realIndex] = buffer
         sendTimes[realIndex] = Date.now()
         // console.log(`${buffer.toString()} ${port} ${ip}`)
-        udpClient.send(buffer, 0, buffer.length, activeRemoteAddr.port, activeRemoteAddr.ip)
+
+        sendUdpPackage(buffer, 0, buffer.length, activeRemoteAddr.port, activeRemoteAddr.ip)
       }
     }
     // TODO 需要升级支持文件
@@ -279,7 +288,7 @@ function ackBuf (metaBuffer, remoteInfo) {
   for (var i = 0; i < metaBuffer.length; i++) {
     buf[i + 2] = metaBuffer[i]
   }
-  udpClient.send(buf, 0, buf.length, remoteInfo.port, remoteInfo.address)
+  sendUdpPackage(buf, 0, buf.length, remoteInfo.port, remoteInfo.address)
 }
 
 function parseResult (msgKey) {
@@ -427,7 +436,7 @@ function heartBeat () {
   for (var i = 0; i < metaData.length; i++) {
     buffer[2 + i] = metaData[i]
   }
-  udpClient.send(buffer, 0, buffer.length, 9000, ServerHost)
+  sendUdpPackage(buffer, 0, buffer.length, 9000, ServerHost)
 }
 export default {
   isStart: function () {
