@@ -1,5 +1,6 @@
 package com.musketeer.superclipboard
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.Context
@@ -17,6 +18,7 @@ import android.widget.*
 import androidx.constraintlayout.widget.Constraints
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.adapter.HistoryListAdapter
+import com.musketeer.superclipboard.components.FeedbackDialog
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
 import com.musketeer.superclipboard.net.UdpClient
@@ -159,9 +161,30 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         }
     }
 
+    fun relocationWindow() {
+        val v = mFloatView
+        val prm = mFloatViewLayoutParams
+        var valueAnimator: ValueAnimator? = null
+        if (v.width / 2 + prm.x > screenWidth / 2) {
+            valueAnimator = ValueAnimator.ofInt(prm.x, screenWidth - v.width)
+            valueAnimator.duration = (1000F * (screenWidth - v.width - prm.x) / screenWidth).toLong()
+        } else {
+            valueAnimator = ValueAnimator.ofInt(prm.x, 0)
+            valueAnimator.duration = (1000F * prm.x / screenWidth).toLong()
+        }
+        valueAnimator.addUpdateListener(object: ValueAnimator.AnimatorUpdateListener {
+            override fun onAnimationUpdate(animation: ValueAnimator?) {
+                if (animation != null) {
+                    mFloatViewLayoutParams.x = animation.animatedValue.toString().toInt()
+                    mWindowManager.updateViewLayout(mFloatView, mFloatViewLayoutParams)
+                }
+            }
+        })
+        valueAnimator.start()
+    }
+
     init {
         Instance = this
-
 
         // init consts
         handler = Handler()
@@ -170,16 +193,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         mWindowManager.defaultDisplay.getMetrics(metrics)
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
-        val actionDoneValueAnimator = ValueAnimator.ofArgb(
-            mContext.resources.getColor(R.color.transparent),
-            mContext.resources.getColor(R.color.light_green),
-            mContext.resources.getColor(R.color.light_green),
-            mContext.resources.getColor(R.color.light_green),
-            mContext.resources.getColor(R.color.light_green),
-            mContext.resources.getColor(R.color.light_green),
-            mContext.resources.getColor(R.color.light_green),
-            mContext.resources.getColor(R.color.transparent)
-        )
+        val actionDoneValueAnimator = ValueAnimator.ofArgb(0, 1, 1, 0)
         actionDoneValueAnimator.duration = 2000
         val receiveMsgMaxLenght = (screenWidth * 0.4).toInt()
         receiveMsgValueAnimator = ValueAnimator.ofInt(0, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, receiveMsgMaxLenght, 0)
@@ -235,23 +249,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                             v?.performClick()
                         } else {
                             if (v != null) {
-                                var valueAnimator: ValueAnimator? = null
-                                if (v.width / 2 + prm.x > screenWidth / 2) {
-                                    valueAnimator = ValueAnimator.ofInt(prm.x, screenWidth - v.width)
-                                    valueAnimator.duration = (1000F * (screenWidth - v.width - prm.x) / screenWidth).toLong()
-                                } else {
-                                    valueAnimator = ValueAnimator.ofInt(prm.x, 0)
-                                    valueAnimator.duration = (1000F * prm.x / screenWidth).toLong()
-                                }
-                                valueAnimator.addUpdateListener(object: ValueAnimator.AnimatorUpdateListener {
-                                    override fun onAnimationUpdate(animation: ValueAnimator?) {
-                                        if (animation != null) {
-                                            mFloatViewLayoutParams.x = animation.animatedValue.toString().toInt()
-                                            mWindowManager.updateViewLayout(mFloatView, mFloatViewLayoutParams)
-                                        }
-                                    }
-                                })
-                                valueAnimator.start()
+                                relocationWindow()
                             }
                         }
                         ret = true
@@ -343,10 +341,11 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 val clipboardMsg = mContentList[position]
                 MainService.instance!!.skipNum++
                 MainService.instance!!.manager.setPrimaryClip(ClipData.newPlainText(clipboardMsg.content, clipboardMsg.content))
+                val copiedCover = view!!.findViewById<View>(R.id.copied_cover)
                 actionDoneValueAnimator.end()
                 actionDoneValueAnimator.removeAllUpdateListeners()
                 actionDoneValueAnimator.addUpdateListener {
-                    view?.setBackgroundColor(it.animatedValue.toString().toInt())
+                    copiedCover.alpha = it.animatedValue.toString().toFloat()
                 }
                 actionDoneValueAnimator.start()
             }
@@ -358,6 +357,12 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         personSettingsBtn.setOnClickListener(object: View.OnClickListener{
             override fun onClick(v: View?) {
                 popWindow.showAsDropDown(personSettingsBtn)
+            }
+        })
+        personSettingsView.findViewById<View>(R.id.btn_feedback).setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                popWindow.dismiss()
+                FeedbackDialog.showDialog(mContext.applicationContext)
             }
         })
 
@@ -486,10 +491,29 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         if (minMainView.visibility != View.VISIBLE) return
         receiveMsgNotice.text = content
         receiveMsgValueAnimator.end()
-        receiveMsgValueAnimator.removeAllUpdateListeners()
+        receiveMsgValueAnimator.removeAllListeners()
         receiveMsgValueAnimator.addUpdateListener {
             receiveMsgNotice.width = it.animatedValue.toString().toInt()
         }
+        minMainView.alpha = 1.0f
+        receiveMsgValueAnimator.addListener(object: Animator.AnimatorListener {
+            override fun onAnimationRepeat(animation: Animator?) {
+
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                this@ClipboardMainWindow.relocationWindow()
+                minMainView.alpha = 0.7f
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+
+            }
+
+            override fun onAnimationStart(animation: Animator?) {
+
+            }
+        })
         receiveMsgValueAnimator.start()
     }
 }

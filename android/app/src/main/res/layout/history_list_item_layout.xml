@@ -1,18 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
-    <TextView
-        android:id="@+id/history_list_item_content"
-        android:text=""
+    android:layout_height="wrap_content">
+    <LinearLayout
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/history_list_item_content"
+            android:text=""
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:padding="8dp"/>
+        <View
+            android:layout_height="1px"
+            android:layout_width="match_parent"
+            android:background="@color/divider"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/copied_cover"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="match_parent"
-        android:maxLines="2"
-        android:ellipsize="end"
-        android:padding="8dp"/>
-    <View
-        android:layout_height="1px"
-        android:layout_width="match_parent"
-        android:background="@color/divider"/>
-</LinearLayout>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/green"
+        android:alpha="0">
+        <ImageView
+            android:layout_gravity="center_vertical"
+            android:layout_width="17dp"
+            android:layout_height="17dp"
+            android:layout_marginStart="6dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_ok"
+            android:contentDescription="@string/avatar"
+            android:tint="@color/white"/>
+        <TextView
+            android:text="@string/copied"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:padding="8dp"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

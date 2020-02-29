@@ -79,7 +79,7 @@
                     android:paddingBottom="4dp"
                     android:paddingLeft="4dp"
                     android:paddingRight="4dp"
-                    android:src="@drawable/ic_person_black_24dp"
+                    android:src="@drawable/ic_more_vert_black_24dp"
                     android:scaleType="centerInside"
                     android:tint="@color/grey"
                     android:contentDescription="@string/person"
