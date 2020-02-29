@@ -45,6 +45,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private val personSettingsBtn: ImageView
     private val maxMainView: View
     val minMainView: View
+    private val syncSwitcher: SwitchMaterial
     val syncStateTextView: TextView
     private val keywordInput: EditText
     private val keywordClear: View
@@ -407,7 +408,9 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         })
 
         // init events
-        maxMainView.findViewById<SwitchMaterial>(R.id.sync_switcher).setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
+        syncSwitcher = maxMainView.findViewById(R.id.sync_switcher)
+        syncSwitcher.isChecked = UdpClient.Instance!!.isRunning
+        syncSwitcher.setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
             override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
                 if (isChecked) {
                     UdpClient.Instance!!.start()
@@ -416,7 +419,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 } else {
                     UdpClient.Instance!!.close()
                     syncStateTextView.setTextColor(mContext.resources.getColor(R.color.grey))
-                    syncStateTextView.text = mContext.getText(R.string.all_platform_sync)
+                    syncStateTextView.text = mContext.getText(R.string.content_sync)
                     actionMenuSyncView.visibility = View.GONE
                 }
             }

@@ -5,7 +5,7 @@
     <string name="window_min">Window Min</string>
     <string name="window_max">Window Max</string>
     <string name="content_type_icon">Content Type Icon</string>
-    <string name="all_platform_sync">All Platform Sync</string>
+    <string name="content_sync">Content Sync</string>
     <string name="person">Person</string>
     <string name="avatar">Avatar</string>
     <string name="user_name">User Name</string>

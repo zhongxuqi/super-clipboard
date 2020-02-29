@@ -100,7 +100,7 @@
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                    android:text="@string/all_platform_sync"/>
+                    android:text="@string/content_sync"/>
                 <ImageView
                     android:id="@+id/btn_window_min"
                     android:layout_width="28dp"
