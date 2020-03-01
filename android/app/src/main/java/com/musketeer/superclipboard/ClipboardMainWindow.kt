@@ -5,20 +5,19 @@ import android.animation.ValueAnimator
 import android.content.ClipData
 import android.content.Context
 import android.content.Context.WINDOW_SERVICE
-import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.constraintlayout.widget.Constraints
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.adapter.HistoryListAdapter
 import com.musketeer.superclipboard.components.FeedbackDialog
+import com.musketeer.superclipboard.components.LoginDialog
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
 import com.musketeer.superclipboard.net.UdpClient
@@ -44,7 +43,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private var mFloatViewFirstX = 0
     private var mFloatViewFirstY = 0
     private var mFloatViewMove = false
-    private val personSettingsBtn: ImageView
+    private val moreMenuBtn: ImageView
     private val maxMainView: View
     val minMainView: View
     private val syncSwitcher: SwitchMaterial
@@ -202,7 +201,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         // init base view
         val inflater = LayoutInflater.from(mContext)
         mFloatView = inflater.inflate(R.layout.clipboard_main_layout, null)
-        personSettingsBtn = mFloatView.findViewById(R.id.person_settings)
+        moreMenuBtn = mFloatView.findViewById(R.id.person_settings)
 
         maxMainView = mFloatView.findViewById(R.id.max_view)
         maxMainView.layoutParams = Constraints.LayoutParams((screenWidth * 0.6).toInt(), screenWidth)
@@ -354,9 +353,15 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         // init popup window
         personSettingsView = inflater.inflate(R.layout.person_settings, null)
         popWindow = PopupWindow(personSettingsView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
-        personSettingsBtn.setOnClickListener(object: View.OnClickListener{
+        moreMenuBtn.setOnClickListener(object: View.OnClickListener{
             override fun onClick(v: View?) {
-                popWindow.showAsDropDown(personSettingsBtn)
+                popWindow.showAsDropDown(moreMenuBtn)
+            }
+        })
+        personSettingsView.findViewById<View>(R.id.btn_login).setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                popWindow.dismiss()
+                LoginDialog.showDialog(mContext.applicationContext)
             }
         })
         personSettingsView.findViewById<View>(R.id.btn_feedback).setOnClickListener(object: View.OnClickListener{
