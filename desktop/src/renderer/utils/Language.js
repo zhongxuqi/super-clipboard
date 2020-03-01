@@ -22,21 +22,27 @@ var languageMap = {
     'clipboard': 'ClipBoard',
     'expand': 'Expand',
     'fold': 'Fold',
-    'all_platform_sync': 'All Platform Sync',
+    'content_sync': 'Content Sync',
     'device_total': '%d device total',
     'keyword_input_hint': 'input keyword...',
     'delete': 'Delete',
-    'sync': 'Sync'
+    'sync': 'Sync',
+    'on': 'On',
+    'off': 'Off',
+    'copied': 'Copied'
   },
   'zh': {
     'clipboard': '剪切板',
     'expand': '展开',
     'fold': '折叠',
-    'all_platform_sync': '全平台同步',
+    'content_sync': '内容同步',
     'device_total': '一共%d个设备',
     'keyword_input_hint': '输入关键字...',
     'delete': '删除',
-    'sync': '同步'
+    'sync': '同步',
+    'on': '开',
+    'off': '关',
+    'copied': '复制成功'
   }
 }
 

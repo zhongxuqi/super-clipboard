@@ -1,9 +1,10 @@
 <template>
   <div class="scb-clipboard-message">
-    <i class="iconfont scb-clipboard-message-icon" v-bind:class="iconClass"></i>
-    <div class="scb-clipboard-message-content" v-b-popover.hover.top="content">
+    <i class="iconfont scb-clipboard-message-icon icon-ok1" style="color: #28a745" v-if="copying"></i>
+    <div class="scb-clipboard-message-content" v-b-popover.hover.top="content" v-if="!copying">
       <pre>{{content}}</pre>
     </div>
+    <div class="scb-clipboard-message-content" v-if="copying">{{textCopied}}</div>
     <b-dropdown ref="dropdown" text="" variant="light" size="sm" style="margin-right:0.5rem">
       <b-dropdown-item v-if="syncState" v-on:click="clickSync">
         <i class="iconfont icon-refresh scb-action-icon"></i>
@@ -35,6 +36,7 @@ export default {
       textFold: Language.getLanguageText('fold'),
       textDelete: Language.getLanguageText('delete'),
       textSync: Language.getLanguageText('sync'),
+      textCopied: Language.getLanguageText('copied'),
 
       copying: false
     }

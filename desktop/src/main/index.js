@@ -6,7 +6,7 @@ import Database from './Database'
 import NetUDP from './net_udp'
 import Language from './language'
 
-const MAX_LEN = 10
+const MAX_LEN = 100
 
 /**
  * Set `__static` path to static files in production
@@ -146,7 +146,6 @@ function createWindow () {
   ipcMain.on('clipboard-message-action-copy', (event, arg) => {
     skipValue = arg
     clipboard.writeText(arg)
-    sendNotification(Language.getLanguageText('copy_clipboard_content'), arg)
   })
 
   ipcMain.on('clipboard-message-action-sync', (event, arg) => {
