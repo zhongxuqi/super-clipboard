@@ -11,6 +11,7 @@ import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.constraintlayout.widget.Constraints
@@ -166,7 +167,12 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         var valueAnimator: ValueAnimator? = null
         if (v.width / 2 + prm.x > screenWidth / 2) {
             valueAnimator = ValueAnimator.ofInt(prm.x, screenWidth - v.width)
-            valueAnimator.duration = (1000F * (screenWidth - v.width - prm.x) / screenWidth).toLong()
+            val duration = (1000F * (screenWidth - v.width - prm.x) / screenWidth).toLong()
+            if (duration > 0) {
+                valueAnimator.duration = duration
+            } else {
+                valueAnimator.duration = 0
+            }
         } else {
             valueAnimator = ValueAnimator.ofInt(prm.x, 0)
             valueAnimator.duration = (1000F * prm.x / screenWidth).toLong()
