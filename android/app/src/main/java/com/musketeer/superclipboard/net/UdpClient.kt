@@ -139,7 +139,7 @@ class UdpClient {
         }
 
         fun sha256(str:String): String {
-            val digest = MessageDigest.getInstance("SHA-256")
+            val digest = MessageDigest.getInstance("MD5")
             val result = digest.digest(str.toByteArray())
             return toHex(result)
         }

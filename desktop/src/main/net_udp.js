@@ -1,6 +1,6 @@
 import dgram from 'dgram'
-import { sha256 } from 'js-sha256'
 import os from 'os'
+import md5 from 'js-md5'
 
 const UdpAddrSeparator = ','
 let localUdpAddrsJoin = ''
@@ -139,7 +139,7 @@ function createSyncWorker (remoteAddr) {
       currMsg.originMsg.create_time = undefined
       currMsg.originMsg.update_time = undefined
       currMsg.baseInfoBuffer = Buffer.from(JSON.stringify(currMsg.originMsg), 'utf-8')
-      currMsg.key = sha256(currMsg.baseInfoBuffer.toString())
+      currMsg.key = md5(currMsg.baseInfoBuffer.toString())
       currMsg.total = Math.ceil(currMsg.baseInfoBuffer.length / sendBufferMaxLen)
       currMsg.index = 0
     }
