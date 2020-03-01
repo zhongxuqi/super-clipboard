@@ -19,11 +19,15 @@ udpClient.on('listening', function () {
   localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
 })
 
+udpClient.on('error', function (e) {
+  console.log(e)
+})
+
 function sendUdpPackage (buffer, offset, length, port, ip) {
   try {
     udpClient.send(buffer, offset, length, port, ip)
   } catch (e) {
-
+    console.log(e)
   }
 }
 
