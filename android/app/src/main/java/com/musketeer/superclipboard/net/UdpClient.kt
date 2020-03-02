@@ -310,25 +310,6 @@ class UdpClient {
 
     init {
         client = DatagramSocket()
-        try {
-            val localUdpAddrMap = HashSet<String>()
-            val en: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
-            while (en.hasMoreElements()) {
-                val intf: NetworkInterface = en.nextElement()
-                val enumIpAddr: Enumeration<InetAddress> = intf.getInetAddresses()
-                while (enumIpAddr.hasMoreElements()) {
-                    val inetAddress = enumIpAddr.nextElement()
-                    if (inetAddress !is Inet4Address) continue
-                    if (!inetAddress.isLoopbackAddress && !inetAddress.isLinkLocalAddress) {
-                        localUdpAddrMap.add("${inetAddress.hostAddress}:${client.localPort}")
-                    }
-                }
-            }
-            val localUdpAddrs = localUdpAddrMap.toTypedArray().sortedArray()
-            localUdpAddrsJoin = localUdpAddrs.joinToString(UdpAddrSeparator)
-        } catch (e: Exception) {
-            Log.e("error", e.toString())
-        }
         packet = DatagramPacket(buffer, buffer.size)
         threadPool = Executors.newFixedThreadPool(3)
         threadPool.submit(Runnable {
@@ -422,6 +403,25 @@ class UdpClient {
     }
 
     private fun heartBeat() {
+        try {
+            val localUdpAddrMap = HashSet<String>()
+            val en: Enumeration<NetworkInterface> = NetworkInterface.getNetworkInterfaces()
+            while (en.hasMoreElements()) {
+                val intf: NetworkInterface = en.nextElement()
+                val enumIpAddr: Enumeration<InetAddress> = intf.getInetAddresses()
+                while (enumIpAddr.hasMoreElements()) {
+                    val inetAddress = enumIpAddr.nextElement()
+                    if (inetAddress !is Inet4Address) continue
+                    if (!inetAddress.isLoopbackAddress && !inetAddress.isLinkLocalAddress) {
+                        localUdpAddrMap.add("${inetAddress.hostAddress}:${client.localPort}")
+                    }
+                }
+            }
+            val localUdpAddrs = localUdpAddrMap.toTypedArray().sortedArray()
+            localUdpAddrsJoin = localUdpAddrs.joinToString(UdpAddrSeparator)
+        } catch (e: Exception) {
+            Log.e("error", e.toString())
+        }
         val msg = ServerSyncMessage()
         if (localUdpAddrsJoin.isNotEmpty()) msg.udpAddrs = arrayOf(localUdpAddrsJoin)
         val msgByte = msg.toJSON().toByteArray()

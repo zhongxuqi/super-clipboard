@@ -5,18 +5,10 @@ import md5 from 'js-md5'
 const UdpAddrSeparator = ','
 let localUdpAddrsJoin = ''
 let udpClient = dgram.createSocket('udp4')
+let localPort = 0
 udpClient.on('listening', function () {
   let address = udpClient.address()
-  let ifaces = os.networkInterfaces()
-  let localUdpAddrs = []
-  for (let dev in ifaces) {
-    for (let i = 0; i < ifaces[dev].length; i++) {
-      if (ifaces[dev][i].family !== 'IPv4' || ifaces[dev][i].address === '127.0.0.1') continue
-      localUdpAddrs.push(`${ifaces[dev][i].address}:${address.port}`)
-    }
-  }
-  localUdpAddrs.sort()
-  localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
+  localPort = address.port
 })
 
 udpClient.on('error', function (e) {
@@ -428,6 +420,16 @@ udpClient.on('message', function (buf, remoteInfo) {
 
 let heartBeatIntervalID
 function heartBeat () {
+  let ifaces = os.networkInterfaces()
+  let localUdpAddrs = []
+  for (let dev in ifaces) {
+    for (let i = 0; i < ifaces[dev].length; i++) {
+      if (ifaces[dev][i].family !== 'IPv4' || ifaces[dev][i].address === '127.0.0.1') continue
+      localUdpAddrs.push(`${ifaces[dev][i].address}:${localPort}`)
+    }
+  }
+  localUdpAddrs.sort()
+  localUdpAddrsJoin = localUdpAddrs.join(UdpAddrSeparator)
   let udpAddrs = []
   if (localUdpAddrsJoin !== '') udpAddrs.push(localUdpAddrsJoin)
   var metaData = str2UTF8(JSON.stringify({
