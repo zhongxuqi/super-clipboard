@@ -35,9 +35,11 @@ if (lang != "en" && lang != "zh") {
 var languageMap = {
   "en": {
     'super_clipboard': 'Super Clipboard',
+    'super_clipboard_desc': 'A powful and amazing clipboard manager',
   },
   "zh": {
     'super_clipboard': '超级剪切板',
+    'super_clipboard_desc': '一款极致、强大的剪切板管理工具',
   },
 }
 

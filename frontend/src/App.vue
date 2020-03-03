@@ -7,21 +7,39 @@
         <div style="flex:1"></div>
         <b-button variant="outline-light" size="sm">{{langs[nextLang]}}</b-button>
       </b-container>
+      <b-container class="scb-topbody">
+        <div class="scb-topbody-left">
+          <h1 style="color:white;font-weight:bold">{{ textSuperClipboard }}</h1>
+          <h3 style="color:white">{{ textSuperClipboardDesc }}</h3>
+        </div>
+        <div  class="scb-topbody-right">
+          <swiper :options="swiperOption">
+            <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_1.png"/></swiper-slide>
+            <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_2.png"/></swiper-slide>
+            <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_3.png"/></swiper-slide>
+            <div class="swiper-pagination" slot="pagination"></div>
+          </swiper>
+        </div>
+      </b-container>
     </div>
   </div>
 </template>
 
 <script>
 import Language from './utils/Language'
+import { swiper, swiperSlide } from 'vue-awesome-swiper'
+import 'swiper/dist/css/swiper.css'
 
 export default {
   name: 'App',
   components: {
-    
+    swiper,
+    swiperSlide
   },
   data: function() {
     return {
       textSuperClipboard: Language.getLanguageText('super_clipboard'),
+      textSuperClipboardDesc: Language.getLanguageText('super_clipboard_desc'),
       
       langs: {
         'en': 'English',
@@ -29,6 +47,23 @@ export default {
       },
 
       lang: Language.getLanguage(),
+
+      swiperOption: {
+        spaceBetween: 30,
+        centeredSlides: true,
+        autoplay: {
+          delay: 2500,
+          disableOnInteraction: false
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev'
+        }
+      }
     }
   },
   computed: {
@@ -40,6 +75,12 @@ export default {
       }
       return this.lang
     },
+    swiper() {
+      return this.$refs.mySwiper.swiper
+    },
+  },
+  mounted() {
+    this.swiper.slideTo(3, 1000, false)
   },
 }
 </script>
@@ -72,5 +113,31 @@ export default {
 .scb-topbar-title {
   color: white;
   font-size: 1.1rem;
+}
+
+.scb-topbody {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: start;
+  padding-top: 2rem;
+}
+
+.scb-topbody {
+  padding: 2rem 5rem !important;
+}
+
+.scb-topbody-left {
+  flex: 1;
+}
+
+.scb-topbody-right {
+  width: 25rem;
+  margin-bottom: -15rem;
+}
+
+.scb-topbody-img {
+  display: block;
+  width: 25rem;
 }
 </style>
