@@ -5,6 +5,14 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('/home/zhongxuqi/MyApp/SuperClipboard/super-clipboard.jks')
+            storePassword 'TbZsjZPWdsgT'
+            keyAlias = 'musketeer'
+            keyPassword 'RZ6FNedr2SoA'
+        }
+    }
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.musketeer.superclipboard"
@@ -13,11 +21,17 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.release
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
