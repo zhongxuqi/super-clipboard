@@ -22,6 +22,7 @@ import com.musketeer.superclipboard.components.LoginDialog
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
 import com.musketeer.superclipboard.net.UdpClient
+import com.umeng.analytics.MobclickAgent
 import java.util.*
 
 
@@ -137,6 +138,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     }
 
     fun dismissFloatView() {
+        MobclickAgent.onPause(mContext)
         if (mIsFloatViewShowing) {
             mIsFloatViewShowing = false
             mWindowManager.removeViewImmediate(mFloatView)
@@ -144,6 +146,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     }
 
     fun showFloatView() {
+        MobclickAgent.onResume(mContext)
         mFloatViewLayoutParams.flags = WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or

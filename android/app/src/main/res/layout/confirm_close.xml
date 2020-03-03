@@ -26,7 +26,12 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:gravity="end">
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
                 <TextView
                     android:id="@+id/confirm_close_cancel"
                     android:text="@string/cancel"

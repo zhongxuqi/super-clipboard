@@ -89,18 +89,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="10dp"
                     android:checked="false"
-                    android:theme="@style/SwitchTheme"/>
+                    android:theme="@style/SwitchTheme"
+                    android:visibility="gone"/>
                 <TextView
                     android:id="@+id/sync_state_desc"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:textColor="@color/grey"
                     android:textSize="12sp"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                    android:text="@string/content_sync"/>
+                    android:text="@string/content_sync"
+                    android:visibility="gone"/>
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"/>
                 <ImageView
                     android:id="@+id/btn_window_min"
                     android:layout_width="28dp"

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">超级剪切板</string>
+
+    <string name="window_close">窗口关闭</string>
+    <string name="window_min">窗口最小化</string>
+    <string name="window_max">窗口最大化</string>
+    <string name="content_type_icon">内容类型图标</string>
+    <string name="content_sync">内容同步</string>
+    <string name="person">我的</string>
+    <string name="avatar">头像</string>
+    <string name="user_name">用户名</string>
+    <string name="help">帮助</string>
+    <string name="move">移动</string>
+    <string name="clipboard_empty">剪切板内容为空</string>
+    <string name="detail">详情</string>
+    <string name="delete">删除</string>
+    <string name="expand">扩展</string>
+    <string name="fold">折叠</string>
+    <string name="copied">已复制</string>
+    <string name="device_total">%d个设备</string>
+    <string name="confirm_close">是否确定关闭？</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确认</string>
+    <string name="keyword_input_hint">输入关键字</string>
+    <string name="keyworkd_search">关键字搜索</string>
+    <string name="keyworkd_clear">关键字清空</string>
+    <string name="sync">同步</string>
+    <string name="action_done">动作完成</string>
+    <string name="receive_new_content">收到新的内容</string>
+    <string name="feedback">反馈</string>
+    <string name="click_to_login">点击登录</string>
+    <string name="submit">提交</string>
+    <string name="input_content_hint">请输入内容...</string>
+    <string name="third_party_login">第三方登录</string>
+    <string name="think_feedback">感谢您的反馈</string>
+</resources>
