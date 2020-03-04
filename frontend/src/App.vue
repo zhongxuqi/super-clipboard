@@ -83,6 +83,19 @@
         </b-row>
       </b-container>
     </div>
+    <div class="scb-footer">
+      <b-container>
+        <b-row>
+          <p class="col-8">Copyright © 2019.EasyPass All rights reserved. <a style="color:white" href="http://www.beian.miit.gov.cn">浙ICP备18002047号-2</a></p>
+          <p class="col-4" style="text-align: right">
+            <a href="mailto:easypass.inc@gmail.com" style="color: white">
+              <i class="far fa-envelope" style="display: inline-block;margin-right: 5px"></i>
+              easypass.inc@gmail.com
+            </a>
+          </p>
+        </b-row>
+      </b-container>
+    </div>
   </div>
 </template>
 
@@ -260,5 +273,18 @@ export default {
 
 .scb-download-row-right {
   text-align: right;
+}
+
+.scb-footer {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: white;
+  margin: 0rem;
+  padding: 1rem;
+}
+
+.scb-footer p {
+  font-size: 15px;
+  margin: 0px;
+  word-break: break-all;
 }
 </style>
