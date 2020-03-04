@@ -5,7 +5,7 @@
         <img class="scb-topbar-logo" alt="Vue logo" src="./assets/logo.png">
         <div class="scb-topbar-title scb-title-text">{{textSuperClipboard}}</div>
         <div style="flex:1"></div>
-        <b-button variant="outline-dark" size="sm">{{langs[nextLang]}}</b-button>
+        <b-button variant="outline-dark" size="sm" v-on:click="toggleLang">{{langs[nextLang].name}}</b-button>
       </b-container>
       <b-container class="scb-topbody">
         <div class="scb-topbody-left">
@@ -55,10 +55,6 @@
             <div class="scb-download-table">
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Android</b-col>
-                <b-col class="scb-download-row-right"><b-button variant="link"><b-icon icon="cloud-download"></b-icon></b-button></b-col>
-              </b-row>
-              <b-row class="scb-download-row">
-                <b-col class="scb-download-row-left scb-title-text">IOS</b-col>
                 <b-col class="scb-download-row-right"><b-button variant="link"><b-icon icon="cloud-download"></b-icon></b-button></b-col>
               </b-row>
             </div>
@@ -125,8 +121,14 @@ export default {
       textDesktop: Language.getLanguageText('desktop'),
       
       langs: {
-        'en': 'English',
-        'zh': '中文',
+        'en': {
+          name: 'English',
+          search: '?lang=en',
+        },
+        'zh': {
+          name: '中文',
+          search: '?lang=zh',
+        },
       },
 
       lang: Language.getLanguage(),
@@ -148,6 +150,11 @@ export default {
         }
       },
     }
+  },
+  methods: {
+    toggleLang: function() {
+      window.location.search = this.langs[this.nextLang].search
+    },
   },
   computed: {
     nextLang: function() {
