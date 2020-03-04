@@ -36,10 +36,24 @@ var languageMap = {
   "en": {
     'super_clipboard': 'Super Clipboard',
     'super_clipboard_desc': 'A powful and amazing clipboard manager',
+    'float_window_design': 'Float Window Design',
+    'feature_title': 'Why choose SuperClipboard',
+    'keyword_search': 'Keyword Search',
+    'window_min': 'Window Minize',
+    'app_download': 'APP Downloader',
+    'mobile': 'Mobile',
+    'desktop': 'Desktop',
   },
   "zh": {
     'super_clipboard': '超级剪切板',
     'super_clipboard_desc': '一款极致、强大的剪切板管理工具',
+    'float_window_design': '悬浮窗设计',
+    'feature_title': '为什么选择剪切板',
+    'keyword_search': '关键字搜索',
+    'window_min': '窗口最小化',
+    'app_download': '应用下载',
+    'mobile': '移动端',
+    'desktop': '桌面端',
   },
 }
 
