@@ -9,10 +9,10 @@
       </b-container>
       <b-container class="scb-topbody">
         <div class="scb-topbody-left">
-          <h1 style="color:white;font-weight:bold">{{ textSuperClipboard }}</h1>
-          <h3 style="color:white">{{ textSuperClipboardDesc }}</h3>
+          <h1 class="scb-title-text" style="font-weight:bold">{{ textSuperClipboard }}</h1>
+          <h3 class="scb-title-text">{{ textSuperClipboardDesc }}</h3>
         </div>
-        <div  class="scb-topbody-right">
+        <div class="scb-topbody-right">
           <swiper :options="swiperOption">
             <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_1.png"/></swiper-slide>
             <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_2.png"/></swiper-slide>
@@ -132,12 +132,25 @@ export default {
 }
 
 .scb-topbody-right {
+  position: relative;
   width: 25rem;
   margin-bottom: -15rem;
+  border: 1rem solid #404040;
+  background-color: #404040;
+  border-radius: 2rem;
+  overflow: hidden;
 }
 
 .scb-topbody-img {
   display: block;
-  width: 25rem;
+  width: 23rem;
+  border-radius: 1rem;
 }
+
+.scb-title-text {
+  color: black;
+  text-shadow: 0.1rem 0rem white, 0rem 0.1rem white, -0.1rem 0rem white, 0rem -0.1rem white, 
+    0.1rem 0.1rem white, -0.1rem 0.1rem white, -0.1rem -0.1rem white, 0.1rem -0.1rem white;
+}
+
 </style>
