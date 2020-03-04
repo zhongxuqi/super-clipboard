@@ -31,6 +31,7 @@
             android:paddingBottom="20dp">
 
             <ImageView
+                android:id="@+id/login_qq"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="80dp"
@@ -45,7 +46,8 @@
                 android:scaleType="centerInside"
                 android:adjustViewBounds="true"
                 android:src="@mipmap/weibo"
-                android:padding="10dp"/>
+                android:padding="10dp"
+                android:visibility="gone"/>
         </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

@@ -7,16 +7,18 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
     private val REQUEST_CODE_DRAW_OVERLAY_PERMISSION = 5
     var clipboardMainWindow: ClipboardMainWindow? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        findViewById<View>(R.id.btn_open_floatview).setOnClickListener(this)
         if (ClipboardMainWindow.Instance != null) {
             clipboardMainWindow = ClipboardMainWindow.Instance
         } else {
@@ -24,11 +26,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
+    fun showFloatView() {
         if (checkDrawOverlayPermission()) {
             clipboardMainWindow!!.showFloatView()
-            finish()
         }
     }
 
@@ -43,7 +43,6 @@ class MainActivity : AppCompatActivity() {
                 clipboardMainWindow!!.showFloatView()
             }
         }
-        finish()
     }
 
     private fun checkDrawOverlayPermission(): Boolean {
@@ -56,6 +55,14 @@ class MainActivity : AppCompatActivity() {
             false
         } else {
             true
+        }
+    }
+
+    override fun onClick(v: View?) {
+        when (v!!.id) {
+            R.id.btn_open_floatview -> {
+                showFloatView()
+            }
         }
     }
 }

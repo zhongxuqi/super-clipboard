@@ -3,8 +3,8 @@ package com.musketeer.superclipboard
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.ClipData
-import android.content.Context
 import android.content.Context.WINDOW_SERVICE
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
@@ -14,19 +14,21 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Constraints
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.adapter.HistoryListAdapter
 import com.musketeer.superclipboard.components.FeedbackDialog
-import com.musketeer.superclipboard.components.LoginDialog
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
 import com.musketeer.superclipboard.net.UdpClient
+import com.musketeer.superclipboard.utils.SharePreference
+import com.musketeer.superclipboard.utils.UserType
 import com.umeng.analytics.MobclickAgent
 import java.util.*
 
 
-class ClipboardMainWindow constructor(val mContext: Context) {
+class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
     companion object {
         var Instance: ClipboardMainWindow? = null
     }
@@ -365,12 +367,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         moreMenuBtn.setOnClickListener(object: View.OnClickListener{
             override fun onClick(v: View?) {
                 popWindow.showAsDropDown(moreMenuBtn)
-            }
-        })
-        personSettingsView.findViewById<View>(R.id.btn_login).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                popWindow.dismiss()
-                LoginDialog.showDialog(mContext.applicationContext)
             }
         })
         personSettingsView.findViewById<View>(R.id.btn_feedback).setOnClickListener(object: View.OnClickListener{

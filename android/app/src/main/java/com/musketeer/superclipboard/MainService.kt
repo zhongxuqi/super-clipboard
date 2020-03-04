@@ -47,7 +47,7 @@ class MainService : Service() {
                         skipNum--
                         return
                     }
-                    val addedText = manager.primaryClip!!.getItemAt(0).text
+                    val addedText = manager.primaryClip!!.getItemAt(0).text ?: return
                     val millisTs = System.currentTimeMillis()
                     val newValue = addedText.toString()
                     prevValue = newValue

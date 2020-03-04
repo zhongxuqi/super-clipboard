@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import com.musketeer.superclipboard.db.SqliteHelper
 import com.musketeer.superclipboard.net.UdpClient
+import com.tencent.tauth.Tencent
 import com.umeng.commonsdk.UMConfigure
 
 class MainApplication : Application() {
