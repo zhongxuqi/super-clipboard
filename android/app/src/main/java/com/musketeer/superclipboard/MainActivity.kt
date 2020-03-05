@@ -10,14 +10,23 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CompoundButton
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.components.FeedbackDialog
 import com.musketeer.superclipboard.net.UdpClient
+import com.musketeer.superclipboard.utils.SharePreference
+import com.musketeer.superclipboard.utils.UserType
+import com.tencent.connect.common.Constants
+import com.tencent.tauth.IUiListener
+import com.tencent.tauth.Tencent
+import com.tencent.tauth.UiError
+import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), View.OnClickListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener {
     private val REQUEST_CODE_DRAW_OVERLAY_PERMISSION = 5
     var clipboardMainWindow: ClipboardMainWindow? = null
 
@@ -25,11 +34,23 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         findViewById<SwitchMaterial>(R.id.sync_switcher)
     }
 
+    val mTencent: Tencent by lazy {
+        Tencent.createInstance("101857020", this.applicationContext)
+    }
+
+    val userTypeImage: ImageView by lazy {
+        findViewById<ImageView>(R.id.user_type)
+    }
+    val userNameText: TextView by lazy {
+        findViewById<TextView>(R.id.user_name)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         findViewById<View>(R.id.btn_open_floatview).setOnClickListener(this)
         findViewById<View>(R.id.btn_feedback).setOnClickListener(this)
+        findViewById<View>(R.id.btn_login).setOnClickListener(this)
         if (ClipboardMainWindow.Instance != null) {
             clipboardMainWindow = ClipboardMainWindow.Instance
         } else {
@@ -45,6 +66,22 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }
             }
         })
+        refreshUserType()
+    }
+
+    fun refreshUserType() {
+        val userType = SharePreference.getUserType(this)
+        val userID = SharePreference.getUserID(this)
+        Log.d("===>>>", "userID $userID")
+        when (userType) {
+            UserType.UserTypeQQ -> {
+                userTypeImage.setImageResource(R.mipmap.qq)
+                userNameText.text = getString(R.string.logined)
+            }
+            else -> {
+
+            }
+        }
     }
 
     fun showFloatView() {
@@ -57,6 +94,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val dialog = BottomSheetDialog(this)
         val v = LayoutInflater.from(this).inflate(R.layout.dialog_login, null)
         dialog.setContentView(v)
+        v.findViewById<View>(R.id.login_qq).setOnClickListener(object: View.OnClickListener{
+            override fun onClick(v: View?) {
+                mTencent.login(this@MainActivity, "all", this@MainActivity)
+                dialog.dismiss()
+            }
+        })
         dialog.show()
     }
 
@@ -65,6 +108,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         resultCode: Int,
         data: Intent?
     ) {
+        if (requestCode == Constants.REQUEST_LOGIN) {
+            Tencent.onActivityResultData(requestCode, resultCode, data, this)
+        }
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_DRAW_OVERLAY_PERMISSION) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
@@ -94,6 +140,26 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.btn_feedback -> {
                 FeedbackDialog.showDialog(this)
             }
+            R.id.btn_login -> {
+                showLoginDialog()
+            }
         }
+    }
+
+    // QQ
+
+    override fun onComplete(p0: Any?) {
+        SharePreference.setUserType(this@MainActivity, UserType.UserTypeQQ)
+        val jo = JSONObject(p0.toString())
+        SharePreference.setUserID(this@MainActivity, jo.getString("openid"))
+        refreshUserType()
+    }
+
+    override fun onCancel() {
+        Log.d("===>>>", "onCancel")
+    }
+
+    override fun onError(p0: UiError?) {
+        Log.d("===>>>", "onError ${p0.toString()}")
     }
 }

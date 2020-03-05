@@ -32,10 +32,11 @@
     <string name="input_content_hint">请输入内容...</string>
     <string name="third_party_login">第三方登录</string>
     <string name="think_feedback">感谢您的反馈</string>
-    <string name="logined">已登录</string>
+    <string name="logined">已登录，点击登录其它帐号</string>
     <string name="open_clipboard">打开剪切板悬浮窗</string>
     <string name="sync_clipboard">同步剪切板</string>
     <string name="sync_clipboard_hint">在局域网中同步用户的内容</string>
     <string name="sync_off">同步关闭</string>
     <string name="sync_on">同步开启: %d个设备</string>
+    <string name="login_qq">登录QQ</string>
 </resources>

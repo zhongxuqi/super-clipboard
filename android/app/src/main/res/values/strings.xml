@@ -31,10 +31,11 @@
     <string name="input_content_hint">Please input content...</string>
     <string name="third_party_login">Third Party Login</string>
     <string name="think_feedback">Think you for your feedback</string>
-    <string name="logined">Logined</string>
+    <string name="logined">Logined. Click to login another account</string>
     <string name="open_clipboard">Open Clipboard Float Window</string>
     <string name="sync_clipboard">Sync Clipboard</string>
     <string name="sync_clipboard_hint">Sync content of user account in local area network</string>
     <string name="sync_off">Sync Off</string>
     <string name="sync_on">Sync On: %d Device Total</string>
+    <string name="login_qq">Login QQ</string>
 </resources>

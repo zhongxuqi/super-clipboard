@@ -65,7 +65,6 @@
                 android:layout_height="35dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_person_black_24dp"
-                android:tint="@color/black"
                 android:contentDescription="@string/avatar"/>
             <TextView
                 android:id="@+id/user_name"
