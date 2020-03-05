@@ -8,12 +8,19 @@ import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.switchmaterial.SwitchMaterial
+import com.musketeer.superclipboard.net.UdpClient
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private val REQUEST_CODE_DRAW_OVERLAY_PERMISSION = 5
     var clipboardMainWindow: ClipboardMainWindow? = null
+
+    val syncSwitcher: SwitchMaterial by lazy {
+        findViewById<SwitchMaterial>(R.id.sync_switcher)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +31,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         } else {
             clipboardMainWindow = ClipboardMainWindow(this)
         }
+        syncSwitcher.isChecked = UdpClient.Instance!!.isRunning
+        syncSwitcher.setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
+            override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+                if (isChecked) {
+                    UdpClient.Instance!!.start()
+                } else {
+                    UdpClient.Instance!!.close()
+                }
+            }
+        })
     }
 
     fun showFloatView() {

@@ -50,7 +50,6 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
     private val moreMenuBtn: ImageView
     private val maxMainView: View
     val minMainView: View
-    private val syncSwitcher: SwitchMaterial
     val syncStateTextView: TextView
     private val keywordInput: EditText
     private val keywordClear: View
@@ -73,6 +72,7 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
     private var clipboardMsg: ClipBoardMessage? = null
 
     private val confirmCLoseWindow: PopupWindow
+    private val udpClientListener: UdpClient.Listener
 
     fun minWindow() {
         val prm = mFloatViewLayoutParams
@@ -423,22 +423,6 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
         })
 
         // init events
-        syncSwitcher = maxMainView.findViewById(R.id.sync_switcher)
-        syncSwitcher.isChecked = UdpClient.Instance!!.isRunning
-        syncSwitcher.setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
-            override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
-                if (isChecked) {
-                    UdpClient.Instance!!.start()
-                    syncStateTextView.setTextColor(mContext.resources.getColor(R.color.blue))
-                    actionMenuSyncView.visibility = View.VISIBLE
-                } else {
-                    UdpClient.Instance!!.close()
-                    syncStateTextView.setTextColor(mContext.resources.getColor(R.color.grey))
-                    syncStateTextView.text = mContext.getText(R.string.content_sync)
-                    actionMenuSyncView.visibility = View.GONE
-                }
-            }
-        })
         mContentListView.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
             override fun onItemLongClick(
                 parent: AdapterView<*>?,
@@ -479,10 +463,23 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
         })
 
         // init udp listener
-        UdpClient.listener = object: UdpClient.Listener{
-            override fun onChangeDeviceNum(deviceNum: Int) {
+        udpClientListener = object: UdpClient.Listener{
+            override fun onChangeDeviceNum(isRunning: Boolean, deviceNum: Int) {
                 Instance?.handler?.post {
-                    Instance?.syncStateTextView?.text = String.format(Instance?.mContext!!.getString(R.string.device_total, deviceNum))
+                    if (isRunning) {
+                        Instance?.syncStateTextView?.text = String.format(
+                            Instance?.mContext!!.getString(
+                                R.string.sync_on,
+                                deviceNum
+                            )
+                        )
+                        syncStateTextView.setTextColor(mContext.resources.getColor(R.color.blue))
+                        actionMenuSyncView.visibility = View.VISIBLE
+                    } else {
+                        syncStateTextView.setTextColor(mContext.resources.getColor(R.color.grey))
+                        syncStateTextView.text = mContext.getText(R.string.sync_off)
+                        actionMenuSyncView.visibility = View.GONE
+                    }
                 }
             }
 
@@ -495,6 +492,8 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
                 })
             }
         }
+        UdpClient.listener = udpClientListener
+        udpClientListener.onChangeDeviceNum(UdpClient.Instance!!.isRunning, UdpClient.Instance!!.deviceNum)
     }
 
     fun showContent(content: String) {

@@ -84,12 +84,6 @@
                     android:tint="@color/grey"
                     android:contentDescription="@string/person"
                     android:background="?attr/selectableItemBackground"/>
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sync_switcher"
-                    android:layout_width="wrap_content"
-                    android:layout_height="10dp"
-                    android:checked="false"
-                    android:theme="@style/SwitchTheme"/>
                 <TextView
                     android:id="@+id/sync_state_desc"
                     android:layout_width="wrap_content"
@@ -99,7 +93,7 @@
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                    android:text="@string/content_sync"/>
+                    android:text="@string/sync_off"/>
                 <View
                     android:layout_width="0dp"
                     android:layout_height="1dp"

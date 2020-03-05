@@ -10,6 +10,8 @@ import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
@@ -53,7 +55,7 @@ class UdpClient {
     }
 
     interface Listener {
-        fun onChangeDeviceNum(deviceNum: Int)
+        fun onChangeDeviceNum(isRunning: Boolean, deviceNum: Int)
         fun onReceiveMsg(msg: ClipBoardMessage)
     }
 
@@ -79,7 +81,7 @@ class UdpClient {
     val client: DatagramSocket
     val buffer: ByteArray = ByteArray(1024)
     val packet: DatagramPacket
-    val threadPool: ExecutorService
+    val threadPool: ScheduledExecutorService
 
     var isRunning: Boolean = false
 
@@ -96,6 +98,17 @@ class UdpClient {
                 client.send(p)
             } catch (e: java.lang.Exception) {
                 Log.e("error", e.toString())
+            }
+        }
+    }
+
+    class ClearKeyTask(val udpClient: UdpClient, val msgKey: String): Runnable {
+        override fun run() {
+            synchronized(udpClient.isFinishMap) {
+                udpClient.isFinishMap.remove(msgKey)
+                udpClient.receiveMap.remove(msgKey)
+                udpClient.receiveIndexMap.remove(msgKey)
+                udpClient.resultMap.remove(msgKey)
             }
         }
     }
@@ -311,7 +324,7 @@ class UdpClient {
     init {
         client = DatagramSocket()
         packet = DatagramPacket(buffer, buffer.size)
-        threadPool = Executors.newFixedThreadPool(3)
+        threadPool = Executors.newScheduledThreadPool(1)
         threadPool.submit(Runnable {
             receiveLoop@ while (true) {
                 try {
@@ -341,7 +354,7 @@ class UdpClient {
                                     deviceNum++
                                 }
                             }
-                            listener?.onChangeDeviceNum(deviceNum)
+                            listener?.onChangeDeviceNum(isRunning, deviceNum)
                             refreshSyncWork(validUdpAddrs.toTypedArray())
                         }
                         HeaderUdpClientSync -> {
@@ -356,11 +369,15 @@ class UdpClient {
 //                            Log.d("UdpClient", "$metaData from ${String(packet.data, 0, packet.length)}")
                             if (metaDataJson.key == null || metaDataJson.key == "") continue@receiveLoop
                             val msgKey = metaDataJson.key!!
-                            if (isFinishMap.containsKey(msgKey) && isFinishMap[msgKey]!!) {
-                                ackBuf(metaData.toByteArray(), packet.address, packet.port)
-                                if (metaDataJson.index == 0 && resultMap.containsKey(msgKey)) listener?.onReceiveMsg(resultMap[msgKey]!!)
-                                continue@receiveLoop
+                            var isFinished = false
+                            synchronized(isFinishMap) {
+                                if (isFinishMap.containsKey(msgKey) && isFinishMap[msgKey]!!) {
+                                    ackBuf(metaData.toByteArray(), packet.address, packet.port)
+                                    if (metaDataJson.index == 0 && resultMap.containsKey(msgKey)) listener?.onReceiveMsg(resultMap[msgKey]!!)
+                                    isFinished = true
+                                }
                             }
+                            if (isFinished) continue@receiveLoop
                             if (!receiveMap.containsKey(msgKey)) {
                                 receiveMap[msgKey] = Array<ByteArray?>(UdpWindowMaxLen, {null})
                                 receiveIndexMap[msgKey] = ReceiveIndex(metaDataJson.total, 0)
@@ -449,7 +466,7 @@ class UdpClient {
             }
 
             // 删除无效SyncWorker
-            val addr2Remove = ArrayList<String>(if(remoteAddrs!=null) remoteAddrs.size else 0)
+            val addr2Remove = ArrayList<String>(remoteAddrs?.size ?: 0)
             for (addr in syncWorkerMap.keys) {
                 if (!remoteAddrMap.containsKey(addr)) {
                     syncWorkerMap[addr]!!.close()
@@ -551,6 +568,7 @@ class UdpClient {
             listener?.onReceiveMsg(ClipBoardMessage(0, msgObj.type, msgObj.content, msgObj.extra, msgObj.createTime, msgObj.updateTime))
             isFinishMap[msgKey] = true
             receiveMap.remove(msgKey)
+            threadPool.schedule(ClearKeyTask(this, msgKey), 3, TimeUnit.MINUTES)
         }
     }
 
@@ -564,6 +582,7 @@ class UdpClient {
 
     fun start() {
         isRunning = true
+        listener?.onChangeDeviceNum(isRunning, 0)
     }
 
     fun close() {
@@ -573,5 +592,6 @@ class UdpClient {
             worker.close()
         }
         syncWorkerMap.clear()
+        listener?.onChangeDeviceNum(isRunning, 0)
     }
 }

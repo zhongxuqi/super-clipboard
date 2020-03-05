@@ -276,6 +276,14 @@ let receiveIndexMap = {}
 let receiveMap = {}
 let resultMap = {}
 let isFinishMap = {}
+function clearKeyTask (msgKey) {
+  return function () {
+    receiveIndexMap[msgKey] = undefined
+    receiveMap[msgKey] = undefined
+    resultMap[msgKey] = undefined
+    isFinishMap[msgKey] = undefined
+  }
+}
 
 function ackBuf (metaBuffer, remoteInfo) {
   var buf = Buffer.alloc(metaBuffer.length + 2)
@@ -350,6 +358,7 @@ function checkFinish (msgKey) {
     onReceiveMsg(msg)
     receiveMap[msgKey] = null
     isFinishMap[msgKey] = true
+    setTimeout(clearKeyTask(msgKey), 3 * 60 * 1000)
   }
 }
 

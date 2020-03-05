@@ -5,7 +5,6 @@
     <string name="window_min">Window Min</string>
     <string name="window_max">Window Max</string>
     <string name="content_type_icon">Content Type Icon</string>
-    <string name="content_sync">Content Sync</string>
     <string name="person">Person</string>
     <string name="avatar">Avatar</string>
     <string name="user_name">User Name</string>
@@ -17,7 +16,6 @@
     <string name="expand">Expand</string>
     <string name="fold">Fold</string>
     <string name="copied">Copied</string>
-    <string name="device_total">%d Device Total</string>
     <string name="confirm_close">Sure to close?</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
@@ -37,4 +35,6 @@
     <string name="open_clipboard">Open Clipboard Float Window</string>
     <string name="sync_clipboard">Sync Clipboard</string>
     <string name="sync_clipboard_hint">Sync content of user account in local area network</string>
+    <string name="sync_off">Sync Off</string>
+    <string name="sync_on">Sync On: %d Device Total</string>
 </resources>
