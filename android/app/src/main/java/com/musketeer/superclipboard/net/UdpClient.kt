@@ -324,7 +324,7 @@ class UdpClient {
     init {
         client = DatagramSocket()
         packet = DatagramPacket(buffer, buffer.size)
-        threadPool = Executors.newScheduledThreadPool(1)
+        threadPool = Executors.newScheduledThreadPool(2)
         threadPool.submit(Runnable {
             receiveLoop@ while (true) {
                 try {
@@ -333,8 +333,7 @@ class UdpClient {
                     val metaMessageLen = packet.data[1].toInt()
                     if (packet.length < 2 + metaMessageLen) continue@receiveLoop
                     val metaData = String(packet.data, 2, metaMessageLen)
-//                  Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
-
+//                    Log.d("UdpClient", "$metaData from ${packet.address.hostAddress}:${packet.getPort()}")
                     val metaDataJson = JSON.parseObject(metaData, MetaData::class.java)
                     when (packet.data[0]) {
                         HeaderUdpServerSync -> {
@@ -405,8 +404,8 @@ class UdpClient {
                 packet.length = buffer.size
             }
         })
-        threadPool.submit(Runnable {
-            while (true) {
+        threadPool.scheduleWithFixedDelay(object: Runnable{
+            override fun run() {
                 if (isRunning) {
                     try {
                         heartBeat()
@@ -414,9 +413,8 @@ class UdpClient {
                         e.printStackTrace()
                     }
                 }
-                Thread.sleep(2000)
             }
-        })
+        }, 2, 2, TimeUnit.SECONDS)
     }
 
     private fun heartBeat() {

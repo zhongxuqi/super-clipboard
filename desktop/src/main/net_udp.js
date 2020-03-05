@@ -276,6 +276,7 @@ let receiveIndexMap = {}
 let receiveMap = {}
 let resultMap = {}
 let isFinishMap = {}
+
 function clearKeyTask (msgKey) {
   return function () {
     receiveIndexMap[msgKey] = undefined

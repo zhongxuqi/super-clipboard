@@ -3,10 +3,7 @@
     <div class="scb-clipboard-topbar">
       <img class="scb-user-head" src="~@/assets/default_head.png" alt="electron-vue">
       <b-form class="scb-clipboard-keyword-form">
-        <b-form-input
-          v-model="keyword"
-          v-bind:placeholder="textKeywordInputHint"
-        ></b-form-input>
+        <input class="scb-clipboard-keyword-form-input" v-model="keyword" v-bind:placeholder="textKeywordInputHint"/>
       </b-form>
       <div class="scb-topbar-sync-switch">
         <b-form-checkbox v-model="syncState" name="check-button" switch>
@@ -123,6 +120,17 @@ export default {
   padding: 0rem;
   margin: 0rem 0.5rem 0rem 0rem;
   flex: 1;
+  padding: 0rem 1rem;
+}
+
+.scb-clipboard-keyword-form-input {
+  background-color: rgba(255, 255, 255, 0.4);
+  border: none;
+  outline: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  display: block;
+  width: 100%;
 }
 
 .scb-user-head {
