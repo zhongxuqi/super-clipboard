@@ -82,11 +82,11 @@
     <div class="scb-footer">
       <b-container>
         <b-row>
-          <p class="col-8">Copyright © 2019.EasyPass All rights reserved. <a style="color:white" href="http://www.beian.miit.gov.cn">浙ICP备18002047号-2</a></p>
+          <p class="col-8">Copyright © 2020-2022.EasyPass All rights reserved. <a style="color:white" href="http://www.beian.miit.gov.cn">浙ICP备18002047号-4</a></p>
           <p class="col-4" style="text-align: right">
             <a href="mailto:easypass.inc@gmail.com" style="color: white">
               <i class="far fa-envelope" style="display: inline-block;margin-right: 5px"></i>
-              easypass.inc@gmail.com
+              Email官方邮箱
             </a>
           </p>
         </b-row>
