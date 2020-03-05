@@ -71,11 +71,6 @@ class FeedbackDialog {
             })
             builder.setView(v)
             val dialog = builder.create()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                dialog.window!!.setType((WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY));
-            } else {
-                dialog.window!!.setType((WindowManager.LayoutParams.TYPE_SYSTEM_ALERT));
-            }
             FeedbackDialog.dialog = dialog
             dialog.show()
         }

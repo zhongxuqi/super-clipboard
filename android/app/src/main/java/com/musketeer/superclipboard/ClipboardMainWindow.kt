@@ -47,7 +47,6 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
     private var mFloatViewFirstX = 0
     private var mFloatViewFirstY = 0
     private var mFloatViewMove = false
-    private val moreMenuBtn: ImageView
     private val maxMainView: View
     val minMainView: View
     val syncStateTextView: TextView
@@ -60,9 +59,6 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
     private val mContentListView: ListView
     private val mContentListAdapter: HistoryListAdapter
     private val mContentList: LinkedList<ClipBoardMessage> = LinkedList()
-
-    private val popWindow: PopupWindow
-    private val personSettingsView: View
 
     private val actionMenuWindow: PopupWindow
     private val actionMenuWindowView: View
@@ -212,7 +208,6 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
         // init base view
         val inflater = LayoutInflater.from(mContext)
         mFloatView = inflater.inflate(R.layout.clipboard_main_layout, null)
-        moreMenuBtn = mFloatView.findViewById(R.id.person_settings)
 
         maxMainView = mFloatView.findViewById(R.id.max_view)
         maxMainView.layoutParams = Constraints.LayoutParams((screenWidth * 0.6).toInt(), screenWidth)
@@ -358,21 +353,6 @@ class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
                     copiedCover.alpha = it.animatedValue.toString().toFloat()
                 }
                 actionDoneValueAnimator.start()
-            }
-        })
-
-        // init popup window
-        personSettingsView = inflater.inflate(R.layout.person_settings, null)
-        popWindow = PopupWindow(personSettingsView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
-        moreMenuBtn.setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                popWindow.showAsDropDown(moreMenuBtn)
-            }
-        })
-        personSettingsView.findViewById<View>(R.id.btn_feedback).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                popWindow.dismiss()
-                FeedbackDialog.showDialog(mContext.applicationContext)
             }
         })
 

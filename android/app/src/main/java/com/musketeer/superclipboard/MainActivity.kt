@@ -7,10 +7,13 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.musketeer.superclipboard.components.FeedbackDialog
 import com.musketeer.superclipboard.net.UdpClient
 
 
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         findViewById<View>(R.id.btn_open_floatview).setOnClickListener(this)
+        findViewById<View>(R.id.btn_feedback).setOnClickListener(this)
         if (ClipboardMainWindow.Instance != null) {
             clipboardMainWindow = ClipboardMainWindow.Instance
         } else {
@@ -47,6 +51,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         if (checkDrawOverlayPermission()) {
             clipboardMainWindow!!.showFloatView()
         }
+    }
+
+    fun showLoginDialog() {
+        val dialog = BottomSheetDialog(this)
+        val v = LayoutInflater.from(this).inflate(R.layout.dialog_login, null)
+        dialog.setContentView(v)
+        dialog.show()
     }
 
     override fun onActivityResult(
@@ -79,6 +90,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         when (v!!.id) {
             R.id.btn_open_floatview -> {
                 showFloatView()
+            }
+            R.id.btn_feedback -> {
+                FeedbackDialog.showDialog(this)
             }
         }
     }

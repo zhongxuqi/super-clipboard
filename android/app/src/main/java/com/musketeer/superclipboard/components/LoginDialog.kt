@@ -15,11 +15,6 @@ class LoginDialog {
             val dialog = BottomSheetDialog(ctx)
             val v = LayoutInflater.from(ctx).inflate(R.layout.dialog_login, null)
             dialog.setContentView(v)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                dialog.window!!.setType((WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY));
-            } else {
-                dialog.window!!.setType((WindowManager.LayoutParams.TYPE_SYSTEM_ALERT));
-            }
             dialog.show()
         }
     }
