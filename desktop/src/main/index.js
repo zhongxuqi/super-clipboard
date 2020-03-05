@@ -158,6 +158,8 @@ function createWindow () {
 
   NetUDP.setOnReceiveMsg(function (msg) {
     upsertMsg(msg, function (dbMsg) {
+      skipValue = dbMsg.content
+      clipboard.writeText(dbMsg.content)
       sendNotification(Language.getLanguageText('receive_clipboard_content'), dbMsg.content)
     })
   })

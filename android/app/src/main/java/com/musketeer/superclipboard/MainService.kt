@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -63,6 +64,9 @@ class MainService : Service() {
 
     fun insertMessage(clipboardMessage: ClipBoardMessage) {
         val existMsg = ClipboardMainWindow.Instance?.getSameMessage(clipboardMessage)
+        skipNum++
+        prevValue = clipboardMessage.content
+        manager.setPrimaryClip(ClipData.newPlainText(prevValue, prevValue))
         ClipboardMainWindow.Instance!!.showContent(clipboardMessage.content)
         if (existMsg != null) {
             existMsg.updateTime = System.currentTimeMillis()
