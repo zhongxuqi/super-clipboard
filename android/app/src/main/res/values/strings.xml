@@ -38,4 +38,16 @@
     <string name="sync_off">Sync Off</string>
     <string name="sync_on">Sync On: %d Device Total</string>
     <string name="login_qq">Login QQ</string>
+    <string name="login_page">Login Page</string>
+    <string name="account">Account</string>
+    <string name="password">Password</string>
+    <string name="password_repeat">Password Repeat</string>
+    <string name="captcha_code">Captcha Code</string>
+    <string name="login">Login</string>
+    <string name="go_register">Go Register</string>
+    <string name="register_page">Register Page</string>
+    <string name="register">Register</string>
+    <string name="go_login">Go Login</string>
+    <string name="required">required</string>
+    <string name="password_repeat_wrong">Password Repeat is wrong</string>
 </resources>

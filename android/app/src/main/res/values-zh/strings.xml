@@ -39,4 +39,16 @@
     <string name="sync_off">同步关闭</string>
     <string name="sync_on">同步开启: %d个设备</string>
     <string name="login_qq">登录QQ</string>
+    <string name="login_page">登录页面</string>
+    <string name="account">帐号</string>
+    <string name="password">密码</string>
+    <string name="password_repeat">密码(重复)</string>
+    <string name="captcha_code">图片验证码</string>
+    <string name="login">登录</string>
+    <string name="go_register">去注册</string>
+    <string name="register_page">注册页面</string>
+    <string name="register">注册</string>
+    <string name="go_login">去登录</string>
+    <string name="required">必填</string>
+    <string name="password_repeat_wrong">重复密码输入错误</string>
 </resources>

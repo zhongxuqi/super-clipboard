@@ -1,21 +1,21 @@
 package com.musketeer.superclipboard
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.components.FeedbackDialog
+import com.musketeer.superclipboard.components.LoginDialog
 import com.musketeer.superclipboard.net.UdpClient
 import com.musketeer.superclipboard.utils.SharePreference
 import com.musketeer.superclipboard.utils.UserType
@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener {
         findViewById<View>(R.id.btn_open_floatview).setOnClickListener(this)
         findViewById<View>(R.id.btn_feedback).setOnClickListener(this)
         findViewById<View>(R.id.btn_login).setOnClickListener(this)
+
         if (ClipboardMainWindow.Instance != null) {
             clipboardMainWindow = ClipboardMainWindow.Instance
         } else {
@@ -91,16 +92,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener {
     }
 
     fun showLoginDialog() {
-        val dialog = BottomSheetDialog(this)
-        val v = LayoutInflater.from(this).inflate(R.layout.dialog_login, null)
-        dialog.setContentView(v)
-        v.findViewById<View>(R.id.login_qq).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                mTencent.login(this@MainActivity, "all", this@MainActivity)
-                dialog.dismiss()
-            }
-        })
-        dialog.show()
+        LoginDialog(this)
     }
 
     override fun onActivityResult(
