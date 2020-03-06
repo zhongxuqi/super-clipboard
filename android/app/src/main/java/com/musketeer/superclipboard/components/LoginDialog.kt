@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import com.google.android.material.textfield.TextInputEditText
@@ -99,7 +100,7 @@ class LoginDialog(val ctx: Context): View.OnClickListener {
             registerPasswordRepeatLayout.error = ctx.getString(R.string.required)
             hasError = true
         }
-        if (registerPassword.text != registerPasswordRepeat.text) {
+        if (registerPassword.text.toString() != registerPasswordRepeat.text.toString()) {
             registerPasswordRepeatLayout.isErrorEnabled = true
             registerPasswordRepeatLayout.error = ctx.getString(R.string.password_repeat_wrong)
             hasError = true
