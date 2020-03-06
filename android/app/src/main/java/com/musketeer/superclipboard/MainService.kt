@@ -17,7 +17,7 @@ import com.musketeer.superclipboard.db.SqliteHelper
 import com.musketeer.superclipboard.net.UdpClient
 
 
-class MainService : Service() {
+class MainService : Service(), ClipboardManager.OnPrimaryClipChangedListener {
     companion object {
         var instance: MainService? = null
     }
@@ -41,25 +41,25 @@ class MainService : Service() {
         if (last != null) {
             prevValue = last.content
         }
-        manager.addPrimaryClipChangedListener(object: ClipboardManager.OnPrimaryClipChangedListener {
-            override fun onPrimaryClipChanged() {
-                if (manager.hasPrimaryClip() && manager.primaryClip!!.itemCount > 0) {
-                    if (skipNum > 0) {
-                        skipNum--
-                        return
-                    }
-                    val addedText = manager.primaryClip!!.getItemAt(0).text ?: return
-                    val millisTs = System.currentTimeMillis()
-                    val newValue = addedText.toString()
-                    prevValue = newValue
-                    val msgObj = ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", 0, 0)
-                    UdpClient.Instance!!.sendClipboardMsg(msgObj)
-                    msgObj.createTime = millisTs
-                    msgObj.updateTime = millisTs
-                    insertMessage(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
-                }
+        manager.addPrimaryClipChangedListener(this)
+    }
+
+    override fun onPrimaryClipChanged() {
+        if (manager.hasPrimaryClip() && manager.primaryClip!!.itemCount > 0) {
+            if (skipNum > 0) {
+                skipNum = 0
+                return
             }
-        })
+            val addedText = manager.primaryClip!!.getItemAt(0).text ?: return
+            val millisTs = System.currentTimeMillis()
+            val newValue = addedText.toString()
+            prevValue = newValue
+            val msgObj = ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", 0, 0)
+            UdpClient.Instance!!.sendClipboardMsg(msgObj)
+            msgObj.createTime = millisTs
+            msgObj.updateTime = millisTs
+            insertMessage(ClipBoardMessage(0, ClipBoardMessage.MessageType.Text, newValue, "", millisTs, millisTs))
+        }
     }
 
     fun insertMessage(clipboardMessage: ClipBoardMessage) {
@@ -114,5 +114,10 @@ class MainService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        manager.removePrimaryClipChangedListener(this)
     }
 }
