@@ -65,7 +65,8 @@
                 android:layout_height="35dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_person_black_24dp"
-                android:contentDescription="@string/avatar"/>
+                android:contentDescription="@string/avatar"
+                android:visibility="gone"/>
             <TextView
                 android:id="@+id/user_name"
                 android:text="@string/click_to_login"

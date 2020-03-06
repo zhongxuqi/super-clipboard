@@ -50,4 +50,11 @@
     <string name="go_login">Go Login</string>
     <string name="required">required</string>
     <string name="password_repeat_wrong">Password Repeat is wrong</string>
+    <string name="register_success">Register Success</string>
+    <string name="network_error">Network Error</string>
+    <string name="captcha_code_error">Captcha Code Error</string>
+    <string name="account_exists">Account Exists</string>
+    <string name="login_success">Login Success</string>
+    <string name="account_not_exists">Account not exists</string>
+    <string name="password_wrong">Password wrong</string>
 </resources>

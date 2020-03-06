@@ -15,6 +15,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.components.FeedbackDialog
+import com.musketeer.superclipboard.components.LoginCallback
 import com.musketeer.superclipboard.components.LoginDialog
 import com.musketeer.superclipboard.net.UdpClient
 import com.musketeer.superclipboard.utils.SharePreference
@@ -26,7 +27,7 @@ import com.tencent.tauth.UiError
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener, LoginCallback {
     private val REQUEST_CODE_DRAW_OVERLAY_PERMISSION = 5
     var clipboardMainWindow: ClipboardMainWindow? = null
 
@@ -73,11 +74,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener {
     fun refreshUserType() {
         val userType = SharePreference.getUserType(this)
         val userID = SharePreference.getUserID(this)
-        Log.d("===>>>", "userID $userID")
         when (userType) {
-            UserType.UserTypeQQ -> {
-                userTypeImage.setImageResource(R.mipmap.qq)
-                userNameText.text = getString(R.string.logined)
+            UserType.UserTypeAccount -> {
+                userNameText.text = "${getString(R.string.account)} $userID\n${getString(R.string.logined)}"
             }
             else -> {
 
@@ -92,7 +91,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener {
     }
 
     fun showLoginDialog() {
-        LoginDialog(this)
+        LoginDialog(this, this)
     }
 
     override fun onActivityResult(
@@ -138,8 +137,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener {
         }
     }
 
-    // QQ
+    // account
+    override fun onLogined() {
+        refreshUserType()
+    }
 
+    // QQ
     override fun onComplete(p0: Any?) {
         SharePreference.setUserType(this@MainActivity, UserType.UserTypeQQ)
         val jo = JSONObject(p0.toString())

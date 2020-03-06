@@ -1,10 +1,12 @@
 package com.musketeer.superclipboard.utils
 
 import android.content.Context
+import android.util.Log
 
 enum class UserType(val v: Int) {
     UserTypeUnknow(0),
-    UserTypeQQ(1)
+    UserTypeAccount(1),
+    UserTypeQQ(2)
 }
 
 object SharePreference {
@@ -14,7 +16,10 @@ object SharePreference {
 
     fun getUserTypeByValue(v: Int): UserType? {
         return when(v) {
-            1 -> {
+            UserType.UserTypeAccount.v -> {
+                UserType.UserTypeAccount
+            }
+            UserType.UserTypeQQ.v -> {
                 UserType.UserTypeQQ
             }
             else -> {
