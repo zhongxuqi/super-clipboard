@@ -14,6 +14,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.musketeer.superclipboard.components.ChangePasswordDialog
 import com.musketeer.superclipboard.components.FeedbackDialog
 import com.musketeer.superclipboard.components.LoginCallback
 import com.musketeer.superclipboard.components.LoginDialog
@@ -27,7 +28,7 @@ import com.tencent.tauth.UiError
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener, LoginCallback {
+class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener, IUiListener, LoginCallback {
     private val REQUEST_CODE_DRAW_OVERLAY_PERMISSION = 5
     var clipboardMainWindow: ClipboardMainWindow? = null
 
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener, Log
         findViewById<View>(R.id.btn_open_floatview).setOnClickListener(this)
         findViewById<View>(R.id.btn_feedback).setOnClickListener(this)
         findViewById<View>(R.id.btn_login).setOnClickListener(this)
+        findViewById<View>(R.id.btn_login).setOnLongClickListener(this)
 
         if (ClipboardMainWindow.Instance != null) {
             clipboardMainWindow = ClipboardMainWindow.Instance
@@ -135,6 +137,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, IUiListener, Log
                 showLoginDialog()
             }
         }
+    }
+
+    override fun onLongClick(v: View?): Boolean {
+        when (v!!.id) {
+            R.id.btn_login -> {
+                val userType = SharePreference.getUserType(this)
+                if (userType == null || userType == UserType.UserTypeUnknow) {
+                    return false
+                }
+                ChangePasswordDialog(this)
+                return true
+            }
+        }
+        return false
     }
 
     // account

@@ -31,7 +31,7 @@
     <string name="input_content_hint">Please input content...</string>
     <string name="third_party_login">Third Party Login</string>
     <string name="think_feedback">Think you for your feedback</string>
-    <string name="logined">Logined. Click to login another account</string>
+    <string name="logined">Logined. Click to login another account; Long click to change password.</string>
     <string name="open_clipboard">Open Clipboard Float Window</string>
     <string name="sync_clipboard">Sync Clipboard</string>
     <string name="sync_clipboard_hint">Sync content of user account in local area network</string>
@@ -57,4 +57,9 @@
     <string name="login_success">Login Success</string>
     <string name="account_not_exists">Account not exists</string>
     <string name="password_wrong">Password wrong</string>
+    <string name="change_password_page">Change Password Page</string>
+    <string name="origin_password">Origin Password</string>
+    <string name="new_password">New Password</string>
+    <string name="new_password_repeat">New Password Repeat</string>
+    <string name="change_password_success">Change Password Success</string>
 </resources>
