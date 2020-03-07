@@ -1,7 +1,14 @@
 <template>
   <div class="scb-clipboard">
     <div class="scb-clipboard-topbar">
-      <img class="scb-user-head" src="~@/assets/default_head.png" alt="electron-vue">
+      <div class="scb-user-head">
+        <b-button v-if="userID==''" variant="outline-success" v-on:click="openLogin">{{textClickToLogin}}</b-button>
+        <b-dropdown v-if="userID!=''" v-bind:text="userID" variant="success">
+          <b-dropdown-item href="#">Action</b-dropdown-item>
+          <b-dropdown-item href="#">Another action</b-dropdown-item>
+          <b-dropdown-item href="#">Something else here</b-dropdown-item>
+        </b-dropdown>
+      </div>
       <b-form class="scb-clipboard-keyword-form">
         <input class="scb-clipboard-keyword-form-input" v-model="keyword" v-bind:placeholder="textKeywordInputHint"/>
       </b-form>
@@ -16,6 +23,38 @@
         <ClipboardMessage v-bind:type="item.type" v-bind:syncState="syncState" v-bind:content="item.content" v-on:ondelete="deleteMsg(item)" v-on:onsync="syncMsg(item)" v-on:oncopy="copyMsg(item)"></ClipboardMessage>
       </div>
     </div>
+
+    <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="sm">
+      <form class="scb-login-form" @submit.stop.prevent v-if="loginMode=='login'">
+        <b-form-group v-bind:label="textAccount">
+          <b-form-input v-model="loginAccount" required></b-form-input>
+        </b-form-group>
+        <b-form-group v-bind:label="textPassword">
+          <b-form-input v-model="loginPassword" required></b-form-input>
+        </b-form-group>
+        <b-button variant="success" block>{{textLogin}}</b-button>
+        <b-button variant="outline-success" block v-on:click="changeLoginMode('register')">{{textGoRegister}}</b-button>
+      </form>
+      <form class="scb-register-form" @submit.stop.prevent v-if="loginMode=='register'">
+        <b-form-group v-bind:label="textAccount">
+          <b-form-input v-model="registerAccount" required></b-form-input>
+        </b-form-group>
+        <b-form-group v-bind:label="textPassword">
+          <b-form-input v-model="registerPassword" required></b-form-input>
+        </b-form-group>
+        <b-form-group v-bind:label="textPasswordRepeat">
+          <b-form-input v-model="registerPasswordRepeat" required></b-form-input>
+        </b-form-group>
+        <div style="display:flex;flex-direction:row;justify-content: center;align-items: center;">
+          <b-form-group v-bind:label="textCaptchaCode" style="flex:1">
+            <b-form-input v-model="registerCaptcha" required></b-form-input>
+          </b-form-group>
+          <img src="~@/assets/broken_image.png" style="margin:0rem 1rem;height:4rem"/>
+        </div>
+        <b-button variant="success" block>{{textRegister}}</b-button>
+        <b-button variant="outline-success" block v-on:click="changeLoginMode('login')">{{textGoLogin}}</b-button>
+      </form>
+    </b-modal>
   </div>
 </template>
 
@@ -35,11 +74,39 @@ export default {
       textContentSync: Language.getLanguageText('content_sync'),
       textOn: Language.getLanguageText('on'),
       textOff: Language.getLanguageText('off'),
+      textClickToLogin: Language.getLanguageText('click_to_login'),
+      textLoginPage: Language.getLanguageText('login_page'),
+      textRegisterPage: Language.getLanguageText('register_page'),
+      textAccount: Language.getLanguageText('account'),
+      textPassword: Language.getLanguageText('password'),
+      textLogin: Language.getLanguageText('login'),
+      textGoRegister: Language.getLanguageText('go_register'),
+      textRegister: Language.getLanguageText('register'),
+      textGoLogin: Language.getLanguageText('go_login'),
+      textPasswordRepeat: Language.getLanguageText('password_repeat'),
+      textCaptchaCode: Language.getLanguageText('captcha_code'),
 
       msgList: [],
       keyword: '',
       syncState: false,
-      deviceNum: 0
+      deviceNum: 0,
+      userID: '',
+
+      loginMode: 'login',
+
+      loginAccount: '',
+      loginAccountError: '',
+      loginPassword: '',
+      loginPasswordError: '',
+
+      registerAccount: '',
+      registerAccountError: '',
+      registerPassword: '',
+      registerPasswordError: '',
+      registerPasswordRepeat: '',
+      registerPasswordRepeatError: '',
+      registerCaptcha: '',
+      registerCaptchaError: ''
     }
   },
   methods: {
@@ -60,6 +127,12 @@ export default {
     },
     copyMsg: function (msg) {
       ipcRenderer.send('clipboard-message-action-copy', msg.content)
+    },
+    openLogin: function () {
+      this.$refs['login-modal'].show()
+    },
+    changeLoginMode: function (mode) {
+      this.loginMode = mode
     }
   },
   computed: {
@@ -135,11 +208,7 @@ export default {
 
 .scb-user-head {
   display: block;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 999rem;
   margin: 0rem 0.5rem;
-  padding: 0.5rem;
 }
 
 .scb-topbar-sync-switch {

@@ -5,6 +5,14 @@ import Consts from '../common/Consts'
 import Database from './Database'
 import NetUDP from './net_udp'
 import Language from './language'
+import Store from 'electron-store'
+
+const storeIns = new Store({
+  user_id: {
+    type: 'string'
+  }
+})
+storeIns.get('user_id')
 
 const MAX_LEN = 100
 
