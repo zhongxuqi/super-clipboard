@@ -1,10 +1,13 @@
 package com.musketeer.superclipboard.net
 
+import android.content.Context
 import android.util.Log
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.annotation.JSONField
+import com.musketeer.superclipboard.MainService
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.data.ServerSyncMessage
+import com.musketeer.superclipboard.utils.SharePreference
 import java.net.*
 import java.security.MessageDigest
 import java.util.*
@@ -18,11 +21,8 @@ import kotlin.collections.HashSet
 import kotlin.experimental.and
 
 
-class UdpClient {
+class UdpClient(val ctx: Context) {
     companion object {
-        val UdpServerHost = "www.easypass.tech"
-//        val UdpServerHost = "192.168.100.107"
-
         val HeaderUdpServerSync: Byte = 0x00
         val HeaderUdpClientSync: Byte = 0x01
         val HeaderUdpDataSync: Byte = 0x02
@@ -439,6 +439,7 @@ class UdpClient {
         }
         val msg = ServerSyncMessage()
         if (localUdpAddrsJoin.isNotEmpty()) msg.udpAddrs = arrayOf(localUdpAddrsJoin)
+        msg.userID = SharePreference.getUserID(ctx)
         val msgByte = msg.toJSON().toByteArray()
         val buffer = ByteArray(2 + msgByte.size)
         buffer[0] = HeaderUdpServerSync
@@ -448,7 +449,7 @@ class UdpClient {
             DatagramPacket(
                 buffer,
                 buffer.size,
-                InetAddress.getByName(UdpServerHost),
+                InetAddress.getByName(HttpClient.Domain),
                 9000
             )
         )

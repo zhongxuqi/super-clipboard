@@ -7,6 +7,7 @@ schema[StoreUserIDKey] = {
   default: ''
 }
 let storeIns = new Store({schema})
+storeIns.set(StoreUserIDKey, '')
 
 export default {
   getUserID: function () {

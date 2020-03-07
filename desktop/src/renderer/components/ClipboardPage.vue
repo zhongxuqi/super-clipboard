@@ -290,7 +290,14 @@ export default {
   },
   watch: {
     syncState: function (newValue, oldValue) {
-      ipcRenderer.send('clipboard-sync-state-toggle', {state: newValue})
+      setTimeout(function () {
+        if (this.userID === '') {
+          this.syncState = false
+          this.openLogin()
+        } else {
+          ipcRenderer.send('clipboard-sync-state-toggle', {state: newValue})
+        }
+      }.bind(this), 100)
     },
     loginAccount: function (newValue, oldValue) {
       this.loginAccountErr = ''
@@ -364,7 +371,6 @@ export default {
       }
     }.bind(this))
     ipcRenderer.on('response-change_password', function (event, resp) {
-      console.log(resp)
       if (resp.errno === 0) {
         this.$refs['change-password-modal'].hide()
       } else {

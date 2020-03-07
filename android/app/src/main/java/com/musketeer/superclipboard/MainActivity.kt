@@ -64,7 +64,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         syncSwitcher.setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
             override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
                 if (isChecked) {
-                    UdpClient.Instance!!.start()
+                    val userID = SharePreference.getUserID(this@MainActivity)
+                    if (userID.isEmpty()) {
+                        syncSwitcher.isChecked = false
+                        showLoginDialog()
+                    } else {
+                        UdpClient.Instance!!.start()
+                    }
                 } else {
                     UdpClient.Instance!!.close()
                 }
