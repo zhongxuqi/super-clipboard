@@ -31,7 +31,7 @@ function createWindow () {
     titleBarStyle: 'hidden',
     height: screen.height * 0.6,
     useContentSize: true,
-    width: screen.height * 0.6,
+    width: screen.height * 0.4,
     icon: require('path').join(__dirname, 'icons', '64x64.png')
   })
   mainWindow.setMenuBarVisibility(false)
@@ -199,6 +199,11 @@ function createWindow () {
   ipcMain.on('request-change_password', (event, params) => {
     NetHttp.changePassword(params, function (resp) {
       renderChannel.send('response-change_password', resp)
+    })
+  })
+  ipcMain.on('request-feedback', (event, params) => {
+    NetHttp.feedback(params, function (resp) {
+      sendNotification(Language.getLanguageText('think_feedback'))
     })
   })
 

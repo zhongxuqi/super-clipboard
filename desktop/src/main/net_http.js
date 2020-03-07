@@ -81,5 +81,25 @@ export default {
     })
     request.write(JSON.stringify(params))
     request.end()
+  },
+  feedback: function (params, callback) {
+    const request = net.request({
+      method: 'POST',
+      url: `${Consts.Host}/openapi/codeutils`
+    })
+    request.on('response', (response) => {
+      response.on('data', (chunk) => {
+        let resp = JSON.parse(chunk)
+        if (typeof callback === 'function') callback(resp)
+      })
+      response.on('error', () => {
+
+      })
+    })
+    request.on('error', () => {
+
+    })
+    request.write(JSON.stringify(params))
+    request.end()
   }
 }

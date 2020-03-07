@@ -2,7 +2,7 @@
   <div class="scb-clipboard">
     <div class="scb-clipboard-topbar">
       <div class="scb-user-head">
-        <b-button v-if="userID==''" variant="outline-success" v-on:click="openLogin">{{textClickToLogin}}</b-button>
+        <b-button v-if="userID==''" variant="light" v-on:click="openLogin">{{textClickToLogin}}</b-button>
         <b-dropdown v-if="userID!=''" v-bind:text="userID" variant="success">
           <b-dropdown-item v-on:click="openChangePassword">{{textChangePassword}}</b-dropdown-item>
           <b-dropdown-item v-on:click="openLogin">{{textLoginAnotherAccount}}</b-dropdown-item>
@@ -16,6 +16,7 @@
           {{syncState?syncStateDesc:textContentSync}}
         </b-form-checkbox>
       </div>
+      <b-button variant="light" style="margin-right:0.5rem" size="sm" v-on:click="openFeedback"><i class="iconfont icon-feedback"></i></b-button>
     </div>
     <div class="scb-cliboard-list">
       <div class="scb-cliboard-list-item" v-for="item in msgListFilter" v-bind:key="item.id">
@@ -73,6 +74,20 @@
         </div>
       </form>
     </b-modal>
+
+    <b-modal ref="feedback-modal" hide-footer v-bind:title="textFeedbackPage" size="lg">
+      <form class="scb-change-password-form" @submit.stop.prevent>
+        <b-form-textarea
+          v-model="feedbackContent"
+          v-bind:placeholder="textInputHint"
+          rows="3"
+          style="margin-bottom:1rem"></b-form-textarea>
+        <div style="display:flex;flex-direction:row;justify-content: center;align-items: center;">
+          <b-button variant="outline-success" block v-on:click="hideFeedback" style="flex:1;margin: 0rem 1rem 0rem 0rem">{{textCancel}}</b-button>
+          <b-button variant="success" block v-on:click="submitFeedback" style="flex:1;margin: 0rem;">{{textSubmit}}</b-button>
+        </div>
+      </form>
+    </b-modal>
   </div>
 </template>
 
@@ -112,6 +127,8 @@ export default {
       textNewPasswordRepeat: Language.getLanguageText('new_password_repeat'),
       textCancel: Language.getLanguageText('cancel'),
       textSubmit: Language.getLanguageText('submit'),
+      textFeedbackPage: Language.getLanguageText('feedback_page'),
+      textInputHint: Language.getLanguageText('input_hint'),
 
       host: Consts.Host,
       msgList: [],
@@ -144,7 +161,10 @@ export default {
       changePasswordNewPassword: '',
       changePasswordNewPasswordErr: '',
       changePasswordNewPasswordRepeat: '',
-      changePasswordNewPasswordRepeatErr: ''
+      changePasswordNewPasswordRepeatErr: '',
+
+      // feedback
+      feedbackContent: ''
     }
   },
   methods: {
@@ -275,6 +295,26 @@ export default {
         token: Hash.sha256(text),
         password: Hash.sha256(this.changePasswordNewPassword)
       })
+    },
+    openFeedback: function () {
+      this.$refs['feedback-modal'].show()
+    },
+    hideFeedback: function () {
+      this.$refs['feedback-modal'].hide()
+    },
+    submitFeedback: function () {
+      this.feedbackContent = this.feedbackContent.trim()
+      if (this.feedbackContent === '') {
+        this.hideFeedback()
+        return
+      }
+      ipcRenderer.send('request-feedback', {
+        app_id: Consts.AppID,
+        type: 1,
+        context: '',
+        message: this.feedbackContent
+      })
+      this.hideFeedback()
     }
   },
   computed: {
@@ -403,6 +443,9 @@ export default {
       this.changePasswordNewPasswordRepeat = ''
       this.changePasswordNewPasswordRepeatErr = ''
     }.bind(this))
+    this.$refs['feedback-modal'].$root.$on('bv::modal::hidden', function (bvEvent, modalId) {
+      this.feedbackContent = ''
+    }.bind(this))
   },
   beforeDestroy: function () {
     ipcRenderer.removeAllListeners('clipboard-message-add')
@@ -421,6 +464,7 @@ export default {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  background-image: linear-gradient(120deg, #8fd3f4 0%, #84fab0 100%);
 }
 
 .scb-clipboard-topbar {
@@ -429,16 +473,12 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid #e4e4e4;
-  background-image: linear-gradient(120deg, #8fd3f4 0%, #84fab0 100%);
 }
 
 .scb-clipboard-keyword-form {
   box-sizing: border-box;
-  padding: 0rem;
   margin: 0rem 0.5rem 0rem 0rem;
   flex: 1;
-  padding: 0rem 1rem;
 }
 
 .scb-clipboard-keyword-form-input {

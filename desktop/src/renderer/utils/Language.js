@@ -53,7 +53,9 @@ var languageMap = {
     'new_password': 'New Password',
     'new_password_repeat': 'New Password Repeat',
     'cancel': 'Cancel',
-    'submit': 'Submit'
+    'submit': 'Submit',
+    'feedback_page': 'Feedback Page',
+    'input_hint': 'Please input content...'
   },
   'zh': {
     'clipboard': '剪切板',
@@ -90,7 +92,9 @@ var languageMap = {
     'new_password': '新密码',
     'new_password_repeat': '新密码（重复）',
     'cancel': '取消',
-    'submit': '提交'
+    'submit': '提交',
+    'feedback_page': '反馈页面',
+    'input_hint': '请输入内容...'
   }
 }
 
