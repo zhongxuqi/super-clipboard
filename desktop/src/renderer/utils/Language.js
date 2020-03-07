@@ -46,7 +46,9 @@ var languageMap = {
     'captcha_code_wrong': 'Captcha Code Wrong',
     'account_exists': 'Account exists',
     'password_wrong': 'Password wrong',
-    'account_not_exists': 'Account not exists'
+    'account_not_exists': 'Account not exists',
+    'change_password': 'Change Password',
+    'login_another_account': 'Login another account'
   },
   'zh': {
     'clipboard': '剪切板',
@@ -76,7 +78,9 @@ var languageMap = {
     'captcha_code_wrong': '校验码错误',
     'account_exists': '帐号已存在',
     'password_wrong': '密码错误',
-    'account_not_exists': '帐号不存在'
+    'account_not_exists': '帐号不存在',
+    'change_password': '修改密码',
+    'login_another_account': '登录另一个帐号'
   }
 }
 

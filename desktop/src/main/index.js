@@ -6,14 +6,7 @@ import Database from './Database'
 import NetUDP from './net_udp'
 import NetHttp from './net_http'
 import Language from './language'
-import Store from 'electron-store'
-
-const storeIns = new Store({
-  user_id: {
-    type: 'string'
-  }
-})
-storeIns.get('user_id')
+import User from './user'
 
 const MAX_LEN = 100
 
@@ -207,6 +200,14 @@ function createWindow () {
     NetHttp.changePassword(params, function (resp) {
       renderChannel.send('response-change_password', resp)
     })
+  })
+
+  // 用户
+  ipcMain.on('set-user-id', (event, userID) => {
+    User.setUserID(userID)
+  })
+  ipcMain.on('get-user-id', (event) => {
+    event.returnValue = User.getUserID()
   })
 
   mainWindow.loadURL(winURL)

@@ -4,9 +4,8 @@
       <div class="scb-user-head">
         <b-button v-if="userID==''" variant="outline-success" v-on:click="openLogin">{{textClickToLogin}}</b-button>
         <b-dropdown v-if="userID!=''" v-bind:text="userID" variant="success">
-          <b-dropdown-item href="#">Action</b-dropdown-item>
-          <b-dropdown-item href="#">Another action</b-dropdown-item>
-          <b-dropdown-item href="#">Something else here</b-dropdown-item>
+          <b-dropdown-item href="#">{{textChangePassword}}</b-dropdown-item>
+          <b-dropdown-item v-on:click="openLogin">{{textLoginAnotherAccount}}</b-dropdown-item>
         </b-dropdown>
       </div>
       <b-form class="scb-clipboard-keyword-form">
@@ -24,7 +23,7 @@
       </div>
     </div>
 
-    <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="lg">
+    <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="lg" v-on:hiden="clearLoginForm">
       <form class="scb-login-form" @submit.stop.prevent v-if="loginMode=='login'">
         <b-form-group v-bind:label="textAccount" :invalid-feedback="loginAccountErr" :state="loginAccountErr==''?undefined:false">
           <b-form-input v-model="loginAccount" :state="loginAccountErr==''?undefined:false" required trim></b-form-input>
@@ -88,6 +87,8 @@ export default {
       textGoLogin: Language.getLanguageText('go_login'),
       textPasswordRepeat: Language.getLanguageText('password_repeat'),
       textCaptchaCode: Language.getLanguageText('captcha_code'),
+      textChangePassword: Language.getLanguageText('change_password'),
+      textLoginAnotherAccount: Language.getLanguageText('login_another_account'),
 
       host: Consts.Host,
       msgList: [],
@@ -96,6 +97,7 @@ export default {
       deviceNum: 0,
       userID: '',
 
+      // login modal
       loginMode: 'login',
 
       loginAccount: '',
@@ -202,6 +204,9 @@ export default {
         captcha_id: this.captchaID,
         captcha_solution: this.registerCaptcha
       })
+    },
+    clearLoginForm: function () {
+      console.log('test')
     }
   },
   computed: {
@@ -242,7 +247,9 @@ export default {
     ipcRenderer.send('clipboard-message-connect', '')
     ipcRenderer.on('clipboard-message-add', this.onAddMessage.bind(this))
     ipcRenderer.on('clipboard-message-delete', this.onDeleteMessage.bind(this))
+    this.getCaptchaID()
     this.syncState = ipcRenderer.sendSync('clipboard-sync-state')
+    this.userID = ipcRenderer.sendSync('get-user-id')
     ipcRenderer.on('clipboard-sync-state-sync', function (event, arg) {
       this.syncState = arg.state
     }.bind(this))
@@ -253,9 +260,10 @@ export default {
       this.captchaID = resp.data.captcha_id
     }.bind(this))
     ipcRenderer.on('response-login', function (event, resp) {
-      console.log(this.captchaID, resp)
       if (resp.errno === 0) {
-
+        this.userID = resp.data.account
+        this.$refs['login-modal'].hide()
+        ipcRenderer.send('set-user-id', this.userID)
       } else {
         if (resp.errno === 4000012) {
           this.loginPasswordErr = Language.getLanguageText('password_wrong')
@@ -265,9 +273,10 @@ export default {
       }
     }.bind(this))
     ipcRenderer.on('response-register', function (event, resp) {
-      console.log(this.captchaID, resp)
       if (resp.errno === 0) {
-
+        this.userID = resp.data.account
+        this.$refs['login-modal'].hide()
+        ipcRenderer.send('set-user-id', this.userID)
       } else {
         if (resp.errno === 4000030) {
           this.registerCaptchaErr = Language.getLanguageText('captcha_code_wrong')
@@ -277,7 +286,22 @@ export default {
         this.getCaptchaID()
       }
     }.bind(this))
-    this.getCaptchaID()
+    this.$refs['login-modal'].$root.$on('bv::modal::hidden', function (bvEvent, modalId) {
+      this.loginMode = 'login'
+      this.loginAccount = ''
+      this.loginAccountErr = ''
+      this.loginPassword = ''
+      this.loginPasswordErr = ''
+      this.registerAccount = ''
+      this.registerAccountErr = ''
+      this.registerPassword = ''
+      this.registerPasswordErr = ''
+      this.registerPasswordRepeat = ''
+      this.registerPasswordRepeatErr = ''
+      this.registerCaptcha = ''
+      this.registerCaptchaErr = ''
+      this.captchaID = ''
+    }.bind(this))
   },
   beforeDestroy: function () {
     ipcRenderer.removeAllListeners('clipboard-message-add')
