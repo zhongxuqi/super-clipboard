@@ -55,7 +55,9 @@ var languageMap = {
     'cancel': 'Cancel',
     'submit': 'Submit',
     'feedback_page': 'Feedback Page',
-    'input_hint': 'Please input content...'
+    'input_hint': 'Please input content...',
+    'usage_notice': 'Usage Notice',
+    'usage_notice_content': 'Please put your device in the same local area network (wifi).'
   },
   'zh': {
     'clipboard': '剪切板',
@@ -94,7 +96,9 @@ var languageMap = {
     'cancel': '取消',
     'submit': '提交',
     'feedback_page': '反馈页面',
-    'input_hint': '请输入内容...'
+    'input_hint': '请输入内容...',
+    'usage_notice': '使用须知',
+    'usage_notice_content': '请把您的设备放在同个局域网(wifi)内。'
   }
 }
 

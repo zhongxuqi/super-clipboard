@@ -11,7 +11,7 @@
       <b-form class="scb-clipboard-keyword-form">
         <input class="scb-clipboard-keyword-form-input" v-model="keyword" v-bind:placeholder="textKeywordInputHint"/>
       </b-form>
-      <div class="scb-topbar-sync-switch">
+      <div class="scb-topbar-sync-switch" v-b-popover.hover.top="textUsageNoticeContent" v-bind:title="textUsageNotice">
         <b-form-checkbox v-model="syncState" name="check-button" switch>
           {{syncState?syncStateDesc:textContentSync}}
         </b-form-checkbox>
@@ -129,6 +129,8 @@ export default {
       textSubmit: Language.getLanguageText('submit'),
       textFeedbackPage: Language.getLanguageText('feedback_page'),
       textInputHint: Language.getLanguageText('input_hint'),
+      textUsageNotice: Language.getLanguageText('usage_notice'),
+      textUsageNoticeContent: Language.getLanguageText('usage_notice_content'),
 
       host: Consts.Host,
       msgList: [],
