@@ -1,5 +1,8 @@
-// const Domain = 'superclipboard.online'
-const Domain = '127.0.0.1'
+// const Domain = '127.0.0.1'
+// const Host = `http://${Domain}:8000`
+
+const Domain = 'www.superclipboard.online'
+const Host = `https://${Domain}`
 
 export default {
   Domain: Domain,
@@ -8,7 +11,6 @@ export default {
     Text: 1,
     Image: 2
   },
-  // Host: `https://${Domain}:8000`,
-  Host: `http://${Domain}:8000`,
+  Host: Host,
   AppID: 4
 }
