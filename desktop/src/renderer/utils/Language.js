@@ -22,7 +22,7 @@ var languageMap = {
     'clipboard': 'ClipBoard',
     'expand': 'Expand',
     'fold': 'Fold',
-    'content_sync': 'Content Sync',
+    'sync_clipboard': 'Sync Clipboard',
     'device_total': '%d device total',
     'keyword_input_hint': 'input keyword...',
     'delete': 'Delete',
@@ -56,14 +56,14 @@ var languageMap = {
     'submit': 'Submit',
     'feedback_page': 'Feedback Page',
     'input_hint': 'Please input content...',
-    'usage_notice': 'Usage Notice',
-    'usage_notice_content': 'Please put your device in the same local area network (wifi).'
+    'usage_notice': 'Sync Clipboard Usage Notice',
+    'usage_notice_content': 'Please put your device in the same local area network (wifi). You can download app on official website (https://www.superclipboard.online).'
   },
   'zh': {
     'clipboard': '剪切板',
     'expand': '展开',
     'fold': '折叠',
-    'content_sync': '内容同步',
+    'sync_clipboard': '同步剪切板',
     'device_total': '一共%d个设备',
     'keyword_input_hint': '输入关键字...',
     'delete': '删除',
@@ -97,8 +97,8 @@ var languageMap = {
     'submit': '提交',
     'feedback_page': '反馈页面',
     'input_hint': '请输入内容...',
-    'usage_notice': '使用须知',
-    'usage_notice_content': '请把您的设备放在同个局域网(wifi)内。'
+    'usage_notice': '同步剪切板使用须知',
+    'usage_notice_content': '请把您的设备放在同个局域网(wifi)内。您可以在SuperClipboard官网（https://www.superclipboard.online）下载APP。'
   }
 }
 

@@ -106,7 +106,7 @@ export default {
   data: function () {
     return {
       textKeywordInputHint: Language.getLanguageText('keyword_input_hint'),
-      textContentSync: Language.getLanguageText('content_sync'),
+      textContentSync: Language.getLanguageText('sync_clipboard'),
       textOn: Language.getLanguageText('on'),
       textOff: Language.getLanguageText('off'),
       textClickToLogin: Language.getLanguageText('click_to_login'),

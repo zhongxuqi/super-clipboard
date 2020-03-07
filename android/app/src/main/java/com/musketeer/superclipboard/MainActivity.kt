@@ -1,13 +1,11 @@
 package com.musketeer.superclipboard
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.ImageView
@@ -54,6 +52,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         findViewById<View>(R.id.btn_feedback).setOnClickListener(this)
         findViewById<View>(R.id.btn_login).setOnClickListener(this)
         findViewById<View>(R.id.btn_login).setOnLongClickListener(this)
+        findViewById<View>(R.id.sync_clipboard_usage_notice).setOnClickListener(this)
 
         if (ClipboardMainWindow.Instance != null) {
             clipboardMainWindow = ClipboardMainWindow.Instance
@@ -141,6 +140,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
             }
             R.id.btn_login -> {
                 showLoginDialog()
+            }
+            R.id.sync_clipboard_usage_notice -> {
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.superclipboard.online"))
+                startActivity(browserIntent)
             }
         }
     }
