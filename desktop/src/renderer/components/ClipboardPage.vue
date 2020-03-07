@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="sm">
+    <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="lg">
       <form class="scb-login-form" @submit.stop.prevent v-if="loginMode=='login'">
         <b-form-group v-bind:label="textAccount" :invalid-feedback="loginAccountErr" :state="loginAccountErr==''?undefined:false">
           <b-form-input v-model="loginAccount" :state="loginAccountErr==''?undefined:false" required trim></b-form-input>
@@ -64,6 +64,7 @@ import ClipboardMessage from './ClipboardMessage'
 import { ipcRenderer } from 'electron'
 import Language from '../utils/Language'
 import Consts from '../../common/Consts'
+import Hash from '../utils/Hash'
 
 export default {
   name: 'clipboard-page',
@@ -156,7 +157,14 @@ export default {
       if (hasErr) {
         return
       }
-      console.log('test')
+      var currTime = parseInt(new Date().getTime() / 1000)
+      var text = this.loginAccount + '-' + Hash.sha256(this.loginPassword) + '-' + currTime
+      ipcRenderer.send('request-login', {
+        app_id: Consts.AppID,
+        account: this.loginAccount,
+        time: currTime,
+        token: Hash.sha256(text)
+      })
     },
     register: function () {
       let hasErr = false
@@ -187,7 +195,13 @@ export default {
       if (hasErr) {
         return
       }
-      console.log('test')
+      ipcRenderer.send('request-register', {
+        app_id: Consts.AppID,
+        account: this.registerAccount,
+        password: Hash.sha256(this.registerPassword),
+        captcha_id: this.captchaID,
+        captcha_solution: this.registerCaptcha
+      })
     }
   },
   computed: {
@@ -238,6 +252,31 @@ export default {
     ipcRenderer.on('response-get_captcha_id', function (event, resp) {
       this.captchaID = resp.data.captcha_id
     }.bind(this))
+    ipcRenderer.on('response-login', function (event, resp) {
+      console.log(this.captchaID, resp)
+      if (resp.errno === 0) {
+
+      } else {
+        if (resp.errno === 4000012) {
+          this.loginPasswordErr = Language.getLanguageText('password_wrong')
+        } else if (resp.errno === 4000010) {
+          this.loginAccountErr = Language.getLanguageText('account_not_exists')
+        }
+      }
+    }.bind(this))
+    ipcRenderer.on('response-register', function (event, resp) {
+      console.log(this.captchaID, resp)
+      if (resp.errno === 0) {
+
+      } else {
+        if (resp.errno === 4000030) {
+          this.registerCaptchaErr = Language.getLanguageText('captcha_code_wrong')
+        } else if (resp.errno === 4000011) {
+          this.registerAccountErr = Language.getLanguageText('account_exists')
+        }
+        this.getCaptchaID()
+      }
+    }.bind(this))
     this.getCaptchaID()
   },
   beforeDestroy: function () {
@@ -245,6 +284,8 @@ export default {
     ipcRenderer.removeAllListeners('clipboard-message-delete')
     ipcRenderer.removeAllListeners('clipboard-sync-state-sync')
     ipcRenderer.removeAllListeners('response-get_captcha_id')
+    ipcRenderer.removeAllListeners('response-login')
+    ipcRenderer.removeAllListeners('response-register')
   }
 }
 </script>

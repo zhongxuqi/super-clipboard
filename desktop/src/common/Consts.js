@@ -4,5 +4,6 @@ export default {
     Text: 1,
     Image: 2
   },
-  Host: 'http://127.0.0.1:8000'
+  Host: 'http://127.0.0.1:8000',
+  AppID: 4
 }

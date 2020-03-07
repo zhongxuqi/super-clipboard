@@ -42,7 +42,11 @@ var languageMap = {
     'register': 'Register',
     'go_login': 'Go Login',
     'required': 'Required',
-    'password_repeat_wrong': 'Password Repeat Wrong'
+    'password_repeat_wrong': 'Password Repeat Wrong',
+    'captcha_code_wrong': 'Captcha Code Wrong',
+    'account_exists': 'Account exists',
+    'password_wrong': 'Password wrong',
+    'account_not_exists': 'Account not exists'
   },
   'zh': {
     'clipboard': '剪切板',
@@ -68,7 +72,11 @@ var languageMap = {
     'register': '注册',
     'go_login': '去登录',
     'required': '必填',
-    'password_repeat_wrong': '密码重复错误'
+    'password_repeat_wrong': '密码重复错误',
+    'captcha_code_wrong': '校验码错误',
+    'account_exists': '帐号已存在',
+    'password_wrong': '密码错误',
+    'account_not_exists': '帐号不存在'
   }
 }
 

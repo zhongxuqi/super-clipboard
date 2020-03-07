@@ -193,6 +193,21 @@ function createWindow () {
       renderChannel.send('response-get_captcha_id', resp)
     })
   })
+  ipcMain.on('request-login', (event, params) => {
+    NetHttp.login(params, function (resp) {
+      renderChannel.send('response-login', resp)
+    })
+  })
+  ipcMain.on('request-register', (event, params) => {
+    NetHttp.register(params, function (resp) {
+      renderChannel.send('response-register', resp)
+    })
+  })
+  ipcMain.on('request-change_password', (event, params) => {
+    NetHttp.changePassword(params, function (resp) {
+      renderChannel.send('response-change_password', resp)
+    })
+  })
 
   mainWindow.loadURL(winURL)
   mainWindow.on('closed', () => {
