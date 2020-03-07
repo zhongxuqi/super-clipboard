@@ -45,6 +45,7 @@ var languageMap = {
     'app_download': 'APP Downloader',
     'mobile': 'Mobile',
     'desktop': 'Desktop',
+    'clipboard_sync': 'Clipboard Sync',
   },
   "zh": {
     'html_title': '超级剪切板',
@@ -58,6 +59,7 @@ var languageMap = {
     'app_download': '应用下载',
     'mobile': '移动端',
     'desktop': '桌面端',
+    'clipboard_sync': '剪切板同步',
   },
 }
 

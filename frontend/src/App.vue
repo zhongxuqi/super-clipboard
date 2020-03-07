@@ -43,6 +43,10 @@
             <div class="scb-feature-item"><b-icon class="scb-feature-icon" icon="arrows-collapse"></b-icon></div>
             <h2 class="scb-feature-item-title scb-title-text">{{textWindowMin}}</h2>
           </b-col>
+          <b-col style="text-align: center">
+            <div class="scb-feature-item"><b-icon class="scb-feature-icon" icon="wifi"></b-icon></div>
+            <h2 class="scb-feature-item-title scb-title-text">{{textClipboardSync}}</h2>
+          </b-col>
         </b-row>
       </b-container>
     </div>
@@ -121,6 +125,7 @@ export default {
       textAppDownload: Language.getLanguageText('app_download'),
       textMobile: Language.getLanguageText('mobile'),
       textDesktop: Language.getLanguageText('desktop'),
+      textClipboardSync: Language.getLanguageText('clipboard_sync'),
       
       langs: {
         'en': {
