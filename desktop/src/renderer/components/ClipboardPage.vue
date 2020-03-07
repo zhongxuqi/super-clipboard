@@ -4,7 +4,7 @@
       <div class="scb-user-head">
         <b-button v-if="userID==''" variant="outline-success" v-on:click="openLogin">{{textClickToLogin}}</b-button>
         <b-dropdown v-if="userID!=''" v-bind:text="userID" variant="success">
-          <b-dropdown-item href="#">{{textChangePassword}}</b-dropdown-item>
+          <b-dropdown-item v-on:click="openChangePassword">{{textChangePassword}}</b-dropdown-item>
           <b-dropdown-item v-on:click="openLogin">{{textLoginAnotherAccount}}</b-dropdown-item>
         </b-dropdown>
       </div>
@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="lg" v-on:hiden="clearLoginForm">
+    <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="lg">
       <form class="scb-login-form" @submit.stop.prevent v-if="loginMode=='login'">
         <b-form-group v-bind:label="textAccount" :invalid-feedback="loginAccountErr" :state="loginAccountErr==''?undefined:false">
           <b-form-input v-model="loginAccount" :state="loginAccountErr==''?undefined:false" required trim></b-form-input>
@@ -53,6 +53,24 @@
         </div>
         <b-button variant="success" block v-on:click="register">{{textRegister}}</b-button>
         <b-button variant="outline-success" block v-on:click="changeLoginMode('login')">{{textGoLogin}}</b-button>
+      </form>
+    </b-modal>
+
+    <b-modal ref="change-password-modal" hide-footer v-bind:title="textChangePassword" size="lg">
+      <form class="scb-change-password-form" @submit.stop.prevent>
+        <b-form-group v-bind:label="textOriginPassword" :invalid-feedback="changePasswordOriginPasswordErr" :state="changePasswordOriginPasswordErr==''?undefined:false">
+          <b-form-input type="password" v-model="changePasswordOriginPassword" required :state="changePasswordOriginPasswordErr==''?undefined:false"></b-form-input>
+        </b-form-group>
+        <b-form-group v-bind:label="textNewPassword" :invalid-feedback="changePasswordNewPasswordErr" :state="changePasswordNewPasswordErr==''?undefined:false">
+          <b-form-input type="password" v-model="changePasswordNewPassword" required :state="changePasswordNewPasswordErr==''?undefined:false"></b-form-input>
+        </b-form-group>
+        <b-form-group v-bind:label="textNewPasswordRepeat" :invalid-feedback="changePasswordNewPasswordRepeatErr" :state="changePasswordNewPasswordRepeatErr==''?undefined:false">
+          <b-form-input type="password" v-model="changePasswordNewPasswordRepeat" required :state="changePasswordNewPasswordRepeatErr==''?undefined:false"></b-form-input>
+        </b-form-group>
+        <div style="display:flex;flex-direction:row;justify-content: center;align-items: center;">
+          <b-button variant="outline-success" block v-on:click="hideChangePassword" style="flex:1;margin: 0rem 1rem 0rem 0rem">{{textCancel}}</b-button>
+          <b-button variant="success" block v-on:click="changePassword" style="flex:1;margin: 0rem;">{{textSubmit}}</b-button>
+        </div>
       </form>
     </b-modal>
   </div>
@@ -89,6 +107,11 @@ export default {
       textCaptchaCode: Language.getLanguageText('captcha_code'),
       textChangePassword: Language.getLanguageText('change_password'),
       textLoginAnotherAccount: Language.getLanguageText('login_another_account'),
+      textOriginPassword: Language.getLanguageText('origin_password'),
+      textNewPassword: Language.getLanguageText('new_password'),
+      textNewPasswordRepeat: Language.getLanguageText('new_password_repeat'),
+      textCancel: Language.getLanguageText('cancel'),
+      textSubmit: Language.getLanguageText('submit'),
 
       host: Consts.Host,
       msgList: [],
@@ -113,7 +136,15 @@ export default {
       registerPasswordRepeatErr: '',
       registerCaptcha: '',
       registerCaptchaErr: '',
-      captchaID: ''
+      captchaID: '',
+
+      // change password
+      changePasswordOriginPassword: '',
+      changePasswordOriginPasswordErr: '',
+      changePasswordNewPassword: '',
+      changePasswordNewPasswordErr: '',
+      changePasswordNewPasswordRepeat: '',
+      changePasswordNewPasswordRepeatErr: ''
     }
   },
   methods: {
@@ -205,8 +236,45 @@ export default {
         captcha_solution: this.registerCaptcha
       })
     },
-    clearLoginForm: function () {
-      console.log('test')
+    openChangePassword: function () {
+      this.$refs['change-password-modal'].show()
+    },
+    hideChangePassword: function () {
+      this.$refs['change-password-modal'].hide()
+    },
+    changePassword: function () {
+      let hasErr = false
+      this.changePasswordOriginPassword = this.changePasswordOriginPassword.trim()
+      this.changePasswordNewPassword = this.changePasswordNewPassword.trim()
+      this.changePasswordNewPasswordRepeat = this.changePasswordNewPasswordRepeat.trim()
+      if (this.changePasswordOriginPassword === '') {
+        this.changePasswordOriginPasswordErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (this.changePasswordNewPassword === '') {
+        this.changePasswordNewPasswordErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (this.changePasswordNewPasswordRepeat === '') {
+        this.changePasswordNewPasswordRepeatErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (this.changePasswordNewPassword !== this.changePasswordNewPasswordRepeat) {
+        this.changePasswordPasswordRepeatErr = Language.getLanguageText('password_repeat_wrong')
+        hasErr = true
+      }
+      if (hasErr) {
+        return
+      }
+      var currTime = parseInt(new Date().getTime() / 1000)
+      var text = this.userID + '-' + Hash.sha256(this.changePasswordOriginPassword) + '-' + currTime
+      ipcRenderer.send('request-change_password', {
+        app_id: Consts.AppID,
+        account: this.userID,
+        time: currTime,
+        token: Hash.sha256(text),
+        password: Hash.sha256(this.changePasswordNewPassword)
+      })
     }
   },
   computed: {
@@ -241,6 +309,15 @@ export default {
     },
     registerCaptcha: function (newValue, oldValue) {
       this.registerCaptchaErr = ''
+    },
+    changePasswordOriginPassword: function (newValue, oldValue) {
+      this.changePasswordOriginPasswordErr = ''
+    },
+    changePasswordNewPassword: function (newValue, oldValue) {
+      this.changePasswordNewPasswordErr = ''
+    },
+    changePasswordNewPasswordRepeat: function (newValue, oldValue) {
+      this.changePasswordNewPasswordRepeatErr = ''
     }
   },
   mounted: function () {
@@ -286,6 +363,16 @@ export default {
         this.getCaptchaID()
       }
     }.bind(this))
+    ipcRenderer.on('response-change_password', function (event, resp) {
+      console.log(resp)
+      if (resp.errno === 0) {
+        this.$refs['change-password-modal'].hide()
+      } else {
+        if (resp.errno === 4000012) {
+          this.changePasswordOriginPasswordErr = Language.getLanguageText('password_wrong')
+        }
+      }
+    }.bind(this))
     this.$refs['login-modal'].$root.$on('bv::modal::hidden', function (bvEvent, modalId) {
       this.loginMode = 'login'
       this.loginAccount = ''
@@ -302,6 +389,14 @@ export default {
       this.registerCaptchaErr = ''
       this.captchaID = ''
     }.bind(this))
+    this.$refs['change-password-modal'].$root.$on('bv::modal::hidden', function (bvEvent, modalId) {
+      this.changePasswordOriginPassword = ''
+      this.changePasswordOriginPasswordErr = ''
+      this.changePasswordNewPassword = ''
+      this.changePasswordNewPasswordErr = ''
+      this.changePasswordNewPasswordRepeat = ''
+      this.changePasswordNewPasswordRepeatErr = ''
+    }.bind(this))
   },
   beforeDestroy: function () {
     ipcRenderer.removeAllListeners('clipboard-message-add')
@@ -310,6 +405,7 @@ export default {
     ipcRenderer.removeAllListeners('response-get_captcha_id')
     ipcRenderer.removeAllListeners('response-login')
     ipcRenderer.removeAllListeners('response-register')
+    ipcRenderer.removeAllListeners('response-change_password')
   }
 }
 </script>

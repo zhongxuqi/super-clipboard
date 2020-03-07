@@ -48,7 +48,12 @@ var languageMap = {
     'password_wrong': 'Password wrong',
     'account_not_exists': 'Account not exists',
     'change_password': 'Change Password',
-    'login_another_account': 'Login another account'
+    'login_another_account': 'Login another account',
+    'origin_password': 'Origin Password',
+    'new_password': 'New Password',
+    'new_password_repeat': 'New Password Repeat',
+    'cancel': 'Cancel',
+    'submit': 'Submit'
   },
   'zh': {
     'clipboard': '剪切板',
@@ -80,7 +85,12 @@ var languageMap = {
     'password_wrong': '密码错误',
     'account_not_exists': '帐号不存在',
     'change_password': '修改密码',
-    'login_another_account': '登录另一个帐号'
+    'login_another_account': '登录另一个帐号',
+    'origin_password': '原密码',
+    'new_password': '新密码',
+    'new_password_repeat': '新密码（重复）',
+    'cancel': '取消',
+    'submit': '提交'
   }
 }
 
