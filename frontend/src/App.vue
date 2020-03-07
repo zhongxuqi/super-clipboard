@@ -8,19 +8,21 @@
         <b-button variant="outline-dark" size="sm" v-on:click="toggleLang">{{langs[nextLang].name}}</b-button>
       </b-container>
       <b-container class="scb-topbody">
-        <div class="scb-topbody-left">
-          <h1 class="scb-title-text" style="font-weight:bold">{{ textSuperClipboard }}</h1>
-          <h3 class="scb-title-text">{{ textSuperClipboardDesc }}</h3>
-          <div style="height:10rem"></div>
-        </div>
-        <div class="scb-topbody-right">
-          <swiper :options="swiperOption">
-            <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_1.png"/></swiper-slide>
-            <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_2.png"/></swiper-slide>
-            <swiper-slide><img class="scb-topbody-img" src="./assets/phone_pic_3.png"/></swiper-slide>
-            <div class="swiper-pagination" slot="pagination"></div>
-          </swiper>
-        </div>
+        <b-row>
+          <b-col class="scb-topbody-left" lg="7">
+            <h1 class="scb-title-text" style="font-weight:bold">{{ textSuperClipboard }}</h1>
+            <h3 class="scb-title-text">{{ textSuperClipboardDesc }}</h3>
+            <div style="height:10rem"></div>
+          </b-col>
+          <b-col class="scb-topbody-right" lg="5">
+            <swiper :options="swiperOption">
+              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_1.png"/></swiper-slide>
+              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_2.png"/></swiper-slide>
+              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_3.png"/></swiper-slide>
+              <div class="swiper-pagination" slot="pagination"></div>
+            </swiper>
+          </b-col>
+        </b-row>
       </b-container>
     </div>
     <div class="scb-feature">
@@ -202,10 +204,6 @@ export default {
 }
 
 .scb-topbody {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: start;
   padding-top: 2rem;
 }
 
@@ -214,22 +212,23 @@ export default {
 }
 
 .scb-topbody-left {
-  flex: 1;
+  margin-top: 10rem;
 }
 
 .scb-topbody-right {
-  position: relative;
-  width: 25rem;
-  border: 1rem solid #404040;
+  width: 100%;
   background-color: #404040;
   border-radius: 2rem;
+  padding: 1rem;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
 .scb-topbody-img {
   display: block;
-  width: 23rem;
+  width: 100%;
   border-radius: 1rem;
+  overflow: hidden;
 }
 
 .scb-title-text {
@@ -255,11 +254,11 @@ export default {
 }
 
 .scb-download {
-  margin: 5rem 5rem;
+  margin: 5rem 0rem;
 }
 
 .scb-download-table {
-  margin: 0rem 5rem !important;
+  margin: 0rem 0rem !important;
   border: 1px solid white;
   border-radius: 0.5rem;
 }

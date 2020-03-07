@@ -34,8 +34,10 @@ if (lang != "en" && lang != "zh") {
 
 var languageMap = {
   "en": {
+    'html_title': 'SuperClipboard',
+    'html_keywords': 'clipboard,clipboard manager,clipboard sync',
     'super_clipboard': 'Super Clipboard',
-    'super_clipboard_desc': 'A powful and amazing clipboard manager',
+    'super_clipboard_desc': 'Clipboard manager and sync tool',
     'float_window_design': 'Float Window Design',
     'feature_title': 'Why choose SuperClipboard',
     'keyword_search': 'Keyword Search',
@@ -45,8 +47,10 @@ var languageMap = {
     'desktop': 'Desktop',
   },
   "zh": {
+    'html_title': '超级剪切板',
+    'html_keywords': '剪切板,剪切板管理,剪切板同步',
     'super_clipboard': '超级剪切板',
-    'super_clipboard_desc': '一款极致、强大的剪切板管理工具',
+    'super_clipboard_desc': '剪切板管理、同步工具',
     'float_window_design': '悬浮窗设计',
     'feature_title': '为什么选择剪切板',
     'keyword_search': '关键字搜索',
@@ -56,6 +60,13 @@ var languageMap = {
     'desktop': '桌面端',
   },
 }
+
+// init html title and meta
+document.getElementsByTagName('title')[0].innerText = languageMap[lang]['html_title']
+let meta = document.createElement('meta')
+meta.name = 'keywords'
+meta.content = languageMap[lang]['html_keywords']
+document.getElementsByTagName('head')[0].appendChild(meta)
 
 export default {
   getLanguage: function() {
