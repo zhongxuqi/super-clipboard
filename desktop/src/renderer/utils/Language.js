@@ -40,7 +40,9 @@ var languageMap = {
     'login': 'Login',
     'go_register': 'Go Register',
     'register': 'Register',
-    'go_login': 'Go Login'
+    'go_login': 'Go Login',
+    'required': 'Required',
+    'password_repeat_wrong': 'Password Repeat Wrong'
   },
   'zh': {
     'clipboard': '剪切板',
@@ -64,7 +66,9 @@ var languageMap = {
     'login': '登录',
     'go_register': '去注册',
     'register': '注册',
-    'go_login': '去登录'
+    'go_login': '去登录',
+    'required': '必填',
+    'password_repeat_wrong': '密码重复错误'
   }
 }
 

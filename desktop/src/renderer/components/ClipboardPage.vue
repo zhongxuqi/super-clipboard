@@ -26,32 +26,33 @@
 
     <b-modal ref="login-modal" hide-footer v-bind:title="loginMode=='login'?textLoginPage:textRegisterPage" size="sm">
       <form class="scb-login-form" @submit.stop.prevent v-if="loginMode=='login'">
-        <b-form-group v-bind:label="textAccount">
-          <b-form-input v-model="loginAccount" required></b-form-input>
+        <b-form-group v-bind:label="textAccount" :invalid-feedback="loginAccountErr" :state="loginAccountErr==''?undefined:false">
+          <b-form-input v-model="loginAccount" :state="loginAccountErr==''?undefined:false" required trim></b-form-input>
         </b-form-group>
-        <b-form-group v-bind:label="textPassword">
-          <b-form-input v-model="loginPassword" required></b-form-input>
+        <b-form-group v-bind:label="textPassword" :invalid-feedback="loginPasswordErr" :state="loginPasswordErr==''?undefined:false">
+          <b-form-input type="password" v-model="loginPassword" required :state="loginPasswordErr==''?undefined:false" trim></b-form-input>
         </b-form-group>
-        <b-button variant="success" block>{{textLogin}}</b-button>
+        <b-button variant="success" block v-on:click="login">{{textLogin}}</b-button>
         <b-button variant="outline-success" block v-on:click="changeLoginMode('register')">{{textGoRegister}}</b-button>
       </form>
       <form class="scb-register-form" @submit.stop.prevent v-if="loginMode=='register'">
-        <b-form-group v-bind:label="textAccount">
-          <b-form-input v-model="registerAccount" required></b-form-input>
+        <b-form-group v-bind:label="textAccount" :invalid-feedback="registerAccountErr" :state="registerAccountErr==''?undefined:false">
+          <b-form-input v-model="registerAccount" required :state="registerAccountErr==''?undefined:false" trim></b-form-input>
         </b-form-group>
-        <b-form-group v-bind:label="textPassword">
-          <b-form-input v-model="registerPassword" required></b-form-input>
+        <b-form-group v-bind:label="textPassword" :invalid-feedback="registerPasswordErr" :state="registerPasswordErr==''?undefined:false">
+          <b-form-input type="password" v-model="registerPassword" required :state="registerPasswordErr==''?undefined:false"></b-form-input>
         </b-form-group>
-        <b-form-group v-bind:label="textPasswordRepeat">
-          <b-form-input v-model="registerPasswordRepeat" required></b-form-input>
+        <b-form-group v-bind:label="textPasswordRepeat" :invalid-feedback="registerPasswordRepeatErr" :state="registerPasswordRepeatErr==''?undefined:false">
+          <b-form-input type="password" v-model="registerPasswordRepeat" required :state="registerPasswordRepeatErr==''?undefined:false"></b-form-input>
         </b-form-group>
         <div style="display:flex;flex-direction:row;justify-content: center;align-items: center;">
-          <b-form-group v-bind:label="textCaptchaCode" style="flex:1">
-            <b-form-input v-model="registerCaptcha" required></b-form-input>
+          <b-form-group v-bind:label="textCaptchaCode" style="flex:1" :invalid-feedback="registerCaptchaErr" :state="registerCaptchaErr==''?undefined:false">
+            <b-form-input v-model="registerCaptcha" required :state="registerCaptchaErr==''?undefined:false"></b-form-input>
           </b-form-group>
-          <img src="~@/assets/broken_image.png" style="margin:0rem 1rem;height:4rem"/>
+          <img v-if="captchaID!=''" v-bind:src="`${host}/openapi/captcha/${captchaID}.png`" style="margin:0rem 1rem;height:4rem" v-on:click="getCaptchaID"/>
+          <img v-if="captchaID==''" src="~@/assets/broken_image.png" style="margin:0rem 1rem;height:4rem" v-on:click="getCaptchaID"/>
         </div>
-        <b-button variant="success" block>{{textRegister}}</b-button>
+        <b-button variant="success" block v-on:click="register">{{textRegister}}</b-button>
         <b-button variant="outline-success" block v-on:click="changeLoginMode('login')">{{textGoLogin}}</b-button>
       </form>
     </b-modal>
@@ -62,6 +63,7 @@
 import ClipboardMessage from './ClipboardMessage'
 import { ipcRenderer } from 'electron'
 import Language from '../utils/Language'
+import Consts from '../../common/Consts'
 
 export default {
   name: 'clipboard-page',
@@ -86,6 +88,7 @@ export default {
       textPasswordRepeat: Language.getLanguageText('password_repeat'),
       textCaptchaCode: Language.getLanguageText('captcha_code'),
 
+      host: Consts.Host,
       msgList: [],
       keyword: '',
       syncState: false,
@@ -95,18 +98,19 @@ export default {
       loginMode: 'login',
 
       loginAccount: '',
-      loginAccountError: '',
+      loginAccountErr: '',
       loginPassword: '',
-      loginPasswordError: '',
+      loginPasswordErr: '',
 
       registerAccount: '',
-      registerAccountError: '',
+      registerAccountErr: '',
       registerPassword: '',
-      registerPasswordError: '',
+      registerPasswordErr: '',
       registerPasswordRepeat: '',
-      registerPasswordRepeatError: '',
+      registerPasswordRepeatErr: '',
       registerCaptcha: '',
-      registerCaptchaError: ''
+      registerCaptchaErr: '',
+      captchaID: ''
     }
   },
   methods: {
@@ -133,6 +137,57 @@ export default {
     },
     changeLoginMode: function (mode) {
       this.loginMode = mode
+    },
+    getCaptchaID: function () {
+      ipcRenderer.send('request-get_captcha_id', {})
+    },
+    login: function () {
+      let hasErr = false
+      this.loginAccount = this.loginAccount.trim()
+      this.loginPassword = this.loginPassword.trim()
+      if (this.loginAccount === '') {
+        this.loginAccountErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (this.loginPassword === '') {
+        this.loginPasswordErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (hasErr) {
+        return
+      }
+      console.log('test')
+    },
+    register: function () {
+      let hasErr = false
+      this.registerAccount = this.registerAccount.trim()
+      this.registerPassword = this.registerPassword.trim()
+      this.registerPasswordRepeat = this.registerPasswordRepeat.trim()
+      this.registerCaptcha = this.registerCaptcha.trim()
+      if (this.registerAccount === '') {
+        this.registerAccountErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (this.registerPassword === '') {
+        this.registerPasswordErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (this.registerPasswordRepeat === '') {
+        this.registerPasswordRepeatErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (this.registerPassword !== this.registerPasswordRepeat) {
+        this.registerPasswordRepeatErr = Language.getLanguageText('password_repeat_wrong')
+        hasErr = true
+      }
+      if (this.registerCaptcha === '') {
+        this.registerCaptchaErr = Language.getLanguageText('required')
+        hasErr = true
+      }
+      if (hasErr) {
+        return
+      }
+      console.log('test')
     }
   },
   computed: {
@@ -149,6 +204,24 @@ export default {
   watch: {
     syncState: function (newValue, oldValue) {
       ipcRenderer.send('clipboard-sync-state-toggle', {state: newValue})
+    },
+    loginAccount: function (newValue, oldValue) {
+      this.loginAccountErr = ''
+    },
+    loginPassword: function (newValue, oldValue) {
+      this.loginPasswordErr = ''
+    },
+    registerAccount: function (newValue, oldValue) {
+      this.registerAccountErr = ''
+    },
+    registerPassword: function (newValue, oldValue) {
+      this.registerPasswordErr = ''
+    },
+    registerPasswordRepeat: function (newValue, oldValue) {
+      this.registerPasswordRepeatErr = ''
+    },
+    registerCaptcha: function (newValue, oldValue) {
+      this.registerCaptchaErr = ''
     }
   },
   mounted: function () {
@@ -162,11 +235,16 @@ export default {
     ipcRenderer.on('clipboard-sync-state-device', function (event, arg) {
       this.deviceNum = arg.deviceNum
     }.bind(this))
+    ipcRenderer.on('response-get_captcha_id', function (event, resp) {
+      this.captchaID = resp.data.captcha_id
+    }.bind(this))
+    this.getCaptchaID()
   },
   beforeDestroy: function () {
     ipcRenderer.removeAllListeners('clipboard-message-add')
     ipcRenderer.removeAllListeners('clipboard-message-delete')
     ipcRenderer.removeAllListeners('clipboard-sync-state-sync')
+    ipcRenderer.removeAllListeners('response-get_captcha_id')
   }
 }
 </script>

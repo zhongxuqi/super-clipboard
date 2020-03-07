@@ -4,6 +4,7 @@ import { app, BrowserWindow, screen, clipboard, ipcMain, Notification } from 'el
 import Consts from '../common/Consts'
 import Database from './Database'
 import NetUDP from './net_udp'
+import NetHttp from './net_http'
 import Language from './language'
 import Store from 'electron-store'
 
@@ -184,6 +185,13 @@ function createWindow () {
     }
     event.returnValue = NetUDP.isStart()
     renderChannel.send('clipboard-sync-state-sync', {state: arg.state})
+  })
+
+  // 网络请求
+  ipcMain.on('request-get_captcha_id', (event) => {
+    NetHttp.getCaptchaID(function (resp) {
+      renderChannel.send('response-get_captcha_id', resp)
+    })
   })
 
   mainWindow.loadURL(winURL)
