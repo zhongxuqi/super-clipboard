@@ -537,6 +537,23 @@ export default {
   overflow-x: hidden;
 }
 
+.scb-cliboard-list::-webkit-scrollbar {
+    width: 0.5rem;
+    background-color: transparent;
+}
+
+.scb-cliboard-list::-webkit-scrollbar-thumb {
+    border-radius: 0.5rem;
+    box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: #555;
+}
+
+.scb-cliboard-list::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 0.3rem rgba(0,0,0,0.3);
+    border-radius: 0.5rem;
+    background-color: transparent;
+}
+
 .scb-cliboard-list-item {
   box-sizing: border-box;
   padding: 0.3rem;
