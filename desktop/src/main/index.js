@@ -83,7 +83,6 @@ function createWindow () {
       msgList.splice(i, 1)
       msgList = clearMsg([...msgList, msg])
       if (typeof callback === 'function') callback(msg)
-      NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(msg)))
       // })
       return
     }
@@ -93,7 +92,6 @@ function createWindow () {
       }
       msgList = clearMsg([...msgList, dbMsg])
       if (typeof callback === 'function') callback(dbMsg)
-      NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
     })
   }
 
@@ -120,7 +118,9 @@ function createWindow () {
           create_time: now,
           update_time: now
         }
-        upsertMsg(msg, function (dbMsg) {})
+        upsertMsg(msg, function (dbMsg) {
+          NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
+        })
       }
     }, 500)
   })
