@@ -23,6 +23,7 @@ import com.tencent.connect.common.Constants
 import com.tencent.tauth.IUiListener
 import com.tencent.tauth.Tencent
 import com.tencent.tauth.UiError
+import com.umeng.analytics.MobclickAgent
 import org.json.JSONObject
 
 
@@ -76,6 +77,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
             }
         })
         refreshUserType()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        MobclickAgent.onResume(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        MobclickAgent.onPause(this)
     }
 
     fun refreshUserType() {
