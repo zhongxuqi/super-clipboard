@@ -222,7 +222,7 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
     if (intervalID !== undefined) clearInterval(intervalID)
-    // Database.close()
+    User.close(msgList)
   })
 }
 

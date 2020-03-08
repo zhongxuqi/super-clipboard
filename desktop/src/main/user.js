@@ -45,5 +45,12 @@ export default {
     clipboardMsg.id = idIndex
     idIndex++
     callback(clipboardMsg)
+  },
+  close: function (clipboardMsgs) {
+    try {
+      storeIns.set(StoreClipboardMsgsKey, JSON.stringify(clipboardMsgs))
+    } catch (e) {
+
+    }
   }
 }
