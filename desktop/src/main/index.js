@@ -32,7 +32,7 @@ function createWindow () {
     height: screen.height * 0.6,
     useContentSize: true,
     width: screen.height * 0.4,
-    icon: require('path').join(__dirname, 'icons', '64x64.png')
+    icon: require('path').join(__dirname, 'icon.png')
   })
   mainWindow.setMenuBarVisibility(false)
   Language.setLanguage(app.getLocale())

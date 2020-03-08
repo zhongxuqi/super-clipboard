@@ -1,6 +1,6 @@
 {
   "name": "superclipboard",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "author": "zhongxuqi <zhongxuqi.1991@gmail.com>",
   "description": "Super ClipBoard",
   "license": null,
@@ -48,13 +48,13 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/icon.icns"
+      "icon": "./static/icons/icon.png"
     },
     "win": {
-      "icon": "build/icons/icon.ico"
+      "icon": "./static/icons/icon.ico"
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "./static/icons/icon.png"
     }
   },
   "dependencies": {
