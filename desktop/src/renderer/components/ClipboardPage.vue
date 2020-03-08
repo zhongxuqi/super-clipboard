@@ -11,11 +11,15 @@
       <b-form class="scb-clipboard-keyword-form">
         <input class="scb-clipboard-keyword-form-input" v-model="keyword" v-bind:placeholder="textKeywordInputHint"/>
       </b-form>
-      <div class="scb-topbar-sync-switch" v-b-popover.hover.top="textUsageNoticeContent" v-bind:title="textUsageNotice">
+      <div id="scb-topbar-sync-switch" class="scb-topbar-sync-switch">
         <b-form-checkbox v-model="syncState" name="check-button" switch>
           {{syncState?syncStateDesc:textContentSync}}
         </b-form-checkbox>
       </div>
+      <b-popover target="scb-topbar-sync-switch" triggers="hover" placement="top">
+        <template v-slot:title>{{textUsageNotice}}</template>
+        {{textUsageNoticeContent}}<br/><b-button variant="link" style="margin:0rem;padding:0rem;" v-on:click="openOfficialLink">https://www.superclipboard.online</b-button>
+      </b-popover>
       <b-button variant="light" style="margin-right:0.5rem" size="sm" v-on:click="openFeedback"><i class="iconfont icon-feedback"></i></b-button>
     </div>
     <div class="scb-cliboard-list">
@@ -93,7 +97,7 @@
 
 <script>
 import ClipboardMessage from './ClipboardMessage'
-import { ipcRenderer } from 'electron'
+import { ipcRenderer, shell } from 'electron'
 import Language from '../utils/Language'
 import Consts from '../../common/Consts'
 import Hash from '../utils/Hash'
@@ -317,6 +321,9 @@ export default {
         message: this.feedbackContent
       })
       this.hideFeedback()
+    },
+    openOfficialLink: function () {
+      shell.openExternal('https://www.superclipboard.online')
     }
   },
   computed: {

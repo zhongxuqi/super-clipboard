@@ -131,6 +131,13 @@
                 android:layout_width="match_parent"
                 android:textSize="15sp"
                 android:textColor="@color/grey"/>
+            <TextView
+                android:id="@+id/sync_clipboard_usage_notice_url"
+                android:text="@string/official_website_url"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:textSize="15sp"
+                android:textColor="@color/blue"/>
         </LinearLayout>
         <View
             android:layout_width="280dp"

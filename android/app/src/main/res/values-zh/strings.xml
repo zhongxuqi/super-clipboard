@@ -64,5 +64,6 @@
     <string name="new_password_repeat">新密码（重复）</string>
     <string name="change_password_success">修改密码成功</string>
     <string name="sync_clipboard_usage_notice">同步剪切板使用须知</string>
-    <string name="sync_clipboard_usage_notice_content">请把您的设备放在同个局域网(wifi)内。您可以在SuperClipboard官网（https://www.superclipboard.online）下载APP。</string>
+    <string name="sync_clipboard_usage_notice_content">请把您的设备放在同个局域网(wifi)内。您可以在SuperClipboard官网下载APP。</string>
+    <string name="official_website_url">https://www.superclipboard.online</string>
 </resources>

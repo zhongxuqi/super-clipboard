@@ -63,5 +63,6 @@
     <string name="new_password_repeat">New Password Repeat</string>
     <string name="change_password_success">Change Password Success</string>
     <string name="sync_clipboard_usage_notice">Sync Clipboard Usage Notice</string>
-    <string name="sync_clipboard_usage_notice_content">Please put your device in the same local area network (wifi). You can download app on official website (https://www.superclipboard.online).</string>
+    <string name="sync_clipboard_usage_notice_content">Please put your device in the same local area network (wifi). You can download app on official website.</string>
+    <string name="official_website_url">https://www.superclipboard.online</string>
 </resources>
