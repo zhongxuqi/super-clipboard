@@ -4,12 +4,14 @@ var languageMap = {
   'en': {
     'catch_clipboard_content': 'Catch New Clipboard Content',
     'receive_clipboard_content': 'Receive New Clipboard Content',
-    'copy_clipboard_content': 'Copy Clipboard Content'
+    'copy_clipboard_content': 'Copy Clipboard Content',
+    'think_feedback': 'Think you for your feedback'
   },
   'zh': {
     'catch_clipboard_content': '获取到新的剪切板内容',
     'receive_clipboard_content': '接收到新的剪切板内容',
-    'copy_clipboard_content': '复制剪切板内容'
+    'copy_clipboard_content': '复制剪切板内容',
+    'think_feedback': '感谢您的反馈'
   }
 }
 

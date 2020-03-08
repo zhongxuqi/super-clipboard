@@ -3,8 +3,8 @@ package com.musketeer.superclipboard
 import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.ClipData
-import android.content.Context
 import android.content.Context.WINDOW_SERVICE
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
@@ -14,19 +14,21 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Constraints
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.musketeer.superclipboard.adapter.HistoryListAdapter
 import com.musketeer.superclipboard.components.FeedbackDialog
-import com.musketeer.superclipboard.components.LoginDialog
 import com.musketeer.superclipboard.data.ClipBoardMessage
 import com.musketeer.superclipboard.db.SqliteHelper
 import com.musketeer.superclipboard.net.UdpClient
+import com.musketeer.superclipboard.utils.SharePreference
+import com.musketeer.superclipboard.utils.UserType
 import com.umeng.analytics.MobclickAgent
 import java.util.*
 
 
-class ClipboardMainWindow constructor(val mContext: Context) {
+class ClipboardMainWindow constructor(val mContext: AppCompatActivity) {
     companion object {
         var Instance: ClipboardMainWindow? = null
     }
@@ -45,10 +47,8 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private var mFloatViewFirstX = 0
     private var mFloatViewFirstY = 0
     private var mFloatViewMove = false
-    private val moreMenuBtn: ImageView
     private val maxMainView: View
     val minMainView: View
-    private val syncSwitcher: SwitchMaterial
     val syncStateTextView: TextView
     private val keywordInput: EditText
     private val keywordClear: View
@@ -60,9 +60,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private val mContentListAdapter: HistoryListAdapter
     private val mContentList: LinkedList<ClipBoardMessage> = LinkedList()
 
-    private val popWindow: PopupWindow
-    private val personSettingsView: View
-
     private val actionMenuWindow: PopupWindow
     private val actionMenuWindowView: View
     private val actionMenuSyncView: View
@@ -71,6 +68,7 @@ class ClipboardMainWindow constructor(val mContext: Context) {
     private var clipboardMsg: ClipBoardMessage? = null
 
     private val confirmCLoseWindow: PopupWindow
+    private val udpClientListener: UdpClient.Listener
 
     fun minWindow() {
         val prm = mFloatViewLayoutParams
@@ -210,7 +208,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         // init base view
         val inflater = LayoutInflater.from(mContext)
         mFloatView = inflater.inflate(R.layout.clipboard_main_layout, null)
-        moreMenuBtn = mFloatView.findViewById(R.id.person_settings)
 
         maxMainView = mFloatView.findViewById(R.id.max_view)
         maxMainView.layoutParams = Constraints.LayoutParams((screenWidth * 0.6).toInt(), screenWidth)
@@ -359,27 +356,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
             }
         })
 
-        // init popup window
-        personSettingsView = inflater.inflate(R.layout.person_settings, null)
-        popWindow = PopupWindow(personSettingsView, (screenWidth * 0.4).toInt(), ViewGroup.LayoutParams.WRAP_CONTENT, true)
-        moreMenuBtn.setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                popWindow.showAsDropDown(moreMenuBtn)
-            }
-        })
-        personSettingsView.findViewById<View>(R.id.btn_login).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                popWindow.dismiss()
-                LoginDialog.showDialog(mContext.applicationContext)
-            }
-        })
-        personSettingsView.findViewById<View>(R.id.btn_feedback).setOnClickListener(object: View.OnClickListener{
-            override fun onClick(v: View?) {
-                popWindow.dismiss()
-                FeedbackDialog.showDialog(mContext.applicationContext)
-            }
-        })
-
         // init action menu window
         var itemView: View? = null
         actionMenuWindowView = inflater.inflate(R.layout.action_menu, null)
@@ -427,22 +403,6 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         })
 
         // init events
-        syncSwitcher = maxMainView.findViewById(R.id.sync_switcher)
-        syncSwitcher.isChecked = UdpClient.Instance!!.isRunning
-        syncSwitcher.setOnCheckedChangeListener(object: CompoundButton.OnCheckedChangeListener{
-            override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
-                if (isChecked) {
-                    UdpClient.Instance!!.start()
-                    syncStateTextView.setTextColor(mContext.resources.getColor(R.color.blue))
-                    actionMenuSyncView.visibility = View.VISIBLE
-                } else {
-                    UdpClient.Instance!!.close()
-                    syncStateTextView.setTextColor(mContext.resources.getColor(R.color.grey))
-                    syncStateTextView.text = mContext.getText(R.string.content_sync)
-                    actionMenuSyncView.visibility = View.GONE
-                }
-            }
-        })
         mContentListView.setOnItemLongClickListener(object: AdapterView.OnItemLongClickListener{
             override fun onItemLongClick(
                 parent: AdapterView<*>?,
@@ -483,10 +443,23 @@ class ClipboardMainWindow constructor(val mContext: Context) {
         })
 
         // init udp listener
-        UdpClient.listener = object: UdpClient.Listener{
-            override fun onChangeDeviceNum(deviceNum: Int) {
+        udpClientListener = object: UdpClient.Listener{
+            override fun onChangeDeviceNum(isRunning: Boolean, deviceNum: Int) {
                 Instance?.handler?.post {
-                    Instance?.syncStateTextView?.text = String.format(Instance?.mContext!!.getString(R.string.device_total, deviceNum))
+                    if (isRunning) {
+                        Instance?.syncStateTextView?.text = String.format(
+                            Instance?.mContext!!.getString(
+                                R.string.sync_on,
+                                deviceNum
+                            )
+                        )
+                        syncStateTextView.setTextColor(mContext.resources.getColor(R.color.blue))
+                        actionMenuSyncView.visibility = View.VISIBLE
+                    } else {
+                        syncStateTextView.setTextColor(mContext.resources.getColor(R.color.grey))
+                        syncStateTextView.text = mContext.getText(R.string.sync_off)
+                        actionMenuSyncView.visibility = View.GONE
+                    }
                 }
             }
 
@@ -499,6 +472,8 @@ class ClipboardMainWindow constructor(val mContext: Context) {
                 })
             }
         }
+        UdpClient.listener = udpClientListener
+        udpClientListener.onChangeDeviceNum(UdpClient.Instance!!.isRunning, UdpClient.Instance!!.deviceNum)
     }
 
     fun showContent(content: String) {

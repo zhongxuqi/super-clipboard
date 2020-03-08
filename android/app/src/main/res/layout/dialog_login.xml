@@ -1,51 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/white">
+    android:layout_height="match_parent">
     <LinearLayout
+        android:id="@+id/login_page"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/login_page"
+            android:textColor="@color/green"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_account_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/third_party_login"
-            android:textColor="@color/black"
-            android:textSize="18sp"
-            android:layout_marginTop="7dp"
-            android:layout_marginBottom="7dp"
-            android:layout_marginStart="10dp"/>
-
-        <View
+            android:hint="@string/account"
+            android:padding="1dp"
+            android:theme="@style/LoginEditText"
+            style="@style/LoginEditText"
+            app:counterMaxLength="32"
+            android:layout_marginBottom="5dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/login_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/login_password_layout"
             android:layout_width="match_parent"
-            android:layout_height="1px"
-            android:background="@color/divider"/>
-
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:padding="1dp"
+            android:theme="@style/LoginEditText"
+            style="@style/LoginEditText"
+            app:counterMaxLength="32"
+            android:layout_marginBottom="5dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/login_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:inputType="textPassword"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <Button
+            android:id="@+id/login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/login"
+            android:theme="@style/LoginButton"
+            style="@style/LoginButton"
+            android:layout_marginBottom="5dp"/>
+        <Button
+            android:id="@+id/go_register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/go_register"
+            android:theme="@style/LoginTextButton"
+            style="@style/LoginTextButton"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/register_page"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="@string/register_page"
+            android:textColor="@color/green"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/register_account_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/account"
+            android:padding="1dp"
+            android:theme="@style/LoginEditText"
+            style="@style/LoginEditText"
+            app:counterMaxLength="32"
+            android:layout_marginBottom="5dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/register_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/register_password_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password"
+            android:padding="1dp"
+            android:theme="@style/LoginEditText"
+            style="@style/LoginEditText"
+            app:counterMaxLength="32"
+            android:layout_marginBottom="5dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/register_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:inputType="textPassword"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/register_password_repeat_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password_repeat"
+            android:padding="1dp"
+            android:theme="@style/LoginEditText"
+            style="@style/LoginEditText"
+            app:counterMaxLength="32"
+            android:layout_marginBottom="5dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/register_password_repeat"
+                android:inputType="textPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"/>
+        </com.google.android.material.textfield.TextInputLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center"
-            android:paddingBottom="20dp">
-
-            <ImageView
+            android:layout_marginBottom="5dp"
+            android:gravity="center_vertical">
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/register_captcha_layout"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_height="80dp"
-                android:scaleType="centerInside"
-                android:src="@mipmap/qq"
-                android:padding="10dp"/>
-
+                android:hint="@string/captcha_code"
+                android:padding="1dp"
+                android:theme="@style/LoginEditTextFilled"
+                style="@style/LoginEditTextFilled"
+                app:counterMaxLength="32">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/register_captcha"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
             <ImageView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="80dp"
+                android:id="@+id/captcha_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="80dp"
+                android:src="@drawable/ic_broken_image_black_24dp"
                 android:scaleType="centerInside"
-                android:adjustViewBounds="true"
-                android:src="@mipmap/weibo"
-                android:padding="10dp"/>
+                android:contentDescription="@string/captcha_code" />
         </LinearLayout>
+        <Button
+            android:id="@+id/register"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/register"
+            android:theme="@style/LoginButton"
+            style="@style/LoginButton"
+            android:layout_marginBottom="5dp"/>
+        <Button
+            android:id="@+id/go_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/go_login"
+            android:theme="@style/LoginTextButton"
+            style="@style/LoginTextButton"/>
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

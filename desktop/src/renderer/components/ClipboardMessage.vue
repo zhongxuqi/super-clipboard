@@ -5,7 +5,7 @@
       <pre>{{content}}</pre>
     </div>
     <div class="scb-clipboard-message-content" v-if="copying">{{textCopied}}</div>
-    <b-dropdown ref="dropdown" text="" variant="light" size="sm" style="margin-right:0.5rem">
+    <b-dropdown text="" variant="light" size="sm" style="margin-right:0.5rem">
       <b-dropdown-item v-if="syncState" v-on:click="clickSync">
         <i class="iconfont icon-refresh scb-action-icon"></i>
         {{textSync}}
@@ -43,11 +43,9 @@ export default {
   },
   methods: {
     clickSync: function () {
-      this.$refs.dropdown.hide(true)
       this.$emit('onsync')
     },
     clickDelete: function () {
-      this.$refs.dropdown.hide(true)
       this.$emit('ondelete')
     },
     clickCopy: function () {
@@ -79,8 +77,8 @@ export default {
 <style scoped>
 .scb-clipboard-message {
   width: 100%;
-  border: 1px solid #e4e4e4;
   border-radius: 0.3rem;
+  background-color: rgba(255, 255, 255, 0.6);
   display: flex;
   flex-direction: row;
   justify-content: left;

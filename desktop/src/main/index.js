@@ -4,7 +4,9 @@ import { app, BrowserWindow, screen, clipboard, ipcMain, Notification } from 'el
 import Consts from '../common/Consts'
 import Database from './Database'
 import NetUDP from './net_udp'
+import NetHttp from './net_http'
 import Language from './language'
+import User from './user'
 
 const MAX_LEN = 100
 
@@ -29,8 +31,8 @@ function createWindow () {
     titleBarStyle: 'hidden',
     height: screen.height * 0.6,
     useContentSize: true,
-    width: screen.height * 0.6,
-    icon: require('path').join(__dirname, 'icons', '64x64.png')
+    width: screen.height * 0.4,
+    icon: require('path').join(__dirname, 'icon.png')
   })
   mainWindow.setMenuBarVisibility(false)
   Language.setLanguage(app.getLocale())
@@ -158,6 +160,8 @@ function createWindow () {
 
   NetUDP.setOnReceiveMsg(function (msg) {
     upsertMsg(msg, function (dbMsg) {
+      skipValue = dbMsg.content
+      clipboard.writeText(dbMsg.content)
       sendNotification(Language.getLanguageText('receive_clipboard_content'), dbMsg.content)
     })
   })
@@ -174,6 +178,41 @@ function createWindow () {
     }
     event.returnValue = NetUDP.isStart()
     renderChannel.send('clipboard-sync-state-sync', {state: arg.state})
+  })
+
+  // 网络请求
+  ipcMain.on('request-get_captcha_id', (event) => {
+    NetHttp.getCaptchaID(function (resp) {
+      renderChannel.send('response-get_captcha_id', resp)
+    })
+  })
+  ipcMain.on('request-login', (event, params) => {
+    NetHttp.login(params, function (resp) {
+      renderChannel.send('response-login', resp)
+    })
+  })
+  ipcMain.on('request-register', (event, params) => {
+    NetHttp.register(params, function (resp) {
+      renderChannel.send('response-register', resp)
+    })
+  })
+  ipcMain.on('request-change_password', (event, params) => {
+    NetHttp.changePassword(params, function (resp) {
+      renderChannel.send('response-change_password', resp)
+    })
+  })
+  ipcMain.on('request-feedback', (event, params) => {
+    NetHttp.feedback(params, function (resp) {
+      sendNotification(Language.getLanguageText('think_feedback'))
+    })
+  })
+
+  // 用户
+  ipcMain.on('set-user-id', (event, userID) => {
+    User.setUserID(userID)
+  })
+  ipcMain.on('get-user-id', (event) => {
+    event.returnValue = User.getUserID()
   })
 
   mainWindow.loadURL(winURL)

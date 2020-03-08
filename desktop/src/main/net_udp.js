@@ -1,6 +1,8 @@
 import dgram from 'dgram'
 import os from 'os'
 import md5 from 'js-md5'
+import Consts from '../common/Consts'
+import User from './user'
 
 const UdpAddrSeparator = ','
 let localUdpAddrsJoin = ''
@@ -16,15 +18,13 @@ udpClient.on('error', function (e) {
 })
 
 function sendUdpPackage (buffer, offset, length, port, ip) {
+  if (port <= 0 || port >= 65536) return
   try {
     udpClient.send(buffer, offset, length, port, ip)
   } catch (e) {
     console.log(e)
   }
 }
-
-const ServerHost = 'www.easypass.tech'
-// const ServerHost = '192.168.100.107'
 
 function str2UTF8 (str) {
   var bytes = []
@@ -277,6 +277,15 @@ let receiveMap = {}
 let resultMap = {}
 let isFinishMap = {}
 
+function clearKeyTask (msgKey) {
+  return function () {
+    receiveIndexMap[msgKey] = undefined
+    receiveMap[msgKey] = undefined
+    resultMap[msgKey] = undefined
+    isFinishMap[msgKey] = undefined
+  }
+}
+
 function ackBuf (metaBuffer, remoteInfo) {
   var buf = Buffer.alloc(metaBuffer.length + 2)
   buf[0] = HeaderUdpDataSyncAck
@@ -350,6 +359,7 @@ function checkFinish (msgKey) {
     onReceiveMsg(msg)
     receiveMap[msgKey] = null
     isFinishMap[msgKey] = true
+    setTimeout(clearKeyTask(msgKey), 3 * 60 * 1000)
   }
 }
 
@@ -433,7 +443,8 @@ function heartBeat () {
   let udpAddrs = []
   if (localUdpAddrsJoin !== '') udpAddrs.push(localUdpAddrsJoin)
   var metaData = str2UTF8(JSON.stringify({
-    app_id: 'superclipboard',
+    app_id: Consts.AppID,
+    user_id: User.getUserID(),
     udp_addrs: udpAddrs
   }))
   var buffer = Buffer.alloc(metaData.length + 2)
@@ -442,7 +453,7 @@ function heartBeat () {
   for (var i = 0; i < metaData.length; i++) {
     buffer[2 + i] = metaData[i]
   }
-  sendUdpPackage(buffer, 0, buffer.length, 9000, ServerHost)
+  sendUdpPackage(buffer, 0, buffer.length, 9000, Consts.Domain)
 }
 export default {
   isStart: function () {
