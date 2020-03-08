@@ -2,7 +2,7 @@
 
 import { app, BrowserWindow, screen, clipboard, ipcMain, Notification } from 'electron'
 import Consts from '../common/Consts'
-import Database from './Database'
+// import Database from './Database'
 import NetUDP from './net_udp'
 import NetHttp from './net_http'
 import Language from './language'
@@ -64,7 +64,7 @@ function createWindow () {
       end = rows.length - MAX_LEN
     }
     for (var i = 0; i < end; i++) {
-      Database.deleteMsg(rows[i].id)
+      // Database.deleteMsg(rows[i].id)
       if (renderChannel !== undefined) renderChannel.send('clipboard-message-delete', rows[i])
     }
     return rows.slice(end)
@@ -75,19 +75,19 @@ function createWindow () {
       if (msg.content !== msgList[i].content) continue
       msg = msgList[i]
       msg.update_time = Date.now()
-      Database.update(msg, function (dbMsg) {
-        if (renderChannel !== undefined) {
-          renderChannel.send('clipboard-message-delete', dbMsg)
-          renderChannel.send('clipboard-message-add', dbMsg)
-        }
-        msgList.splice(i, 1)
-        msgList = clearMsg([...msgList, dbMsg])
-        if (typeof callback === 'function') callback(dbMsg)
-        NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(dbMsg)))
-      })
+      // Database.update(msg, function (dbMsg) {
+      if (renderChannel !== undefined) {
+        renderChannel.send('clipboard-message-delete', msg)
+        renderChannel.send('clipboard-message-add', msg)
+      }
+      msgList.splice(i, 1)
+      msgList = clearMsg([...msgList, msg])
+      if (typeof callback === 'function') callback(msg)
+      NetUDP.sendClipboardMsg(JSON.parse(JSON.stringify(msg)))
+      // })
       return
     }
-    Database.insert(msg, function (dbMsg) {
+    User.insert(msg, function (dbMsg) {
       if (renderChannel !== undefined) {
         renderChannel.send('clipboard-message-add', dbMsg)
       }
@@ -97,7 +97,7 @@ function createWindow () {
     })
   }
 
-  Database.listAll(function (rows) {
+  User.listAll(function (rows) {
     msgList = clearMsg(rows)
     if (renderChannel !== undefined && renderInited === false) {
       renderInited = true
@@ -141,7 +141,7 @@ function createWindow () {
   })
 
   ipcMain.on('clipboard-message-action-delete', (event, arg) => {
-    Database.deleteMsg(arg.id)
+    // Database.deleteMsg(arg.id)
     if (renderChannel !== undefined) renderChannel.send('clipboard-message-delete', arg)
     msgList = msgList.filter(function (item) {
       return item.id !== arg.id
@@ -222,7 +222,7 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
     if (intervalID !== undefined) clearInterval(intervalID)
-    Database.close()
+    // Database.close()
   })
 }
 
