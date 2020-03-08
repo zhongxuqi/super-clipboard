@@ -32,6 +32,9 @@ function createWindow () {
     height: screen.height * 0.6,
     useContentSize: true,
     width: screen.height * 0.4,
+    webPreferences: {
+      nodeIntegration: true
+    },
     icon: require('path').join(__dirname, 'icon.png')
   })
   mainWindow.setMenuBarVisibility(false)
