@@ -48,13 +48,13 @@
       ]
     },
     "mac": {
-      "icon": "./static/icons/icon.png"
+      "icon": "build/icons/icon.icns"
     },
     "win": {
-      "icon": "./static/icons/icon.ico"
+      "icon": "build/icons/icon.ico"
     },
     "linux": {
-      "icon": "./static/icons/icon.png"
+      "icon": "build/icons"
     }
   },
   "dependencies": {
@@ -63,6 +63,7 @@
     "bootstrap-vue": "^2.3.0",
     "dgram": "^1.0.1",
     "electron-store": "^5.1.1",
+    "jquery": "^3.4.1",
     "js-md5": "^0.7.3",
     "js-sha256": "^0.9.0",
     "sqlite3": "^4.1.1",
