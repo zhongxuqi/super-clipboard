@@ -193,6 +193,7 @@ export default {
       ipcRenderer.send('clipboard-message-action-copy', msg.content)
     },
     openLogin: function () {
+      this.getCaptchaID()
       this.$refs['login-modal'].show()
     },
     changeLoginMode: function (mode) {
@@ -442,7 +443,6 @@ export default {
       this.registerPasswordRepeatErr = ''
       this.registerCaptcha = ''
       this.registerCaptchaErr = ''
-      this.captchaID = ''
     }.bind(this))
     this.$refs['change-password-modal'].$root.$on('bv::modal::hidden', function (bvEvent, modalId) {
       this.changePasswordOriginPassword = ''
