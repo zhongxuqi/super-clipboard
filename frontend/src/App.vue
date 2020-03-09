@@ -61,7 +61,9 @@
             <div class="scb-download-table">
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Android</b-col>
-                <b-col class="scb-download-row-right"><b-button variant="link"><b-icon icon="cloud-download"></b-icon></b-button></b-col>
+                <b-col class="scb-download-row-right">
+                  <b-button variant="link" href="https://easypass-tech.oss-cn-hangzhou.aliyuncs.com/app-release-1.0.apk"><b-icon icon="cloud-download"></b-icon></b-button>
+                </b-col>
               </b-row>
             </div>
           </b-col>
@@ -70,15 +72,22 @@
             <div class="scb-download-table">
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Windows</b-col>
-                <b-col class="scb-download-row-right"><b-button variant="link"><b-icon icon="cloud-download"></b-icon></b-button></b-col>
+                <b-col class="scb-download-row-right">
+                  <b-button variant="link" href="https://easypass-tech.oss-cn-hangzhou.aliyuncs.com/superclipboard%20Setup%201.0.0.exe"><b-icon icon="cloud-download"></b-icon></b-button>
+                </b-col>
               </b-row>
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Mac</b-col>
-                <b-col class="scb-download-row-right"><b-button variant="link"><b-icon icon="cloud-download"></b-icon></b-button></b-col>
+                <b-col class="scb-download-row-right">
+                  <!-- <b-button variant="link"><b-icon icon="cloud-download"></b-icon></b-button> -->
+                  {{textComingSoon}}
+                </b-col>
               </b-row>
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Linux</b-col>
-                <b-col class="scb-download-row-right"><b-button variant="link"><b-icon icon="cloud-download"></b-icon></b-button></b-col>
+                <b-col class="scb-download-row-right">
+                  <b-button variant="link" href="https://easypass-tech.oss-cn-hangzhou.aliyuncs.com/superclipboard-1.0.0.AppImage"><b-icon icon="cloud-download"></b-icon></b-button>
+                </b-col>
               </b-row>
             </div>
           </b-col>
@@ -126,6 +135,7 @@ export default {
       textMobile: Language.getLanguageText('mobile'),
       textDesktop: Language.getLanguageText('desktop'),
       textClipboardSync: Language.getLanguageText('clipboard_sync'),
+      textComingSoon: Language.getLanguageText('coming_soon'),
       
       langs: {
         'en': {

@@ -165,7 +165,7 @@
                 android:id="@+id/captcha_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="80dp"
+                android:minWidth="100dp"
                 android:src="@drawable/ic_broken_image_black_24dp"
                 android:scaleType="centerInside"
                 android:contentDescription="@string/captcha_code" />

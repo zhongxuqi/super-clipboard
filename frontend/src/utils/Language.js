@@ -46,6 +46,7 @@ var languageMap = {
     'mobile': 'Mobile',
     'desktop': 'Desktop',
     'clipboard_sync': 'Clipboard Sync',
+    'coming_soon': 'Coming soon',
   },
   "zh": {
     'html_title': '超级剪切板',
@@ -60,6 +61,7 @@ var languageMap = {
     'mobile': '移动端',
     'desktop': '桌面端',
     'clipboard_sync': '剪切板同步',
+    'coming_soon': '敬情期待',
   },
 }
 
