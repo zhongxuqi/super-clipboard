@@ -286,7 +286,7 @@ export default {
         hasErr = true
       }
       if (this.changePasswordNewPassword !== this.changePasswordNewPasswordRepeat) {
-        this.changePasswordPasswordRepeatErr = Language.getLanguageText('password_repeat_wrong')
+        this.changePasswordNewPasswordRepeatErr = Language.getLanguageText('password_repeat_wrong')
         hasErr = true
       }
       if (hasErr) {
