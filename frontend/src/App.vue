@@ -19,6 +19,7 @@
               <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_1.png"/></swiper-slide>
               <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_2.png"/></swiper-slide>
               <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_3.png"/></swiper-slide>
+              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_4.png"/></swiper-slide>
               <div class="swiper-pagination" slot="pagination"></div>
             </swiper>
           </b-col>
