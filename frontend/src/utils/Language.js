@@ -41,7 +41,7 @@ var languageMap = {
     'float_window_design': 'Float Window Design',
     'feature_title': 'Why choose SuperClipboard',
     'keyword_search': 'Keyword Search',
-    'window_min': 'Window Minize',
+    'window_min': 'Window Minimize',
     'app_download': 'APP Downloader',
     'mobile': 'Mobile',
     'desktop': 'Desktop',

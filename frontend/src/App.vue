@@ -16,10 +16,14 @@
           </b-col>
           <b-col class="scb-topbody-right" lg="5">
             <swiper :options="swiperOption">
-              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_1.png"/></swiper-slide>
-              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_2.png"/></swiper-slide>
-              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_3.png"/></swiper-slide>
-              <swiper-slide style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_4.png"/></swiper-slide>
+              <swiper-slide v-if="lang!='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_1.png"/></swiper-slide>
+              <swiper-slide v-if="lang!='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_2.png"/></swiper-slide>
+              <swiper-slide v-if="lang!='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_3.png"/></swiper-slide>
+              <swiper-slide v-if="lang!='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_4.png"/></swiper-slide>
+              <swiper-slide v-if="lang=='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_1_en.png"/></swiper-slide>
+              <swiper-slide v-if="lang=='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_2_en.png"/></swiper-slide>
+              <swiper-slide v-if="lang=='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_3_en.png"/></swiper-slide>
+              <swiper-slide v-if="lang=='en'" style="margin:0rem;overflow:hidden;border-radius:1rem;"><img class="scb-topbody-img" src="./assets/phone_pic_4_en.png"/></swiper-slide>
               <div class="swiper-pagination" slot="pagination"></div>
             </swiper>
           </b-col>
@@ -63,7 +67,7 @@
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Android</b-col>
                 <b-col class="scb-download-row-right">
-                  <b-button variant="link" href="https://easypass-tech.oss-cn-hangzhou.aliyuncs.com/app-release-1.0.apk"><b-icon icon="cloud-download"></b-icon></b-button>
+                  <b-button variant="link" v-bind:href="`https://${ossDomain}/app-release-1.0.apk`"><b-icon icon="cloud-download"></b-icon></b-button>
                 </b-col>
               </b-row>
             </div>
@@ -74,7 +78,7 @@
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Windows</b-col>
                 <b-col class="scb-download-row-right">
-                  <b-button variant="link" href="https://easypass-tech.oss-cn-hangzhou.aliyuncs.com/superclipboard%20Setup%201.0.0.exe"><b-icon icon="cloud-download"></b-icon></b-button>
+                  <b-button variant="link" v-bind:href="`https://${ossDomain}/superclipboard%20Setup%201.0.0.exe`"><b-icon icon="cloud-download"></b-icon></b-button>
                 </b-col>
               </b-row>
               <b-row class="scb-download-row">
@@ -87,7 +91,7 @@
               <b-row class="scb-download-row">
                 <b-col class="scb-download-row-left scb-title-text">Linux</b-col>
                 <b-col class="scb-download-row-right">
-                  <b-button variant="link" href="https://easypass-tech.oss-cn-hangzhou.aliyuncs.com/superclipboard-1.0.0.AppImage"><b-icon icon="cloud-download"></b-icon></b-button>
+                  <b-button variant="link" v-bind:href="`https://${ossDomain}/superclipboard-1.0.0.AppImage`"><b-icon icon="cloud-download"></b-icon></b-button>
                 </b-col>
               </b-row>
             </div>
@@ -137,6 +141,9 @@ export default {
       textDesktop: Language.getLanguageText('desktop'),
       textClipboardSync: Language.getLanguageText('clipboard_sync'),
       textComingSoon: Language.getLanguageText('coming_soon'),
+
+      ossDomain: 'easypass-tech.oss-cn-hangzhou.aliyuncs.com',
+      // ossDomain: 'easypass-tech-us.oss-us-west-1.aliyuncs.com',
       
       langs: {
         'en': {
@@ -148,7 +155,6 @@ export default {
           search: '?lang=zh',
         },
       },
-
       lang: Language.getLanguage(),
 
       swiperOption: {
