@@ -65,4 +65,7 @@
     <string name="sync_clipboard_usage_notice">Sync Clipboard Usage Notice</string>
     <string name="sync_clipboard_usage_notice_content">Please put your device in the same local area network (wifi). You can download desktop client on official website.</string>
     <string name="official_website_url">https://www.superclipboard.online</string>
+    <string name="user_notice">User Notice</string>
+    <string name="user_notice_content">User Notice Content</string>
+    <string name="readed">Readed</string>
 </resources>

@@ -12,10 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.musketeer.superclipboard.components.ChangePasswordDialog
-import com.musketeer.superclipboard.components.FeedbackDialog
-import com.musketeer.superclipboard.components.LoginCallback
-import com.musketeer.superclipboard.components.LoginDialog
+import com.musketeer.superclipboard.components.*
 import com.musketeer.superclipboard.net.UdpClient
 import com.musketeer.superclipboard.utils.SharePreference
 import com.musketeer.superclipboard.utils.UserType
@@ -27,8 +24,9 @@ import com.umeng.analytics.MobclickAgent
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener, IUiListener, LoginCallback {
+class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener, IUiListener, LoginCallback, UserNoticeCallback {
     private val REQUEST_CODE_DRAW_OVERLAY_PERMISSION = 5
+    private val userNoticeChannels = arrayListOf("huawei")
     var clipboardMainWindow: ClipboardMainWindow? = null
 
     val syncSwitcher: SwitchMaterial by lazy {
@@ -77,6 +75,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
             }
         })
         refreshUserType()
+
+        if (!SharePreference.getHadOpen(this) && userNoticeChannels.contains(MainApplication.AppChannel)) {
+            UserNoticeDialog(this, this)
+        }
     }
 
     override fun onResume() {
@@ -176,6 +178,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     // account
     override fun onLogined() {
         refreshUserType()
+    }
+
+    // user notice
+    override fun onAgree() {
+        SharePreference.setHadOpen(this)
     }
 
     // QQ

@@ -1,7 +1,6 @@
 package com.musketeer.superclipboard.utils
 
 import android.content.Context
-import android.util.Log
 
 enum class UserType(val v: Int) {
     UserTypeUnknow(0),
@@ -11,8 +10,21 @@ enum class UserType(val v: Int) {
 
 object SharePreference {
     val Name = "super-clipboard"
+    val HadOpenKey = "had-open"
     val UserTypeKey = "user-type"
     val UserIDKey = "user-id"
+
+    fun getHadOpen(ctx: Context): Boolean {
+        val sp = ctx.getSharedPreferences(Name, Context.MODE_PRIVATE)
+        return sp.getBoolean(HadOpenKey, false)
+    }
+
+    fun setHadOpen(ctx: Context) {
+        val sp = ctx.getSharedPreferences(Name, Context.MODE_PRIVATE)
+        val editor = sp.edit()
+        editor.putBoolean(HadOpenKey, true)
+        editor.apply()
+    }
 
     fun getUserTypeByValue(v: Int): UserType? {
         return when(v) {

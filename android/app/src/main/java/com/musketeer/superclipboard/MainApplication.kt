@@ -9,7 +9,9 @@ import com.tencent.tauth.Tencent
 import com.umeng.commonsdk.UMConfigure
 
 class MainApplication : Application() {
-    val AppChannel = "main"
+    companion object {
+        val AppChannel = "main"
+    }
 
     override fun onCreate() {
         super.onCreate()
