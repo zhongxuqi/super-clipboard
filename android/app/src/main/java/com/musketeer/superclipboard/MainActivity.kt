@@ -26,7 +26,7 @@ import org.json.JSONObject
 
 class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClickListener, IUiListener, LoginCallback, UserNoticeCallback {
     private val REQUEST_CODE_DRAW_OVERLAY_PERMISSION = 5
-    private val userNoticeChannels = arrayListOf("huawei")
+    private val userNoticeChannels = arrayListOf("huawei", "baidu", "tencent", "ali")
     var clipboardMainWindow: ClipboardMainWindow? = null
 
     val syncSwitcher: SwitchMaterial by lazy {
