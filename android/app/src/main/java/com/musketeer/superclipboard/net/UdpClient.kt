@@ -63,6 +63,8 @@ class UdpClient(val ctx: Context) {
         @JSONField(name="udp_addrs")
         var udpAddrs: Array<String>? = null
         var key: String? = null
+        @JSONField(name="user_id")
+        var userID: String? = null
         var total: Int = 0
         var index: Int = 0
     }
@@ -159,7 +161,7 @@ class UdpClient(val ctx: Context) {
 
         fun sendData() {
             if (lastSyncTime + SyncWorkerTimeout < System.currentTimeMillis() || (currMsg == null && clipboardMsgs.size <= 0)) {
-                val metaData = "{\"key\":\"$localUdpClientSyncKey\"}".toByteArray()
+                val metaData = "{\"key\":\"$localUdpClientSyncKey\",\"user_id\":\"${SharePreference.getUserID(udpClient.ctx)}\"}".toByteArray()
                 val buffer = ByteArray(2 + metaData.size)
                 buffer[0] = HeaderUdpClientSync
                 buffer[1] = metaData.size.toByte()
@@ -357,7 +359,8 @@ class UdpClient(val ctx: Context) {
                             refreshSyncWork(validUdpAddrs.toTypedArray())
                         }
                         HeaderUdpClientSync -> {
-//                            Log.d("UdpClient", "$metaData")
+//                            Log.d("UdpClient", "${metaDataJson.userID}")
+                            if (metaDataJson.userID != null && metaDataJson.userID != SharePreference.getUserID(ctx)) continue@receiveLoop
                             val remoteAddr = "${packet.address.hostAddress}:${packet.port}"
                             for (udpAddr in syncWorkerMap.keys) {
                                 if (udpAddr.indexOf(remoteAddr) < 0) continue

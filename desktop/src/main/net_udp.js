@@ -111,7 +111,8 @@ function createSyncWorker (remoteAddr) {
     // console.log(`${lastSyncTime} ${SyncWorkerTimeout} ${Date.now()}`)
     if (lastSyncTime + SyncWorkerTimeout < Date.now() || (currMsg === undefined && clipboardMsgs.length <= 0)) {
       let metaData = str2UTF8(JSON.stringify({
-        key: udpClientSyncKey
+        key: udpClientSyncKey,
+        user_id: User.getUserID()
       }))
       let buffer = Buffer.alloc(2 + metaData.length)
       buffer[0] = HeaderUdpClientSync
@@ -388,6 +389,8 @@ udpClient.on('message', function (buf, remoteInfo) {
     refreshSyncWork(validUdpAddrs)
   } else if (buf[0] === HeaderUdpClientSync) {
     // console.log(`${buf.toString()}`)
+    // console.log(metaDataJson.user_id)
+    if (metaDataJson.user_id !== undefined && metaDataJson.user_id !== User.getUserID()) return
     let syncUdpAddr = `${remoteInfo.address}:${remoteInfo.port}`
     for (let udpAddrkey in syncWorkerMap) {
       if (syncWorkerMap[udpAddrkey] === undefined) continue
